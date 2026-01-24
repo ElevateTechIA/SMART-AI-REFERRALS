@@ -12,7 +12,9 @@ const nextConfig = {
       },
     ],
   },
-  serverExternalPackages: ['firebase-admin'],
+  experimental: {
+    serverComponentsExternalPackages: ['firebase-admin'],
+  },
   transpilePackages: ['undici'],
   webpack: (config, { isServer }) => {
     if (!isServer) {
