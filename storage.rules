@@ -1,0 +1,35 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isValidImage() {
+      return request.resource.contentType.matches('image/.*') &&
+        request.resource.size < 5 * 1024 * 1024; // 5MB max
+    }
+
+    // Business images
+    match /businesses/{businessId}/{imageId} {
+      // Anyone can read business images
+      allow read: if true;
+
+      // Business owners can upload images to their business folder
+      // Note: Additional ownership check should be done server-side
+      allow write: if isAuthenticated() && isValidImage();
+    }
+
+    // User profile images
+    match /users/{userId}/{imageId} {
+      // Anyone can read profile images
+      allow read: if true;
+
+      // Users can upload their own profile images
+      allow write: if isAuthenticated() &&
+        request.auth.uid == userId &&
+        isValidImage();
+    }
+  }
+}

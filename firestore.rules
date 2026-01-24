@@ -1,0 +1,137 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function hasRole(role) {
+      return isAuthenticated() && role in getUserData().roles;
+    }
+
+    function isAdmin() {
+      return hasRole('admin');
+    }
+
+    // Users collection
+    match /users/{userId} {
+      // Users can read their own document
+      allow read: if isOwner(userId) || isAdmin();
+
+      // Users can create their own document
+      allow create: if isOwner(userId);
+
+      // Users can update their own document (except roles - managed by admin/server)
+      allow update: if isOwner(userId) &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['roles']);
+
+      // Admins can update any user (including roles)
+      allow update: if isAdmin();
+
+      // No one can delete users from client
+      allow delete: if false;
+    }
+
+    // Businesses collection
+    match /businesses/{businessId} {
+      // Anyone can read active businesses
+      allow read: if resource.data.status == 'active' ||
+        isOwner(resource.data.ownerUserId) ||
+        isAdmin();
+
+      // Authenticated users can create (pending approval)
+      allow create: if isAuthenticated() &&
+        request.resource.data.ownerUserId == request.auth.uid &&
+        request.resource.data.status == 'pending';
+
+      // Business owners can update their own business (except status)
+      allow update: if isOwner(resource.data.ownerUserId) &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status', 'ownerUserId']);
+
+      // Admins can update any business (including status)
+      allow update: if isAdmin();
+
+      // No client-side delete
+      allow delete: if false;
+    }
+
+    // Offers collection
+    match /offers/{offerId} {
+      // Anyone can read active offers
+      allow read: if resource.data.active == true || isAdmin();
+
+      // Business owners can read their own offers
+      allow read: if isAuthenticated() &&
+        exists(/databases/$(database)/documents/businesses/$(offerId)) &&
+        get(/databases/$(database)/documents/businesses/$(offerId)).data.ownerUserId == request.auth.uid;
+
+      // Offer creation/update handled by server (API routes)
+      allow create, update: if false;
+
+      // No client-side delete
+      allow delete: if false;
+    }
+
+    // Visits collection
+    match /visits/{visitId} {
+      // Users can read their own visits (as consumer or referrer)
+      allow read: if isAuthenticated() && (
+        resource.data.consumerUserId == request.auth.uid ||
+        resource.data.referrerUserId == request.auth.uid
+      );
+
+      // Business owners can read visits to their business
+      allow read: if isAuthenticated() &&
+        exists(/databases/$(database)/documents/businesses/$(resource.data.businessId)) &&
+        get(/databases/$(database)/documents/businesses/$(resource.data.businessId)).data.ownerUserId == request.auth.uid;
+
+      // Admins can read all visits
+      allow read: if isAdmin();
+
+      // Visit creation/update handled by server
+      allow create, update, delete: if false;
+    }
+
+    // Earnings collection
+    match /earnings/{earningId} {
+      // Users can read their own earnings
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+
+      // Managed by server only
+      allow create, update, delete: if false;
+    }
+
+    // Charges collection
+    match /charges/{chargeId} {
+      // Business owners can read their own charges
+      allow read: if isAuthenticated() &&
+        exists(/databases/$(database)/documents/businesses/$(resource.data.businessId)) &&
+        get(/databases/$(database)/documents/businesses/$(resource.data.businessId)).data.ownerUserId == request.auth.uid;
+
+      // Admins can read all charges
+      allow read: if isAdmin();
+
+      // Managed by server only
+      allow create, update, delete: if false;
+    }
+
+    // Fraud flags collection
+    match /fraudFlags/{flagId} {
+      // Admins only
+      allow read: if isAdmin();
+
+      // Managed by server only
+      allow create, update, delete: if false;
+    }
+  }
+}
