@@ -3,6 +3,8 @@ import { getAdminDb, verifyAuth } from '@/lib/firebase/admin'
 import { FieldValue } from 'firebase-admin/firestore'
 import type { Offer } from '@/lib/types'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(
   request: NextRequest,
   { params }: { params: { visitId: string } }

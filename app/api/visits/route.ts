@@ -3,6 +3,8 @@ import { getAdminDb, verifyAuth } from '@/lib/firebase/admin'
 import { FieldValue } from 'firebase-admin/firestore'
 import type { Visit, AttributionType } from '@/lib/types'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     // Verify authentication

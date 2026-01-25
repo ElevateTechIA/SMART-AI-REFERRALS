@@ -3,6 +3,8 @@ import { getAdminDb, verifyAuth } from '@/lib/firebase/admin'
 import { FieldValue } from 'firebase-admin/firestore'
 import type { Offer } from '@/lib/types'
 
+export const dynamic = 'force-dynamic'
+
 // Validation constants
 const MIN_PRICE = 1 // Minimum price per customer
 const MAX_PRICE = 10000 // Maximum price per customer

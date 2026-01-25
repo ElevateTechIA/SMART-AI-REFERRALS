@@ -94,9 +94,9 @@ export default function EarningsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-900 to-purple-800 px-6 py-8">
+    <div className="min-h-screen">
+      {/* Header with gradient matching dashboard */}
+      <div className="bg-gradient-to-br from-indigo-900 to-purple-800 px-6 py-8">
         <div className="max-w-7xl mx-auto">
           <Link
             href="/dashboard"
@@ -112,75 +112,75 @@ export default function EarningsPage() {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Stats Cards */}
+        {/* Stats Cards - matching dashboard style */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg">
+          <div className="bg-white/95 backdrop-blur-sm rounded-xl p-6 shadow-xl">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
-                <DollarSign className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+              <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                <DollarSign className="h-6 w-6 text-indigo-600" />
               </div>
-              <span className="text-sm text-gray-600 dark:text-gray-400">Total Earnings</span>
+              <span className="text-sm text-gray-600">Total Earnings</span>
             </div>
-            <p className="text-3xl font-bold text-gray-900 dark:text-white">
+            <p className="text-3xl font-bold text-gray-900">
               {formatCurrency(stats.totalEarnings)}
             </p>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg">
+          <div className="bg-white/95 backdrop-blur-sm rounded-xl p-6 shadow-xl">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-                <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-400" />
+              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <TrendingUp className="h-6 w-6 text-green-600" />
               </div>
-              <span className="text-sm text-gray-600 dark:text-gray-400">Completed</span>
+              <span className="text-sm text-gray-600">Completed</span>
             </div>
-            <p className="text-3xl font-bold text-gray-900 dark:text-white">
+            <p className="text-3xl font-bold text-gray-900">
               {formatCurrency(stats.completedEarnings)}
             </p>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg">
+          <div className="bg-white/95 backdrop-blur-sm rounded-xl p-6 shadow-xl">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
-                <Clock className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+              <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                <Clock className="h-6 w-6 text-yellow-600" />
               </div>
-              <span className="text-sm text-gray-600 dark:text-gray-400">Pending</span>
+              <span className="text-sm text-gray-600">Pending</span>
             </div>
-            <p className="text-3xl font-bold text-gray-900 dark:text-white">
+            <p className="text-3xl font-bold text-gray-900">
               {formatCurrency(stats.pendingEarnings)}
             </p>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg">
+          <div className="bg-white/95 backdrop-blur-sm rounded-xl p-6 shadow-xl">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                <Calendar className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                <Calendar className="h-6 w-6 text-purple-600" />
               </div>
-              <span className="text-sm text-gray-600 dark:text-gray-400">This Month</span>
+              <span className="text-sm text-gray-600">This Month</span>
             </div>
-            <p className="text-3xl font-bold text-gray-900 dark:text-white">
+            <p className="text-3xl font-bold text-gray-900">
               {formatCurrency(stats.thisMonth)}
             </p>
           </div>
         </div>
 
-        {/* Transactions */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden">
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+        {/* Transactions - matching dashboard card style */}
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden">
+          <div className="p-6 border-b border-gray-200">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+              <h2 className="text-xl font-bold text-gray-900">
                 Transaction History
               </h2>
               <div className="flex gap-3">
                 <select
                   value={selectedPeriod}
                   onChange={(e) => setSelectedPeriod(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                  className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="all">All Time</option>
                   <option value="month">This Month</option>
                   <option value="week">This Week</option>
                 </select>
-                <Button className="bg-indigo-600 hover:bg-indigo-700">
+                <Button className="bg-indigo-600 hover:bg-indigo-700 rounded-lg">
                   <Download className="h-4 w-4 mr-2" />
                   Export
                 </Button>
@@ -190,44 +190,44 @@ export default function EarningsPage() {
 
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-slate-900/50">
+              <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Date
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Business
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Customer
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Type
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Amount
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-white divide-y divide-gray-200">
                 {transactions.map((transaction) => (
-                  <tr key={transaction.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
+                  <tr key={transaction.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {new Date(transaction.date).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {transaction.business}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                       {transaction.customer}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400 capitalize">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 capitalize">
                       {transaction.type}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-white">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
                       {formatCurrency(transaction.amount)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -242,8 +242,8 @@ export default function EarningsPage() {
           {transactions.length === 0 && (
             <div className="text-center py-12">
               <DollarSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600 dark:text-gray-400">No transactions yet</p>
-              <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
+              <p className="text-gray-600">No transactions yet</p>
+              <p className="text-sm text-gray-500 mt-2">
                 Start referring customers to earn rewards
               </p>
             </div>

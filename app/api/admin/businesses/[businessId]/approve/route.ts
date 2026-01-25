@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAdminDb, verifyAdmin } from '@/lib/firebase/admin'
 import { FieldValue } from 'firebase-admin/firestore'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(
   request: NextRequest,
   { params }: { params: { businessId: string } }

@@ -3,6 +3,8 @@ import { getAdminDb, verifyAuth } from '@/lib/firebase/admin'
 import { FieldValue } from 'firebase-admin/firestore'
 import type { Business } from '@/lib/types'
 
+export const dynamic = 'force-dynamic'
+
 // Input validation helpers
 function validateBusinessName(name: string): boolean {
   return typeof name === 'string' && name.length >= 2 && name.length <= 100
