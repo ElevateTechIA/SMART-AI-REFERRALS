@@ -57,3 +57,131 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Theme Gradient Backgrounds */
+@layer utilities {
+  .gradient-bg {
+    background: linear-gradient(
+      135deg,
+      var(--theme-gradientFrom) 0%,
+      var(--theme-gradientVia) 50%,
+      var(--theme-gradientTo) 100%
+    );
+  }
+
+  .gradient-bg-radial {
+    background: radial-gradient(
+      ellipse at top,
+      var(--theme-gradientVia),
+      var(--theme-gradientFrom)
+    );
+  }
+
+  /* Glassmorphism Card Styles */
+  .glass-card {
+    background: var(--theme-cardBg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--theme-cardBorder);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  }
+
+  .glass-card:hover {
+    background: var(--theme-cardBgHover);
+    border-color: var(--theme-primary);
+  }
+
+  /* Gradient Text */
+  .gradient-text {
+    background: linear-gradient(
+      90deg,
+      var(--theme-primary),
+      var(--theme-accent)
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Animated Gradient Border */
+  .gradient-border {
+    position: relative;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 2px;
+    background: linear-gradient(
+      45deg,
+      var(--theme-primary),
+      var(--theme-accent),
+      var(--theme-primaryLight)
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box,
+                   linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  /* Glow Effect */
+  .glow {
+    box-shadow: 0 0 20px var(--theme-primary),
+                0 0 40px var(--theme-primary),
+                0 0 60px var(--theme-primaryLight);
+  }
+
+  /* Shimmer Animation */
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+
+  .shimmer {
+    animation: shimmer 3s infinite linear;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--theme-primaryLight),
+      transparent
+    );
+    background-size: 1000px 100%;
+  }
+
+  /* Floating Animation */
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  /* Pulse Glow Animation */
+  @keyframes pulseGlow {
+    0%, 100% {
+      box-shadow: 0 0 10px var(--theme-primary);
+    }
+    50% {
+      box-shadow: 0 0 20px var(--theme-primary),
+                  0 0 30px var(--theme-primaryLight);
+    }
+  }
+
+  .pulse-glow {
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+}

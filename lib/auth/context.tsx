@@ -51,17 +51,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const createUserDocument = async (
     firebaseUser: FirebaseUser,
-    name?: string,
-    roles: UserRole[] = ['consumer']
+    name?: string
   ): Promise<User> => {
-    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || process.env.ADMIN_EMAIL
-    const userRoles: UserRole[] = firebaseUser.email === adminEmail ? ['admin', ...roles] : roles
+    // Admin role is only assigned through server-side scripts (scripts/make-admin.js)
+    // Never assign admin role on client side to prevent privilege escalation
+    const defaultRoles: UserRole[] = ['consumer']
 
     const userData = {
       email: firebaseUser.email!,
       name: name || firebaseUser.displayName || 'User',
       photoURL: firebaseUser.photoURL || null,
-      roles: userRoles,
+      roles: defaultRoles,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     }

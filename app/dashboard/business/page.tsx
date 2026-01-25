@@ -10,6 +10,7 @@ import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { db } from '@/lib/firebase/client'
 import { collection, query, where, getDocs, orderBy, doc, getDoc } from 'firebase/firestore'
+import { apiPost } from '@/lib/api-client'
 import type { Business, Offer, Visit, Charge } from '@/lib/types'
 import { formatCurrency, formatDate, generateReferralUrl } from '@/lib/utils'
 import {
@@ -133,20 +134,14 @@ export default function BusinessDashboardPage() {
 
     setConverting(visitId)
     try {
-      const response = await fetch(`/api/visits/${visitId}/convert`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          businessUserId: user.id,
-        }),
-      })
+      // API uses auth token to verify business owner - no need to pass user ID
+      const result = await apiPost<{ success: boolean; error?: string }>(
+        `/api/visits/${visitId}/convert`,
+        {}
+      )
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to confirm conversion')
+      if (!result.ok) {
+        throw new Error(result.error || 'Failed to confirm conversion')
       }
 
       // Update local state
@@ -247,7 +242,7 @@ export default function BusinessDashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Visits</CardTitle>
@@ -308,22 +303,26 @@ export default function BusinessDashboardPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-2">
-            <div className="flex-1 bg-muted rounded-md px-4 py-2 text-sm font-mono truncate">
+          <div className="space-y-2">
+            <div className="bg-muted rounded-md px-4 py-2 text-sm font-mono overflow-x-auto">
               {generateReferralUrl(business.id)}
             </div>
-            <Button variant="outline" size="icon" onClick={copyReferralLink}>
-              <Copy className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="icon" asChild>
-              <a
-                href={generateReferralUrl(business.id)}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <ExternalLink className="h-4 w-4" />
-              </a>
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button variant="outline" className="flex-1 gap-2" onClick={copyReferralLink}>
+                <Copy className="h-4 w-4" />
+                Copy Link
+              </Button>
+              <Button variant="outline" className="flex-1 gap-2" asChild>
+                <a
+                  href={generateReferralUrl(business.id)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Open Link
+                </a>
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -345,7 +344,7 @@ export default function BusinessDashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-4">
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
               <div>
                 <p className="text-sm text-muted-foreground">Price per Customer</p>
                 <p className="text-lg font-semibold">{formatCurrency(offer.pricePerNewCustomer)}</p>

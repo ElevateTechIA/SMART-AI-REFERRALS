@@ -7,8 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
-import { db } from '@/lib/firebase/client'
-import { collection, query, where, getDocs, orderBy, doc, getDoc } from 'firebase/firestore'
+import { apiGet } from '@/lib/api-client'
 import type { Business, Visit, Earning } from '@/lib/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import {
@@ -16,12 +15,16 @@ import {
   MapPin,
   Clock,
   CheckCircle,
-  XCircle,
   Loader2,
   Share2,
   ArrowRight,
   Building2,
 } from 'lucide-react'
+
+interface VisitsApiResponse {
+  visits: (Visit & { business?: Business })[]
+  rewards: Earning[]
+}
 
 export default function VisitsPage() {
   const { user } = useAuth()
@@ -35,62 +38,28 @@ export default function VisitsPage() {
       if (!user) return
 
       try {
-        // Fetch visits as consumer
-        const visitsQuery = query(
-          collection(db, 'visits'),
-          where('consumerUserId', '==', user.id),
-          orderBy('createdAt', 'desc')
-        )
-        const visitsSnapshot = await getDocs(visitsQuery)
-        const visitsList: (Visit & { business?: Business })[] = []
+        const result = await apiGet<VisitsApiResponse>('/api/visits/consumer')
 
-        for (const visitDoc of visitsSnapshot.docs) {
-          const data = visitDoc.data()
-          const visit: Visit = {
-            id: visitDoc.id,
-            ...data,
-            createdAt: data.createdAt?.toDate(),
-            updatedAt: data.updatedAt?.toDate(),
-          } as Visit
-
-          // Fetch business details
-          const businessDoc = await getDoc(doc(db, 'businesses', visit.businessId))
-          if (businessDoc.exists()) {
-            const businessData = businessDoc.data()
-            visitsList.push({
-              ...visit,
-              business: {
-                id: businessDoc.id,
-                ...businessData,
-                createdAt: businessData.createdAt?.toDate(),
-                updatedAt: businessData.updatedAt?.toDate(),
-              } as Business,
-            })
-          } else {
-            visitsList.push(visit)
-          }
+        if (!result.ok) {
+          throw new Error(result.error || 'Failed to load visit data')
         }
 
-        setVisits(visitsList)
+        const data = result.data!
 
-        // Fetch consumer rewards
-        const rewardsQuery = query(
-          collection(db, 'earnings'),
-          where('userId', '==', user.id),
-          where('type', '==', 'CONSUMER_REWARD'),
-          orderBy('createdAt', 'desc')
-        )
-        const rewardsSnapshot = await getDocs(rewardsQuery)
-        const rewardsList: Earning[] = []
-        rewardsSnapshot.forEach((doc) => {
-          const data = doc.data()
-          rewardsList.push({
-            id: doc.id,
-            ...data,
-            createdAt: data.createdAt?.toDate(),
-            updatedAt: data.updatedAt?.toDate(),
-          } as Earning)
-        })
+        // Parse dates from API response
+        const visitsList = data.visits.map((v) => ({
+          ...v,
+          createdAt: v.createdAt ? new Date(v.createdAt) : undefined,
+          updatedAt: v.updatedAt ? new Date(v.updatedAt) : undefined,
+        })) as (Visit & { business?: Business })[]
+
+        const rewardsList = data.rewards.map((r) => ({
+          ...r,
+          createdAt: r.createdAt ? new Date(r.createdAt) : undefined,
+          updatedAt: r.updatedAt ? new Date(r.updatedAt) : undefined,
+        })) as Earning[]
+
+        setVisits(visitsList)
         setRewards(rewardsList)
       } catch (error) {
         console.error('Error fetching data:', error)
@@ -145,7 +114,7 @@ export default function VisitsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Visits</CardTitle>
@@ -234,11 +203,11 @@ export default function VisitsPage() {
                     <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
                       <Building2 className="h-6 w-6 text-muted-foreground" />
                     </div>
-                    <div>
-                      <h4 className="font-semibold">
+                    <div className="min-w-0">
+                      <h4 className="font-semibold break-words">
                         {visit.business?.name || 'Unknown Business'}
                       </h4>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground break-words">
                         {visit.business?.category}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
@@ -247,7 +216,7 @@ export default function VisitsPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 ml-16 md:ml-0">
+                  <div className="flex items-center gap-4">
                     <div className="text-right">
                       <Badge
                         variant={

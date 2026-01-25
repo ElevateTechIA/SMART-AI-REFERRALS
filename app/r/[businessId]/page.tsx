@@ -12,6 +12,7 @@ import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { db } from '@/lib/firebase/client'
 import { doc, getDoc } from 'firebase/firestore'
+import { apiPost } from '@/lib/api-client'
 import type { Business, Offer } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
 import {
@@ -102,23 +103,18 @@ function ReferralPageContent() {
 
     setRegistering(true)
     try {
-      const response = await fetch('/api/visits', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      // API uses auth token to identify consumer - no need to pass consumerUserId
+      const result = await apiPost<{ success: boolean; error?: string }>(
+        '/api/visits',
+        {
           businessId: business.id,
           offerId: offer?.id,
-          consumerUserId: user.id,
           referrerUserId: referrerId,
-        }),
-      })
+        }
+      )
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create visit')
+      if (!result.ok) {
+        throw new Error(result.error || 'Failed to create visit')
       }
 
       setVisitCreated(true)

@@ -132,7 +132,7 @@ export default function DashboardPage() {
     return (
       <div className="space-y-6">
         <div className="h-8 w-48 bg-gray-200 animate-pulse rounded" />
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
             <Card key={i}>
               <CardHeader className="space-y-2">
@@ -149,24 +149,24 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">
-          Welcome back, {user?.name?.split(' ')[0]}!
+        <h1 className="text-3xl font-bold tracking-tight text-theme-textPrimary">
+          Welcome back, <span className="gradient-text">{user?.name?.split(' ')[0]}</span>!
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-theme-textSecondary">
           Here&apos;s an overview of your referral activity
         </p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <DollarSign className="h-4 w-4 text-theme-textMuted" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(stats.totalEarnings)}</div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-theme-textMuted">
               +{formatCurrency(stats.pendingEarnings)} pending
             </p>
           </CardContent>
@@ -174,31 +174,31 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Referrals</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Users className="h-4 w-4 text-theme-textMuted" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalReferrals}</div>
-            <p className="text-xs text-muted-foreground">People you&apos;ve referred</p>
+            <p className="text-xs text-theme-textMuted">People you&apos;ve referred</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">My Visits</CardTitle>
-            <Gift className="h-4 w-4 text-muted-foreground" />
+            <Gift className="h-4 w-4 text-theme-textMuted" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalVisits}</div>
-            <p className="text-xs text-muted-foreground">Places you&apos;ve visited</p>
+            <p className="text-xs text-theme-textMuted">Places you&apos;ve visited</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Pending Payout</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <TrendingUp className="h-4 w-4 text-theme-textMuted" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(stats.pendingEarnings)}</div>
-            <p className="text-xs text-muted-foreground">Awaiting approval</p>
+            <p className="text-xs text-theme-textMuted">Awaiting approval</p>
           </CardContent>
         </Card>
       </div>
@@ -271,7 +271,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-xl font-semibold">Businesses to Refer</h2>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-theme-textMuted">
                 Share these businesses and earn commissions
               </p>
             </div>
@@ -294,7 +294,7 @@ export default function DashboardPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                  <p className="text-sm text-theme-textMuted mb-4 line-clamp-2">
                     {business.description}
                   </p>
                   <Link href={`/dashboard/referrals?business=${business.id}`}>
@@ -328,7 +328,7 @@ export default function DashboardPage() {
                       </div>
                       <div>
                         <p className="font-medium">Visit #{visit.id.slice(-6)}</p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-theme-textMuted">
                           {formatDate(visit.createdAt)}
                         </p>
                       </div>

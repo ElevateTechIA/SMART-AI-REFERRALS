@@ -8,8 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
-import { db } from '@/lib/firebase/client'
-import { collection, query, getDocs, orderBy, where } from 'firebase/firestore'
+import { apiGet, apiPost } from '@/lib/api-client'
 import type { Business, User, Visit, FraudFlag } from '@/lib/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import {
@@ -22,8 +21,14 @@ import {
   Loader2,
   Shield,
   TrendingUp,
-  Clock,
 } from 'lucide-react'
+
+interface AdminDataResponse {
+  businesses: Business[]
+  users: User[]
+  visits: Visit[]
+  fraudFlags: FraudFlag[]
+}
 
 interface AdminStats {
   totalUsers: number
@@ -59,84 +64,44 @@ export default function AdminDashboardPage() {
       if (!user) return
 
       try {
-        // Fetch stats
-        const statsResponse = await fetch(`/api/admin/stats?adminUserId=${user.id}`)
-        const statsData = await statsResponse.json()
-        if (statsData.success) {
-          setStats(statsData.data)
+        // Fetch stats (uses auth token from API client)
+        const statsResult = await apiGet<{ success: boolean; data: AdminStats }>('/api/admin/stats')
+        if (statsResult.ok && statsResult.data?.success) {
+          setStats(statsResult.data.data)
         }
 
-        // Fetch businesses
-        const businessesQuery = query(
-          collection(db, 'businesses'),
-          orderBy('createdAt', 'desc')
-        )
-        const businessesSnapshot = await getDocs(businessesQuery)
-        const businessesList: Business[] = []
-        businessesSnapshot.forEach((doc) => {
-          const data = doc.data()
-          businessesList.push({
-            id: doc.id,
-            ...data,
-            createdAt: data.createdAt?.toDate(),
-            updatedAt: data.updatedAt?.toDate(),
-          } as Business)
-        })
-        setBusinesses(businessesList)
+        // Fetch admin data using API
+        const dataResult = await apiGet<AdminDataResponse>('/api/admin/data')
+        if (dataResult.ok && dataResult.data) {
+          // Parse dates from API response
+          const businessesList = dataResult.data.businesses.map((b) => ({
+            ...b,
+            createdAt: b.createdAt ? new Date(b.createdAt) : undefined,
+            updatedAt: b.updatedAt ? new Date(b.updatedAt) : undefined,
+          })) as Business[]
 
-        // Fetch users
-        const usersQuery = query(
-          collection(db, 'users'),
-          orderBy('createdAt', 'desc')
-        )
-        const usersSnapshot = await getDocs(usersQuery)
-        const usersList: User[] = []
-        usersSnapshot.forEach((doc) => {
-          const data = doc.data()
-          usersList.push({
-            id: doc.id,
-            ...data,
-            createdAt: data.createdAt?.toDate(),
-            updatedAt: data.updatedAt?.toDate(),
-          } as User)
-        })
-        setUsers(usersList)
+          const usersList = dataResult.data.users.map((u) => ({
+            ...u,
+            createdAt: u.createdAt ? new Date(u.createdAt) : undefined,
+            updatedAt: u.updatedAt ? new Date(u.updatedAt) : undefined,
+          })) as User[]
 
-        // Fetch recent visits
-        const visitsQuery = query(
-          collection(db, 'visits'),
-          orderBy('createdAt', 'desc')
-        )
-        const visitsSnapshot = await getDocs(visitsQuery)
-        const visitsList: Visit[] = []
-        visitsSnapshot.forEach((doc) => {
-          const data = doc.data()
-          visitsList.push({
-            id: doc.id,
-            ...data,
-            createdAt: data.createdAt?.toDate(),
-            updatedAt: data.updatedAt?.toDate(),
-          } as Visit)
-        })
-        setVisits(visitsList)
+          const visitsList = dataResult.data.visits.map((v) => ({
+            ...v,
+            createdAt: v.createdAt ? new Date(v.createdAt) : undefined,
+            updatedAt: v.updatedAt ? new Date(v.updatedAt) : undefined,
+          })) as Visit[]
 
-        // Fetch fraud flags
-        const fraudQuery = query(
-          collection(db, 'fraudFlags'),
-          where('resolved', '==', false),
-          orderBy('createdAt', 'desc')
-        )
-        const fraudSnapshot = await getDocs(fraudQuery)
-        const fraudList: FraudFlag[] = []
-        fraudSnapshot.forEach((doc) => {
-          const data = doc.data()
-          fraudList.push({
-            id: doc.id,
-            ...data,
-            createdAt: data.createdAt?.toDate(),
-          } as FraudFlag)
-        })
-        setFraudFlags(fraudList)
+          const fraudList = dataResult.data.fraudFlags.map((f) => ({
+            ...f,
+            createdAt: f.createdAt ? new Date(f.createdAt) : undefined,
+          })) as FraudFlag[]
+
+          setBusinesses(businessesList)
+          setUsers(usersList)
+          setVisits(visitsList)
+          setFraudFlags(fraudList)
+        }
       } catch (error) {
         console.error('Error fetching admin data:', error)
         toast({
@@ -157,21 +122,13 @@ export default function AdminDashboardPage() {
 
     setActionLoading(businessId)
     try {
-      const response = await fetch(`/api/admin/businesses/${businessId}/approve`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          adminUserId: user.id,
-          action,
-        }),
-      })
+      const result = await apiPost<{ success: boolean; error?: string }>(
+        `/api/admin/businesses/${businessId}/approve`,
+        { action }
+      )
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || `Failed to ${action} business`)
+      if (!result.ok) {
+        throw new Error(result.error || `Failed to ${action} business`)
       }
 
       // Update local state
@@ -225,7 +182,7 @@ export default function AdminDashboardPage() {
 
       {/* Stats Cards */}
       {stats && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Users</CardTitle>
@@ -336,9 +293,9 @@ export default function AdminDashboardPage() {
                         <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
                           <Building2 className="h-6 w-6 text-muted-foreground" />
                         </div>
-                        <div>
-                          <h4 className="font-semibold">{business.name}</h4>
-                          <p className="text-sm text-muted-foreground">
+                        <div className="min-w-0">
+                          <h4 className="font-semibold break-words">{business.name}</h4>
+                          <p className="text-sm text-muted-foreground break-words">
                             {business.category} • {business.address}
                           </p>
                           <p className="text-xs text-muted-foreground">
@@ -347,7 +304,7 @@ export default function AdminDashboardPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 ml-16 md:ml-0">
+                      <div className="flex items-center gap-2">
                         <Badge
                           variant={
                             business.status === 'active'

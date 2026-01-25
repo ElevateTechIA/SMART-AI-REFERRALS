@@ -11,7 +11,8 @@ import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { db } from '@/lib/firebase/client'
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore'
-import type { Business, Offer, ConsumerRewardType } from '@/lib/types'
+import { apiPost } from '@/lib/api-client'
+import type { Business, ConsumerRewardType } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
 import { Gift, Loader2, DollarSign, Users, Building2 } from 'lucide-react'
 
@@ -93,22 +94,17 @@ export default function OfferConfigPage() {
 
     setSaving(true)
     try {
-      const response = await fetch('/api/offers', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      // API uses auth token to verify ownership - no need to pass ownerUserId
+      const result = await apiPost<{ success: boolean; error?: string }>(
+        '/api/offers',
+        {
           ...formData,
           businessId: business.id,
-          ownerUserId: user.id,
-        }),
-      })
+        }
+      )
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to save offer')
+      if (!result.ok) {
+        throw new Error(result.error || 'Failed to save offer')
       }
 
       toast({

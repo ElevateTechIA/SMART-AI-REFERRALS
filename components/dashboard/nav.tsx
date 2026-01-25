@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { ThemeSwitcher } from '@/components/theme-switcher'
 import { useAuth } from '@/lib/auth/context'
 import { cn } from '@/lib/utils'
 import {
@@ -74,14 +75,14 @@ export function DashboardNav() {
   )
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-theme-cardBorder glass-card">
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-theme-primary rounded-lg flex items-center justify-center glow">
               <QrCode className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold hidden md:inline-block">Smart AI Referrals</span>
+            <span className="font-bold hidden md:inline-block text-theme-textPrimary">Smart AI Referrals</span>
           </Link>
           <nav className="hidden md:flex items-center gap-1">
             {filteredNavItems.map((item) => {
@@ -104,6 +105,7 @@ export function DashboardNav() {
         </div>
 
         <div className="flex items-center gap-4">
+          <ThemeSwitcher />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">

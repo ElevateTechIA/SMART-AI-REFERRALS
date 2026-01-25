@@ -8,8 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
-import { db } from '@/lib/firebase/client'
-import { collection, query, where, getDocs, orderBy, doc, getDoc } from 'firebase/firestore'
+import { apiGet } from '@/lib/api-client'
 import type { Business, Offer, Visit, Earning } from '@/lib/types'
 import { formatCurrency, formatDate, generateReferralUrl } from '@/lib/utils'
 import QRCode from 'qrcode'
@@ -18,13 +17,18 @@ import {
   Users,
   TrendingUp,
   Copy,
-  ExternalLink,
   Loader2,
   QrCode,
   Download,
   Share2,
   Building2,
 } from 'lucide-react'
+
+interface ReferralsApiResponse {
+  businesses: (Business & { offer?: Offer })[]
+  referrals: Visit[]
+  earnings: Earning[]
+}
 
 function ReferralsContent() {
   const searchParams = useSearchParams()
@@ -44,79 +48,35 @@ function ReferralsContent() {
       if (!user) return
 
       try {
-        // Fetch active businesses with offers
-        const businessesQuery = query(
-          collection(db, 'businesses'),
-          where('status', '==', 'active'),
-          orderBy('createdAt', 'desc')
-        )
-        const businessesSnapshot = await getDocs(businessesQuery)
-        const businessList: (Business & { offer?: Offer })[] = []
+        const result = await apiGet<ReferralsApiResponse>('/api/referrals')
 
-        for (const businessDoc of businessesSnapshot.docs) {
-          const businessData = businessDoc.data()
-          const business: Business = {
-            id: businessDoc.id,
-            ...businessData,
-            createdAt: businessData.createdAt?.toDate(),
-            updatedAt: businessData.updatedAt?.toDate(),
-          } as Business
-
-          // Fetch offer for this business
-          const offerDoc = await getDoc(doc(db, 'offers', business.id))
-          if (offerDoc.exists() && offerDoc.data().active) {
-            const offerData = offerDoc.data()
-            businessList.push({
-              ...business,
-              offer: {
-                id: offerDoc.id,
-                ...offerData,
-                createdAt: offerData.createdAt?.toDate(),
-                updatedAt: offerData.updatedAt?.toDate(),
-              } as Offer,
-            })
-          }
+        if (!result.ok) {
+          throw new Error(result.error || 'Failed to load referral data')
         }
 
+        const data = result.data!
+
+        // Parse dates from API response
+        const businessList = data.businesses.map((b) => ({
+          ...b,
+          createdAt: b.createdAt ? new Date(b.createdAt) : undefined,
+          updatedAt: b.updatedAt ? new Date(b.updatedAt) : undefined,
+        })) as (Business & { offer?: Offer })[]
+
+        const referralsList = data.referrals.map((r) => ({
+          ...r,
+          createdAt: r.createdAt ? new Date(r.createdAt) : undefined,
+          updatedAt: r.updatedAt ? new Date(r.updatedAt) : undefined,
+        })) as Visit[]
+
+        const earningsList = data.earnings.map((e) => ({
+          ...e,
+          createdAt: e.createdAt ? new Date(e.createdAt) : undefined,
+          updatedAt: e.updatedAt ? new Date(e.updatedAt) : undefined,
+        })) as Earning[]
+
         setBusinesses(businessList)
-
-        // Fetch user's referrals
-        const referralsQuery = query(
-          collection(db, 'visits'),
-          where('referrerUserId', '==', user.id),
-          orderBy('createdAt', 'desc')
-        )
-        const referralsSnapshot = await getDocs(referralsQuery)
-        const referralsList: Visit[] = []
-        referralsSnapshot.forEach((doc) => {
-          const data = doc.data()
-          referralsList.push({
-            id: doc.id,
-            ...data,
-            createdAt: data.createdAt?.toDate(),
-            updatedAt: data.updatedAt?.toDate(),
-          } as Visit)
-        })
         setReferrals(referralsList)
-
-        // Fetch earnings
-        const earningsQuery = query(
-          collection(db, 'earnings'),
-          where('userId', '==', user.id),
-          where('type', '==', 'REFERRER_COMMISSION'),
-          orderBy('createdAt', 'desc')
-        )
-        const earningsSnapshot = await getDocs(earningsQuery)
-        const earningsList: Earning[] = []
-        earningsSnapshot.forEach((doc) => {
-          const data = doc.data()
-          earningsList.push({
-            id: doc.id,
-            ...data,
-            createdAt: data.createdAt?.toDate(),
-            updatedAt: data.updatedAt?.toDate(),
-          } as Earning)
-        })
         setEarnings(earningsList)
 
         // Set initial selected business
@@ -224,7 +184,7 @@ function ReferralsContent() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Referrals</CardTitle>
@@ -332,19 +292,19 @@ function ReferralsContent() {
 
                     {/* Link and Actions */}
                     <div className="space-y-2">
-                      <div className="bg-muted rounded-md px-4 py-2 text-sm font-mono truncate">
+                      <div className="bg-muted rounded-md px-4 py-2 text-sm font-mono overflow-x-auto">
                         {generateReferralUrl(selectedBusiness!, user?.id)}
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <Button onClick={copyReferralLink} className="flex-1 gap-2">
                           <Copy className="h-4 w-4" />
                           Copy Link
                         </Button>
-                        <Button variant="outline" onClick={downloadQRCode} className="gap-2">
+                        <Button variant="outline" onClick={downloadQRCode} className="flex-1 gap-2">
                           <Download className="h-4 w-4" />
-                          QR
+                          Download QR
                         </Button>
-                        <Button variant="outline" onClick={shareLink} className="gap-2">
+                        <Button variant="outline" onClick={shareLink} className="flex-1 gap-2">
                           <Share2 className="h-4 w-4" />
                           Share
                         </Button>

@@ -1,43 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { adminDb } from '@/lib/firebase/admin'
+import { getAdminDb, verifyAuth } from '@/lib/firebase/admin'
 import { FieldValue } from 'firebase-admin/firestore'
 import type { Visit, AttributionType } from '@/lib/types'
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { businessId, offerId, consumerUserId, referrerUserId } = body
-
-    if (!businessId || !consumerUserId) {
+    // Verify authentication
+    const authResult = await verifyAuth(request)
+    if (!authResult.success) {
       return NextResponse.json(
-        { error: 'Missing required fields: businessId and consumerUserId' },
+        { error: authResult.error },
+        { status: authResult.status }
+      )
+    }
+
+    const body = await request.json()
+    const { businessId, offerId, referrerUserId } = body
+
+    // Use authenticated user as consumer (prevent impersonation)
+    const consumerUserId = authResult.uid
+
+    if (!businessId) {
+      return NextResponse.json(
+        { error: 'Missing required field: businessId' },
         { status: 400 }
       )
     }
 
-    // Check if consumer already has a visit to this business (anti-fraud)
-    const existingVisitsQuery = await adminDb
-      .collection('visits')
-      .where('businessId', '==', businessId)
-      .where('consumerUserId', '==', consumerUserId)
-      .get()
+    // Verify business exists and is active
+    const businessDoc = await getAdminDb().collection('businesses').doc(businessId).get()
+    if (!businessDoc.exists) {
+      return NextResponse.json(
+        { error: 'Business not found' },
+        { status: 404 }
+      )
+    }
+    if (businessDoc.data()?.status !== 'active') {
+      return NextResponse.json(
+        { error: 'Business is not accepting visits' },
+        { status: 400 }
+      )
+    }
 
-    const isNewCustomer = existingVisitsQuery.empty
-
-    // Determine attribution type
-    const attributionType: AttributionType = referrerUserId ? 'REFERRER' : 'PLATFORM'
-
-    // Create visit record
-    const visitData: Omit<Visit, 'id'> = {
-      businessId,
-      offerId: offerId || null,
-      consumerUserId,
-      referrerUserId: referrerUserId || null,
-      attributionType,
-      status: 'CREATED',
-      isNewCustomer,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+    // Prevent self-referral
+    if (referrerUserId && referrerUserId === consumerUserId) {
+      return NextResponse.json(
+        { error: 'Cannot refer yourself' },
+        { status: 400 }
+      )
     }
 
     // Get user's request metadata
@@ -45,46 +55,80 @@ export async function POST(request: NextRequest) {
     const forwardedFor = request.headers.get('x-forwarded-for')
     const ipAddress = forwardedFor?.split(',')[0]?.trim() || undefined
 
-    const visitRef = await adminDb.collection('visits').add({
-      ...visitData,
-      userAgent,
-      ipAddress,
-      createdAt: FieldValue.serverTimestamp(),
-      updatedAt: FieldValue.serverTimestamp(),
-    })
+    // Determine attribution type
+    const attributionType: AttributionType = referrerUserId ? 'REFERRER' : 'PLATFORM'
 
-    // If not a new customer, create fraud flag
-    if (!isNewCustomer) {
-      await adminDb.collection('fraudFlags').add({
-        visitId: visitRef.id,
-        consumerUserId,
+    // Use transaction for atomic fraud check and visit creation
+    const result = await getAdminDb().runTransaction(async (transaction) => {
+      // Check if consumer already has a visit to this business (anti-fraud)
+      const existingVisitsQuery = await getAdminDb()
+        .collection('visits')
+        .where('businessId', '==', businessId)
+        .where('consumerUserId', '==', consumerUserId)
+        .limit(1)
+        .get()
+
+      const isNewCustomer = existingVisitsQuery.empty
+
+      // Create visit record
+      const visitRef = getAdminDb().collection('visits').doc()
+      const visitData = {
         businessId,
-        reason: 'Repeat visit from same consumer',
+        offerId: offerId || null,
+        consumerUserId,
+        referrerUserId: referrerUserId || null,
+        attributionType,
+        status: 'CREATED',
+        isNewCustomer,
+        userAgent,
+        ipAddress,
         createdAt: FieldValue.serverTimestamp(),
-        resolved: false,
-      })
-    }
+        updatedAt: FieldValue.serverTimestamp(),
+      }
 
-    // Ensure consumer has the consumer role
-    const userRef = adminDb.collection('users').doc(consumerUserId)
-    const userDoc = await userRef.get()
-    if (userDoc.exists) {
-      const userData = userDoc.data()
-      if (!userData?.roles?.includes('consumer')) {
-        await userRef.update({
-          roles: FieldValue.arrayUnion('consumer'),
-          updatedAt: FieldValue.serverTimestamp(),
+      transaction.set(visitRef, visitData)
+
+      // If not a new customer, create fraud flag atomically
+      if (!isNewCustomer) {
+        const fraudRef = getAdminDb().collection('fraudFlags').doc()
+        transaction.set(fraudRef, {
+          visitId: visitRef.id,
+          consumerUserId,
+          businessId,
+          reason: 'Repeat visit from same consumer',
+          createdAt: FieldValue.serverTimestamp(),
+          resolved: false,
         })
       }
-    }
+
+      // Ensure consumer has the consumer role
+      const userRef = getAdminDb().collection('users').doc(consumerUserId)
+      const userDoc = await userRef.get()
+      if (userDoc.exists) {
+        const userData = userDoc.data()
+        if (!userData?.roles?.includes('consumer')) {
+          transaction.update(userRef, {
+            roles: FieldValue.arrayUnion('consumer'),
+            updatedAt: FieldValue.serverTimestamp(),
+          })
+        }
+      }
+
+      return {
+        id: visitRef.id,
+        businessId,
+        offerId: offerId || null,
+        consumerUserId,
+        referrerUserId: referrerUserId || null,
+        attributionType,
+        status: 'CREATED',
+        isNewCustomer,
+      }
+    })
 
     return NextResponse.json({
       success: true,
-      data: {
-        id: visitRef.id,
-        ...visitData,
-        isNewCustomer,
-      },
+      data: result,
     })
   } catch (error) {
     console.error('Error creating visit:', error)
@@ -97,31 +141,99 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    // Verify authentication
+    const authResult = await verifyAuth(request)
+    if (!authResult.success) {
+      return NextResponse.json(
+        { error: authResult.error },
+        { status: authResult.status }
+      )
+    }
+
     const { searchParams } = new URL(request.url)
     const businessId = searchParams.get('businessId')
-    const consumerUserId = searchParams.get('consumerUserId')
-    const referrerUserId = searchParams.get('referrerUserId')
     const status = searchParams.get('status')
+    const page = parseInt(searchParams.get('page') || '1', 10)
+    const limit = Math.min(parseInt(searchParams.get('limit') || '50', 10), 100)
 
-    let query = adminDb.collection('visits').orderBy('createdAt', 'desc')
+    const userId = authResult.uid
+
+    // Check if user is admin
+    const userDoc = await getAdminDb().collection('users').doc(userId).get()
+    const isAdmin = userDoc.data()?.roles?.includes('admin')
+
+    // Check if user owns the requested business
+    let isBusinessOwner = false
+    if (businessId) {
+      const businessDoc = await getAdminDb().collection('businesses').doc(businessId).get()
+      isBusinessOwner = businessDoc.data()?.ownerUserId === userId
+    }
+
+    // Build query based on user permissions
+    let query = getAdminDb().collection('visits').orderBy('createdAt', 'desc')
 
     if (businessId) {
+      // If requesting business visits, must be admin or business owner
+      if (!isAdmin && !isBusinessOwner) {
+        return NextResponse.json(
+          { error: 'Unauthorized to view these visits' },
+          { status: 403 }
+        )
+      }
       query = query.where('businessId', '==', businessId)
+    } else if (!isAdmin) {
+      // Non-admins without businessId filter can only see their own visits
+      // as consumer or referrer
+      const consumerVisits = await getAdminDb()
+        .collection('visits')
+        .where('consumerUserId', '==', userId)
+        .orderBy('createdAt', 'desc')
+        .limit(limit)
+        .get()
+
+      const referrerVisits = await getAdminDb()
+        .collection('visits')
+        .where('referrerUserId', '==', userId)
+        .orderBy('createdAt', 'desc')
+        .limit(limit)
+        .get()
+
+      const visitMap = new Map<string, Visit>()
+
+      const processDoc = (doc: FirebaseFirestore.QueryDocumentSnapshot) => {
+        const data = doc.data()
+        visitMap.set(doc.id, {
+          id: doc.id,
+          ...data,
+          createdAt: data.createdAt?.toDate(),
+          updatedAt: data.updatedAt?.toDate(),
+          convertedAt: data.convertedAt?.toDate(),
+        } as Visit)
+      }
+
+      consumerVisits.forEach(processDoc)
+      referrerVisits.forEach(processDoc)
+
+      const visits = Array.from(visitMap.values())
+        .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0))
+        .slice(0, limit)
+
+      return NextResponse.json({
+        success: true,
+        data: visits,
+        pagination: { page: 1, limit, hasMore: false }
+      })
     }
-    if (consumerUserId) {
-      query = query.where('consumerUserId', '==', consumerUserId)
-    }
-    if (referrerUserId) {
-      query = query.where('referrerUserId', '==', referrerUserId)
-    }
+
     if (status) {
       query = query.where('status', '==', status)
     }
 
-    const snapshot = await query.limit(100).get()
+    const snapshot = await query.limit(limit + 1).get()
+    const hasMore = snapshot.size > limit
     const visits: Visit[] = []
 
-    snapshot.forEach((doc) => {
+    snapshot.docs.slice(0, limit).forEach((doc) => {
       const data = doc.data()
       visits.push({
         id: doc.id,
@@ -132,7 +244,11 @@ export async function GET(request: NextRequest) {
       } as Visit)
     })
 
-    return NextResponse.json({ success: true, data: visits })
+    return NextResponse.json({
+      success: true,
+      data: visits,
+      pagination: { page, limit, hasMore }
+    })
   } catch (error) {
     console.error('Error fetching visits:', error)
     return NextResponse.json(

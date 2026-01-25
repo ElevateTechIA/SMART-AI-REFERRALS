@@ -1,13 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { adminDb } from '@/lib/firebase/admin'
+import { getAdminDb, verifyAuth } from '@/lib/firebase/admin'
 import { FieldValue } from 'firebase-admin/firestore'
 import type { Business } from '@/lib/types'
 
+// Input validation helpers
+function validateBusinessName(name: string): boolean {
+  return typeof name === 'string' && name.length >= 2 && name.length <= 100
+}
+
+function validatePhone(phone: string): boolean {
+  return typeof phone === 'string' && phone.length >= 7 && phone.length <= 20
+}
+
+function validateAddress(address: string): boolean {
+  return typeof address === 'string' && address.length >= 5 && address.length <= 500
+}
+
 export async function POST(request: NextRequest) {
   try {
+    // Verify authentication
+    const authResult = await verifyAuth(request)
+    if (!authResult.success) {
+      return NextResponse.json(
+        { error: authResult.error },
+        { status: authResult.status }
+      )
+    }
+
+    // Use authenticated user as owner (prevent impersonation)
+    const ownerUserId = authResult.uid
+
     const body = await request.json()
     const {
-      ownerUserId,
       name,
       category,
       description,
@@ -17,22 +41,46 @@ export async function POST(request: NextRequest) {
       images,
     } = body
 
-    if (!ownerUserId || !name || !category || !address || !phone) {
+    // Validate required fields
+    if (!name || !category || !address || !phone) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required fields: name, category, address, phone' },
+        { status: 400 }
+      )
+    }
+
+    // Input validation
+    if (!validateBusinessName(name)) {
+      return NextResponse.json(
+        { error: 'Business name must be between 2 and 100 characters' },
+        { status: 400 }
+      )
+    }
+
+    if (!validatePhone(phone)) {
+      return NextResponse.json(
+        { error: 'Invalid phone number format' },
+        { status: 400 }
+      )
+    }
+
+    if (!validateAddress(address)) {
+      return NextResponse.json(
+        { error: 'Address must be between 5 and 500 characters' },
         { status: 400 }
       )
     }
 
     // Check if user already has a business
-    const existingBusinessQuery = await adminDb
+    const existingBusinessQuery = await getAdminDb()
       .collection('businesses')
       .where('ownerUserId', '==', ownerUserId)
+      .limit(1)
       .get()
 
     if (!existingBusinessQuery.empty) {
       return NextResponse.json(
-        { error: 'User already has a business registered' },
+        { error: 'You already have a business registered' },
         { status: 400 }
       )
     }
@@ -40,22 +88,22 @@ export async function POST(request: NextRequest) {
     // Create business
     const businessData = {
       ownerUserId,
-      name,
+      name: name.trim(),
       category,
-      description: description || '',
-      address,
-      phone,
-      website: website || null,
-      images: images || [],
+      description: (description || '').trim().slice(0, 1000),
+      address: address.trim(),
+      phone: phone.trim(),
+      website: website ? website.trim() : null,
+      images: Array.isArray(images) ? images.slice(0, 10) : [],
       status: 'pending',
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
     }
 
-    const businessRef = await adminDb.collection('businesses').add(businessData)
+    const businessRef = await getAdminDb().collection('businesses').add(businessData)
 
     // Add business role to user
-    await adminDb.collection('users').doc(ownerUserId).update({
+    await getAdminDb().collection('users').doc(ownerUserId).update({
       roles: FieldValue.arrayUnion('business'),
       updatedAt: FieldValue.serverTimestamp(),
     })
@@ -78,23 +126,77 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const ownerUserId = searchParams.get('ownerUserId')
-    const status = searchParams.get('status')
-
-    let query = adminDb.collection('businesses').orderBy('createdAt', 'desc')
-
-    if (ownerUserId) {
-      query = query.where('ownerUserId', '==', ownerUserId)
+    // Verify authentication
+    const authResult = await verifyAuth(request)
+    if (!authResult.success) {
+      return NextResponse.json(
+        { error: authResult.error },
+        { status: authResult.status }
+      )
     }
+
+    const userId = authResult.uid
+    const { searchParams } = new URL(request.url)
+    const status = searchParams.get('status')
+    const page = parseInt(searchParams.get('page') || '1', 10)
+    const limit = Math.min(parseInt(searchParams.get('limit') || '50', 10), 100)
+
+    // Check if user is admin
+    const userDoc = await getAdminDb().collection('users').doc(userId).get()
+    const isAdmin = userDoc.data()?.roles?.includes('admin')
+
+    let query = getAdminDb().collection('businesses').orderBy('createdAt', 'desc')
+
+    if (!isAdmin) {
+      // Non-admins can only see their own businesses or active businesses
+      const ownBusinesses = await getAdminDb()
+        .collection('businesses')
+        .where('ownerUserId', '==', userId)
+        .get()
+
+      const activeBusinesses = await getAdminDb()
+        .collection('businesses')
+        .where('status', '==', 'active')
+        .orderBy('createdAt', 'desc')
+        .limit(limit)
+        .get()
+
+      const businessMap = new Map<string, Business>()
+
+      const processDoc = (doc: FirebaseFirestore.QueryDocumentSnapshot) => {
+        const data = doc.data()
+        businessMap.set(doc.id, {
+          id: doc.id,
+          ...data,
+          createdAt: data.createdAt?.toDate(),
+          updatedAt: data.updatedAt?.toDate(),
+        } as Business)
+      }
+
+      ownBusinesses.forEach(processDoc)
+      activeBusinesses.forEach(processDoc)
+
+      const businesses = Array.from(businessMap.values())
+        .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0))
+        .slice(0, limit)
+
+      return NextResponse.json({
+        success: true,
+        data: businesses,
+        pagination: { page: 1, limit, hasMore: false }
+      })
+    }
+
+    // Admin can filter by status
     if (status) {
       query = query.where('status', '==', status)
     }
 
-    const snapshot = await query.limit(100).get()
+    const snapshot = await query.limit(limit + 1).get()
+    const hasMore = snapshot.size > limit
     const businesses: Business[] = []
 
-    snapshot.forEach((doc) => {
+    snapshot.docs.slice(0, limit).forEach((doc) => {
       const data = doc.data()
       businesses.push({
         id: doc.id,
@@ -104,7 +206,11 @@ export async function GET(request: NextRequest) {
       } as Business)
     })
 
-    return NextResponse.json({ success: true, data: businesses })
+    return NextResponse.json({
+      success: true,
+      data: businesses,
+      pagination: { page, limit, hasMore }
+    })
   } catch (error) {
     console.error('Error fetching businesses:', error)
     return NextResponse.json(
@@ -116,18 +222,29 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { businessId, ownerUserId, ...updateData } = body
-
-    if (!businessId || !ownerUserId) {
+    // Verify authentication
+    const authResult = await verifyAuth(request)
+    if (!authResult.success) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: authResult.error },
+        { status: authResult.status }
+      )
+    }
+
+    const userId = authResult.uid
+
+    const body = await request.json()
+    const { businessId, ...updateData } = body
+
+    if (!businessId) {
+      return NextResponse.json(
+        { error: 'Missing businessId' },
         { status: 400 }
       )
     }
 
     // Verify ownership
-    const businessRef = adminDb.collection('businesses').doc(businessId)
+    const businessRef = getAdminDb().collection('businesses').doc(businessId)
     const businessDoc = await businessRef.get()
 
     if (!businessDoc.exists) {
@@ -137,17 +254,48 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    if (businessDoc.data()?.ownerUserId !== ownerUserId) {
+    // Only owner can update their business
+    if (businessDoc.data()?.ownerUserId !== userId) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Unauthorized: You can only update your own business' },
         { status: 403 }
       )
     }
 
-    // Don't allow updating certain fields
+    // Don't allow updating protected fields
     delete updateData.ownerUserId
     delete updateData.createdAt
     delete updateData.status // Status can only be changed by admin
+
+    // Validate update fields if provided
+    if (updateData.name && !validateBusinessName(updateData.name)) {
+      return NextResponse.json(
+        { error: 'Business name must be between 2 and 100 characters' },
+        { status: 400 }
+      )
+    }
+
+    if (updateData.phone && !validatePhone(updateData.phone)) {
+      return NextResponse.json(
+        { error: 'Invalid phone number format' },
+        { status: 400 }
+      )
+    }
+
+    if (updateData.address && !validateAddress(updateData.address)) {
+      return NextResponse.json(
+        { error: 'Address must be between 5 and 500 characters' },
+        { status: 400 }
+      )
+    }
+
+    // Sanitize string fields
+    if (updateData.name) updateData.name = updateData.name.trim()
+    if (updateData.description) updateData.description = updateData.description.trim().slice(0, 1000)
+    if (updateData.address) updateData.address = updateData.address.trim()
+    if (updateData.phone) updateData.phone = updateData.phone.trim()
+    if (updateData.website) updateData.website = updateData.website.trim()
+    if (updateData.images) updateData.images = updateData.images.slice(0, 10)
 
     await businessRef.update({
       ...updateData,

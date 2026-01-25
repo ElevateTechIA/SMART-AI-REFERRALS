@@ -1,26 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { adminDb } from '@/lib/firebase/admin'
+import { getAdminDb, verifyAuth } from '@/lib/firebase/admin'
 import { FieldValue } from 'firebase-admin/firestore'
-import type { Earning, Charge, Offer } from '@/lib/types'
+import type { Offer } from '@/lib/types'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ visitId: string }> }
+  { params }: { params: { visitId: string } }
 ) {
   try {
-    const { visitId } = await params
-    const body = await request.json()
-    const { businessUserId } = body // The business owner confirming the conversion
-
-    if (!visitId || !businessUserId) {
+    // Verify authentication
+    const authResult = await verifyAuth(request)
+    if (!authResult.success) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: authResult.error },
+        { status: authResult.status }
+      )
+    }
+
+    const { visitId } = params
+    // Use authenticated user ID instead of trusting request body
+    const businessUserId = authResult.uid
+
+    if (!visitId) {
+      return NextResponse.json(
+        { error: 'Missing visitId' },
         { status: 400 }
       )
     }
 
     // Get the visit
-    const visitRef = adminDb.collection('visits').doc(visitId)
+    const visitRef = getAdminDb().collection('visits').doc(visitId)
     const visitDoc = await visitRef.get()
 
     if (!visitDoc.exists) {
@@ -32,14 +41,31 @@ export async function POST(
 
     const visit = visitDoc.data()!
 
-    // Verify the business owner
-    const businessRef = adminDb.collection('businesses').doc(visit.businessId)
+    // Verify the business owner matches authenticated user
+    const businessRef = getAdminDb().collection('businesses').doc(visit.businessId)
     const businessDoc = await businessRef.get()
 
-    if (!businessDoc.exists || businessDoc.data()?.ownerUserId !== businessUserId) {
+    if (!businessDoc.exists) {
+      return NextResponse.json(
+        { error: 'Business not found' },
+        { status: 404 }
+      )
+    }
+
+    const businessData = businessDoc.data()!
+
+    if (businessData.ownerUserId !== businessUserId) {
       return NextResponse.json(
         { error: 'Unauthorized: Only the business owner can confirm conversions' },
         { status: 403 }
+      )
+    }
+
+    // Verify business is active
+    if (businessData.status !== 'active') {
+      return NextResponse.json(
+        { error: 'Business is not active' },
+        { status: 400 }
       )
     }
 
@@ -59,10 +85,10 @@ export async function POST(
       )
     }
 
-    // Get the offer
+    // Get the offer (do reads before transaction)
     let offer: Offer | null = null
     if (visit.offerId) {
-      const offerDoc = await adminDb.collection('offers').doc(visit.offerId).get()
+      const offerDoc = await getAdminDb().collection('offers').doc(visit.offerId).get()
       if (offerDoc.exists) {
         offer = { id: offerDoc.id, ...offerDoc.data() } as Offer
       }
@@ -70,14 +96,24 @@ export async function POST(
 
     // If no specific offer, try to get the default offer for the business
     if (!offer) {
-      const offerDoc = await adminDb.collection('offers').doc(visit.businessId).get()
+      const offerDoc = await getAdminDb().collection('offers').doc(visit.businessId).get()
       if (offerDoc.exists) {
         offer = { id: offerDoc.id, ...offerDoc.data() } as Offer
       }
     }
 
+    // Get referrer data before transaction if needed
+    let referrerNeedsRoleUpdate = false
+    if (visit.referrerUserId) {
+      const referrerDoc = await getAdminDb().collection('users').doc(visit.referrerUserId).get()
+      if (referrerDoc.exists) {
+        const referrerData = referrerDoc.data()
+        referrerNeedsRoleUpdate = !referrerData?.roles?.includes('referrer')
+      }
+    }
+
     // Use transaction to update all records atomically
-    await adminDb.runTransaction(async (transaction) => {
+    await getAdminDb().runTransaction(async (transaction) => {
       // Update visit status
       transaction.update(visitRef, {
         status: 'CONVERTED',
@@ -100,7 +136,7 @@ export async function POST(
 
           // Create earning for referrer
           if (referrerAmount > 0) {
-            const referrerEarningRef = adminDb.collection('earnings').doc()
+            const referrerEarningRef = getAdminDb().collection('earnings').doc()
             transaction.set(referrerEarningRef, {
               userId: visit.referrerUserId,
               businessId: visit.businessId,
@@ -115,17 +151,13 @@ export async function POST(
 
             platformAmount -= referrerAmount
 
-            // Ensure referrer has the referrer role
-            const referrerRef = adminDb.collection('users').doc(visit.referrerUserId)
-            const referrerDoc = await referrerRef.get()
-            if (referrerDoc.exists) {
-              const referrerData = referrerDoc.data()
-              if (!referrerData?.roles?.includes('referrer')) {
-                transaction.update(referrerRef, {
-                  roles: FieldValue.arrayUnion('referrer'),
-                  updatedAt: FieldValue.serverTimestamp(),
-                })
-              }
+            // Update referrer role if needed
+            if (referrerNeedsRoleUpdate) {
+              const referrerRef = getAdminDb().collection('users').doc(visit.referrerUserId)
+              transaction.update(referrerRef, {
+                roles: FieldValue.arrayUnion('referrer'),
+                updatedAt: FieldValue.serverTimestamp(),
+              })
             }
           }
         }
@@ -135,7 +167,7 @@ export async function POST(
           consumerRewardAmount = offer.consumerRewardValue
 
           // Create earning for consumer
-          const consumerEarningRef = adminDb.collection('earnings').doc()
+          const consumerEarningRef = getAdminDb().collection('earnings').doc()
           transaction.set(consumerEarningRef, {
             userId: visit.consumerUserId,
             businessId: visit.businessId,
@@ -154,7 +186,7 @@ export async function POST(
         }
 
         // Create charge for business
-        const chargeRef = adminDb.collection('charges').doc()
+        const chargeRef = getAdminDb().collection('charges').doc()
         transaction.set(chargeRef, {
           businessId: visit.businessId,
           visitId,

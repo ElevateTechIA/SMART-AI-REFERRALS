@@ -14,6 +14,7 @@ import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { db } from '@/lib/firebase/client'
 import { collection, query, where, getDocs } from 'firebase/firestore'
+import { apiPut } from '@/lib/api-client'
 import type { Business } from '@/lib/types'
 import { Building2, Loader2, ArrowLeft } from 'lucide-react'
 
@@ -102,22 +103,17 @@ export default function BusinessSettingsPage() {
 
     setSaving(true)
     try {
-      const response = await fetch('/api/businesses', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      // API uses auth token to verify ownership - no need to pass ownerUserId
+      const result = await apiPut<{ success: boolean; error?: string }>(
+        '/api/businesses',
+        {
           businessId: business.id,
-          ownerUserId: user.id,
           ...formData,
-        }),
-      })
+        }
+      )
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to update business')
+      if (!result.ok) {
+        throw new Error(result.error || 'Failed to update business')
       }
 
       toast({

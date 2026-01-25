@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
+import { apiPost } from '@/lib/api-client'
 import { Building2, Loader2 } from 'lucide-react'
 
 const CATEGORIES = [
@@ -46,21 +47,14 @@ export default function BusinessSetupPage() {
 
     setLoading(true)
     try {
-      const response = await fetch('/api/businesses', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          ownerUserId: user.id,
-        }),
-      })
+      // API uses auth token to identify owner - no need to pass user ID
+      const result = await apiPost<{ success: boolean; error?: string }>(
+        '/api/businesses',
+        formData
+      )
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create business')
+      if (!result.ok) {
+        throw new Error(result.error || 'Failed to create business')
       }
 
       await refreshUser()

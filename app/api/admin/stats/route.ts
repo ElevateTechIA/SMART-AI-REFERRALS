@@ -1,24 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { adminDb } from '@/lib/firebase/admin'
+import { getAdminDb, verifyAdmin } from '@/lib/firebase/admin'
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const adminUserId = searchParams.get('adminUserId')
-
-    if (!adminUserId) {
+    // Verify admin authentication from token (not URL parameter)
+    const authResult = await verifyAdmin(request)
+    if (!authResult.success) {
       return NextResponse.json(
-        { error: 'Missing adminUserId' },
-        { status: 400 }
-      )
-    }
-
-    // Verify admin role
-    const adminDoc = await adminDb.collection('users').doc(adminUserId).get()
-    if (!adminDoc.exists || !adminDoc.data()?.roles?.includes('admin')) {
-      return NextResponse.json(
-        { error: 'Unauthorized: Admin access required' },
-        { status: 403 }
+        { error: authResult.error },
+        { status: authResult.status }
       )
     }
 
@@ -32,22 +22,20 @@ export async function GET(request: NextRequest) {
       chargesSnapshot,
       fraudFlagsSnapshot,
     ] = await Promise.all([
-      adminDb.collection('users').count().get(),
-      adminDb.collection('businesses').count().get(),
-      adminDb.collection('businesses').where('status', '==', 'pending').count().get(),
-      adminDb.collection('visits').count().get(),
-      adminDb.collection('visits').where('status', '==', 'CONVERTED').count().get(),
-      adminDb.collection('charges').get(),
-      adminDb.collection('fraudFlags').where('resolved', '==', false).count().get(),
+      getAdminDb().collection('users').count().get(),
+      getAdminDb().collection('businesses').count().get(),
+      getAdminDb().collection('businesses').where('status', '==', 'pending').count().get(),
+      getAdminDb().collection('visits').count().get(),
+      getAdminDb().collection('visits').where('status', '==', 'CONVERTED').count().get(),
+      getAdminDb().collection('charges').where('status', '==', 'PAID').get(),
+      getAdminDb().collection('fraudFlags').where('resolved', '==', false).count().get(),
     ])
 
-    // Calculate total revenue
+    // Calculate total revenue (only from PAID charges)
     let totalRevenue = 0
     chargesSnapshot.forEach((doc) => {
       const data = doc.data()
-      if (data.status === 'PAID') {
-        totalRevenue += data.amount || 0
-      }
+      totalRevenue += data.amount || 0
     })
 
     return NextResponse.json({

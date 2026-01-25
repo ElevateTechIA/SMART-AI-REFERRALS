@@ -1,34 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { adminDb } from '@/lib/firebase/admin'
+import { getAdminDb, verifyAdmin } from '@/lib/firebase/admin'
 import { FieldValue } from 'firebase-admin/firestore'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ businessId: string }> }
+  { params }: { params: { businessId: string } }
 ) {
   try {
-    const { businessId } = await params
-    const body = await request.json()
-    const { adminUserId, action } = body // action: 'approve' | 'suspend'
-
-    if (!businessId || !adminUserId || !action) {
+    // Verify admin authentication from token
+    const authResult = await verifyAdmin(request)
+    if (!authResult.success) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: authResult.error },
+        { status: authResult.status }
+      )
+    }
+
+    const { businessId } = params
+    const body = await request.json()
+    const { action } = body // action: 'approve' | 'suspend'
+
+    if (!businessId || !action) {
+      return NextResponse.json(
+        { error: 'Missing required fields: businessId and action' },
         { status: 400 }
       )
     }
 
-    // Verify admin role
-    const adminDoc = await adminDb.collection('users').doc(adminUserId).get()
-    if (!adminDoc.exists || !adminDoc.data()?.roles?.includes('admin')) {
+    if (action !== 'approve' && action !== 'suspend') {
       return NextResponse.json(
-        { error: 'Unauthorized: Admin access required' },
-        { status: 403 }
+        { error: 'Invalid action. Must be "approve" or "suspend"' },
+        { status: 400 }
       )
     }
 
     // Get business
-    const businessRef = adminDb.collection('businesses').doc(businessId)
+    const businessRef = getAdminDb().collection('businesses').doc(businessId)
     const businessDoc = await businessRef.get()
 
     if (!businessDoc.exists) {
@@ -38,7 +45,7 @@ export async function POST(
       )
     }
 
-    const newStatus = action === 'approve' ? 'active' : action === 'suspend' ? 'suspended' : 'pending'
+    const newStatus = action === 'approve' ? 'active' : 'suspended'
 
     await businessRef.update({
       status: newStatus,
