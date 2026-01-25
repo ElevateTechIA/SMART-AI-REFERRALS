@@ -1,226 +1,349 @@
 'use client'
 
+import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useAuth } from '@/lib/auth/context'
-import { Building2, Users, Gift, ArrowRight, QrCode, DollarSign, TrendingUp } from 'lucide-react'
+import { CheckCircle2, Users, Shield, X, Share2 } from 'lucide-react'
+import QRCode from 'qrcode'
 
-export default function HomePage() {
-  const { user, loading } = useAuth()
+export default function LandingPage() {
+  const [showQR, setShowQR] = useState(false)
+  const [qrCode, setQrCode] = useState('')
+
+  useEffect(() => {
+    generateQRCode()
+  }, [])
+
+  const generateQRCode = async () => {
+    try {
+      const qr = await QRCode.toDataURL('https://smart-ai-referrals.vercel.app/', {
+        width: 300,
+        margin: 2,
+        color: {
+          dark: '#4f46e5',
+          light: '#ffffff',
+        },
+      })
+      setQrCode(qr)
+    } catch (error) {
+      console.error('Error generating QR code:', error)
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <QrCode className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-xl font-bold">Smart AI Referrals</span>
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Background Image */}
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          backgroundImage: 'url(/dashboard/assets/landing-background.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/40 via-purple-800/30 to-purple-900/50"></div>
+      </div>
+
+      {/* Content Container */}
+      <div className="relative z-10 min-h-screen flex flex-col">
+        {/* Navigation */}
+        <nav className="px-6 py-6">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            {/* Logo */}
+            <button
+              onClick={() => setShowQR(true)}
+              className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+            >
+              <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center p-2">
+                <svg className="w-full h-full text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                </svg>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-white font-bold text-lg leading-tight">SMART AI</span>
+                <span className="text-white font-bold text-lg leading-tight">REFERRALS</span>
+              </div>
+            </button>
+
+            {/* Sign In Button */}
+            <Link href="/auth/signin">
+              <Button variant="ghost" className="text-white hover:bg-white/20">
+                Sign In
+              </Button>
+            </Link>
           </div>
-          <nav className="flex items-center gap-4">
-            {loading ? (
-              <div className="w-24 h-10 bg-gray-200 animate-pulse rounded-md" />
-            ) : user ? (
-              <Link href="/dashboard">
-                <Button>Go to Dashboard</Button>
-              </Link>
-            ) : (
-              <>
-                <Link href="/auth/login">
-                  <Button variant="ghost">Sign In</Button>
-                </Link>
+        </nav>
+
+        {/* Hero Section */}
+        <div className="flex-1 flex items-center">
+          <div className="max-w-7xl mx-auto px-6 py-12 grid lg:grid-cols-2 gap-12 items-center w-full">
+            {/* Left Column - Text Content */}
+            <div className="space-y-8">
+              <div>
+                <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+                  Turn Your Network Into <span className="text-blue-400">Real Income</span>
+                </h1>
+                <p className="text-xl md:text-2xl text-white/90 leading-relaxed">
+                  Share businesses you already trust. Earn money every time someone visits — automatically.
+                </p>
+              </div>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/auth/register">
-                  <Button>Get Started</Button>
+                  <Button
+                    size="lg"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-6 text-lg font-semibold rounded-xl shadow-2xl shadow-indigo-500/50 w-full sm:w-auto"
+                  >
+                    Start Earning Free
+                  </Button>
                 </Link>
-              </>
-            )}
-          </nav>
-        </div>
-      </header>
-
-      {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20 text-center">
-        <h1 className="text-5xl font-bold tracking-tight mb-6">
-          Turn Your Network Into
-          <span className="text-primary block">Passive Income</span>
-        </h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-          Connect businesses with new customers. Share referral links, earn commissions,
-          and help local businesses grow while building your income.
-        </p>
-        <div className="flex justify-center gap-4">
-          <Link href="/auth/register">
-            <Button size="lg" className="gap-2">
-              Start Earning <ArrowRight className="w-4 h-4" />
-            </Button>
-          </Link>
-          <Link href="/auth/register?type=business">
-            <Button size="lg" variant="outline">
-              List Your Business
-            </Button>
-          </Link>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="container mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
-        <div className="grid md:grid-cols-3 gap-8">
-          <Card>
-            <CardHeader>
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                <QrCode className="w-6 h-6 text-primary" />
+                <Link href="/business/register">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="bg-white/10 backdrop-blur-sm border-2 border-white/30 text-white hover:bg-white/20 px-8 py-6 text-lg font-semibold rounded-xl w-full sm:w-auto"
+                  >
+                    List Your Business
+                  </Button>
+                </Link>
               </div>
-              <CardTitle>1. Get Your Link</CardTitle>
-              <CardDescription>
-                Sign up and get unique referral links for participating businesses
-              </CardDescription>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader>
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                <Users className="w-6 h-6 text-primary" />
+
+              <p className="text-white/80 text-sm">
+                No credit card required · Takes less than 1 minute
+              </p>
+            </div>
+
+            {/* Right Column - Phone Mockup */}
+            <div className="flex justify-center lg:justify-end">
+              <div className="relative w-full max-w-sm">
+                {/* Phone Image */}
+                <Image
+                  src="/dashboard/assets/mobile-smart-ref.png"
+                  alt="Smart AI Referrals App"
+                  width={400}
+                  height={800}
+                  className="w-full h-auto rounded-[2.5rem] shadow-2xl"
+                />
+
+                {/* Floating Decorative Elements */}
+                <div className="absolute -top-4 -right-4 w-20 h-20 bg-blue-400/20 rounded-full blur-2xl animate-pulse"></div>
+                <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-purple-400/20 rounded-full blur-2xl animate-pulse delay-1000"></div>
               </div>
-              <CardTitle>2. Share & Refer</CardTitle>
-              <CardDescription>
-                Share your link with friends, family, or on social media
-              </CardDescription>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader>
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                <DollarSign className="w-6 h-6 text-primary" />
-              </div>
-              <CardTitle>3. Earn Money</CardTitle>
-              <CardDescription>
-                When someone becomes a customer, you earn a commission
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </div>
-      </section>
-
-      {/* For Different Users */}
-      <section className="bg-gray-50 py-16">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Built For Everyone</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="border-2 hover:border-primary transition-colors">
-              <CardHeader>
-                <Building2 className="w-10 h-10 text-primary mb-2" />
-                <CardTitle>For Businesses</CardTitle>
-                <CardDescription>
-                  Get new customers through word-of-mouth referrals. Only pay when you get a real customer.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-primary rounded-full" />
-                    Pay per acquisition model
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-primary rounded-full" />
-                    Track all referrals and conversions
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-primary rounded-full" />
-                    Custom reward settings
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 hover:border-primary transition-colors">
-              <CardHeader>
-                <TrendingUp className="w-10 h-10 text-primary mb-2" />
-                <CardTitle>For Referrers</CardTitle>
-                <CardDescription>
-                  Share your favorite local spots and earn money when people visit.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-primary rounded-full" />
-                    Generate QR codes and links
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-primary rounded-full" />
-                    Track your earnings in real-time
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-primary rounded-full" />
-                    Get paid for successful referrals
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 hover:border-primary transition-colors">
-              <CardHeader>
-                <Gift className="w-10 h-10 text-primary mb-2" />
-                <CardTitle>For Consumers</CardTitle>
-                <CardDescription>
-                  Discover local businesses and get rewards for trying new places.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-primary rounded-full" />
-                    Get exclusive rewards and discounts
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-primary rounded-full" />
-                    Refer friends and earn more
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-primary rounded-full" />
-                    Track your visit history
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
+            </div>
           </div>
         </div>
-      </section>
 
-      {/* CTA Section */}
-      <section className="container mx-auto px-4 py-20 text-center">
-        <h2 className="text-3xl font-bold mb-4">Ready to Start Earning?</h2>
-        <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
-          Join thousands of people already earning through referrals.
-          It only takes a minute to get started.
-        </p>
-        <Link href="/auth/register">
-          <Button size="lg" className="gap-2">
-            Create Free Account <ArrowRight className="w-4 h-4" />
-          </Button>
-        </Link>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t bg-gray-50">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <QrCode className="w-4 h-4 text-white" />
-              </div>
-              <span className="font-semibold">Smart AI Referrals</span>
+        {/* Trust Badges Section */}
+        <div className="pb-12">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl md:text-3xl font-bold text-white">
+                Trusted by local businesses <span className="text-blue-400">& creators</span>
+              </h2>
             </div>
-            <p className="text-sm text-muted-foreground">
-              2024 Smart AI Referrals. All rights reserved.
+
+            {/* Feature Cards */}
+            <div className="grid md:grid-cols-3 gap-6">
+              {/* Pay per real customer */}
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
+                    <CheckCircle2 className="w-6 h-6 text-blue-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-white font-bold text-lg">Pay per real</h3>
+                    <h3 className="text-white font-bold text-lg">customer</h3>
+                  </div>
+                </div>
+              </div>
+
+              {/* AI-verified visits */}
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
+                    <Users className="w-6 h-6 text-purple-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-white font-bold text-lg">AI-verified visits</h3>
+                    <p className="text-white/70 text-sm">EWA hats</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Secure payouts */}
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="w-12 h-12 bg-cyan-500/20 rounded-xl flex items-center justify-center">
+                    <Shield className="w-6 h-6 text-cyan-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-white font-bold text-lg">Secure payouts</h3>
+                    <p className="text-white/70 text-sm">Save ewp</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* App Section */}
+        <div className="py-16 bg-white/5 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-6 text-center">
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
+              This Is Not Just a Website. <span className="text-blue-400">It's an App.</span>
+            </h2>
+            <p className="text-xl text-white/90 mb-8">
+              Track referrals. See conversions. Withdraw earnings.
+              <br />
+              All in one dashboard.
+            </p>
+            <Link href="/dashboard">
+              <Button
+                size="lg"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-6 text-lg font-semibold rounded-xl shadow-2xl shadow-indigo-500/50"
+              >
+                Preview the Dashboard →
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Built For Everyone Section */}
+        <div className="py-16">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-3xl p-6 md:p-12 border border-white/20">
+              <h2 className="text-3xl md:text-5xl font-bold text-white text-center mb-4 md:mb-6">
+                Built For Everyone.
+              </h2>
+              <p className="text-lg md:text-xl text-white/90 text-center mb-8 md:mb-12">
+                Track referrals. See conversions. Withdraw earnings. All in one dashboard.
+              </p>
+
+              {/* Earnings Preview */}
+              <div className="grid md:grid-cols-2 gap-6 md:gap-8 items-center">
+                {/* Image - Show first on mobile */}
+                <div className="flex justify-center order-1 md:order-2">
+                  <div className="relative w-full max-w-[280px] md:max-w-xs">
+                    <Image
+                      src="/dashboard/assets/mobile-smart-ref.png"
+                      alt="App Preview"
+                      width={300}
+                      height={600}
+                      className="w-full h-auto rounded-[2rem] shadow-2xl"
+                    />
+                  </div>
+                </div>
+
+                {/* Earnings Card - Show second on mobile */}
+                <div className="bg-gradient-to-br from-indigo-600/40 to-purple-600/40 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-white/20 order-2 md:order-1">
+                  <div className="mb-4 md:mb-6">
+                    <p className="text-white/80 text-base md:text-lg mb-2">Passive Income</p>
+                    <div className="flex items-baseline gap-2 mb-1">
+                      <span className="text-4xl md:text-5xl font-bold text-white">$350</span>
+                    </div>
+                    <p className="text-white/70 text-sm md:text-base">44 Verified Visits</p>
+                  </div>
+                  <Button
+                    size="lg"
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm md:text-base"
+                  >
+                    See How Much You Can Earn →
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <footer className="py-8 border-t border-white/10">
+          <div className="max-w-7xl mx-auto px-6 text-center">
+            <p className="text-white/60">
+              © 2024 Smart AI Referrals. All rights reserved.
             </p>
           </div>
+        </footer>
+      </div>
+
+      {/* QR Code Modal */}
+      {showQR && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={() => setShowQR(false)}
+        >
+          <div
+            className="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl relative animate-in fade-in zoom-in duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setShowQR(false)}
+              className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors"
+            >
+              <X className="h-5 w-5 text-gray-600" />
+            </button>
+
+            {/* Header */}
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Share2 className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Share the App</h3>
+              <p className="text-sm text-gray-600">Scan this QR code to visit Smart AI Referrals</p>
+            </div>
+
+            {/* QR Code */}
+            <div className="bg-white rounded-2xl p-4 border-2 border-indigo-100 mb-6">
+              {qrCode && (
+                <img
+                  src={qrCode}
+                  alt="QR Code"
+                  className="w-full h-auto"
+                />
+              )}
+            </div>
+
+            {/* URL */}
+            <div className="bg-gray-50 rounded-xl p-4 mb-4">
+              <p className="text-xs text-gray-600 mb-1 text-center">Or visit</p>
+              <p className="text-sm font-semibold text-indigo-600 text-center break-all">
+                smart-ai-referrals.vercel.app
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <Button
+                onClick={() => {
+                  navigator.clipboard.writeText('https://smart-ai-referrals.vercel.app/')
+                }}
+                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl"
+              >
+                Copy Link
+              </Button>
+              {navigator.share && (
+                <Button
+                  onClick={() => {
+                    navigator.share({
+                      title: 'Smart AI Referrals',
+                      text: 'Turn your network into real income!',
+                      url: 'https://smart-ai-referrals.vercel.app/',
+                    })
+                  }}
+                  variant="outline"
+                  className="flex-1 border-indigo-600 text-indigo-600 hover:bg-indigo-50 rounded-xl"
+                >
+                  Share
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
-      </footer>
+      )}
     </div>
   )
 }

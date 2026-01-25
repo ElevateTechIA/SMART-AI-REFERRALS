@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useAuth } from '@/lib/auth/context'
 import { DashboardNav } from '@/components/dashboard/nav'
 import { Loader2 } from 'lucide-react'
@@ -13,6 +13,7 @@ export default function DashboardLayout({
 }) {
   const { user, loading } = useAuth()
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     if (!loading && !user) {
@@ -32,10 +33,12 @@ export default function DashboardLayout({
     return null
   }
 
+  const isMainDashboard = pathname === '/dashboard'
+
   return (
-    <div className="min-h-screen gradient-bg">
-      <DashboardNav />
-      <main className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-[#e9d5ff]">
+      {!isMainDashboard && <DashboardNav />}
+      <main className={`container mx-auto px-4 ${isMainDashboard ? 'py-0' : 'py-8'}`}>
         {children}
       </main>
     </div>

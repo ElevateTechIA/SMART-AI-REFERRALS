@@ -56,18 +56,53 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <Link href="/" className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <QrCode className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-xl font-bold">Smart AI Referrals</span>
-          </Link>
-          <CardTitle>Welcome Back</CardTitle>
-          <CardDescription>Sign in to your account to continue</CardDescription>
-        </CardHeader>
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Background Image */}
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          backgroundImage: 'url(/dashboard/assets/landing-background.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/40 via-purple-800/30 to-purple-900/50"></div>
+      </div>
+
+      {/* Content Container */}
+      <div className="relative z-10 min-h-screen flex flex-col">
+        {/* Navigation */}
+        <nav className="px-6 py-6">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center p-2">
+                <QrCode className="w-full h-full text-indigo-600" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-white font-bold text-lg leading-tight">SMART AI</span>
+                <span className="text-white font-bold text-lg leading-tight">REFERRALS</span>
+              </div>
+            </Link>
+
+            {/* Sign Up Button */}
+            <Link href="/auth/register">
+              <Button variant="ghost" className="text-white hover:bg-white/20">
+                Sign Up
+              </Button>
+            </Link>
+          </div>
+        </nav>
+
+        {/* Main Content */}
+        <div className="flex-1 flex items-center justify-center px-4 py-8">
+          <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm shadow-2xl">
+            <CardHeader className="text-center">
+              <CardTitle>Welcome Back</CardTitle>
+              <CardDescription>Sign in to your account to continue</CardDescription>
+            </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
@@ -141,14 +176,25 @@ export default function LoginPage() {
           </Button>
         </CardContent>
         <CardFooter className="flex flex-col gap-2">
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-sm text-gray-700 text-center font-medium">
             Don&apos;t have an account?{' '}
-            <Link href="/auth/register" className="text-primary hover:underline">
+            <Link href="/auth/register" className="text-indigo-600 hover:text-indigo-700 font-semibold hover:underline">
               Sign up
             </Link>
           </p>
         </CardFooter>
       </Card>
+        </div>
+
+        {/* Footer */}
+        <footer className="py-8 border-t border-white/20">
+          <div className="max-w-7xl mx-auto px-6 text-center">
+            <p className="text-white/90 text-sm">
+              © 2024 Smart AI Referrals. All rights reserved.
+            </p>
+          </div>
+        </footer>
+      </div>
     </div>
   )
 }

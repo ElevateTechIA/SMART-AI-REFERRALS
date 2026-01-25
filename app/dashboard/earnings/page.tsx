@@ -1,0 +1,255 @@
+'use client'
+
+import { useState } from 'react'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { formatCurrency } from '@/lib/utils'
+import {
+  DollarSign,
+  TrendingUp,
+  Calendar,
+  Download,
+  ChevronLeft,
+  Clock,
+} from 'lucide-react'
+
+interface Transaction {
+  id: string
+  date: string
+  business: string
+  customer: string
+  amount: number
+  status: 'completed' | 'pending' | 'processing'
+  type: 'referral' | 'bonus'
+}
+
+export default function EarningsPage() {
+  const [selectedPeriod, setSelectedPeriod] = useState('all')
+
+  // Mock data
+  const stats = {
+    totalEarnings: 1250,
+    pendingEarnings: 300,
+    completedEarnings: 950,
+    thisMonth: 450,
+  }
+
+  const transactions: Transaction[] = [
+    {
+      id: '1',
+      date: '2024-03-17',
+      business: 'Marina Boat Tours',
+      customer: 'Alex M.',
+      amount: 100,
+      status: 'completed',
+      type: 'referral',
+    },
+    {
+      id: '2',
+      date: '2024-03-15',
+      business: 'Bella Spa & Wellness',
+      customer: 'Sarah T.',
+      amount: 50,
+      status: 'completed',
+      type: 'referral',
+    },
+    {
+      id: '3',
+      date: '2024-03-12',
+      business: 'Marina Boat Tours',
+      customer: 'David S.',
+      amount: 100,
+      status: 'pending',
+      type: 'referral',
+    },
+    {
+      id: '4',
+      date: '2024-03-10',
+      business: 'Bonus Reward',
+      customer: 'Monthly Bonus',
+      amount: 50,
+      status: 'completed',
+      type: 'bonus',
+    },
+    {
+      id: '5',
+      date: '2024-03-08',
+      business: 'Bella Spa & Wellness',
+      customer: 'Emma L.',
+      amount: 50,
+      status: 'processing',
+      type: 'referral',
+    },
+  ]
+
+  const getStatusBadge = (status: string) => {
+    const statusConfig = {
+      completed: { label: 'Completed', className: 'bg-green-500 text-white' },
+      pending: { label: 'Pending', className: 'bg-yellow-500 text-white' },
+      processing: { label: 'Processing', className: 'bg-blue-500 text-white' },
+    }
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending
+    return <Badge className={config.className}>{config.label}</Badge>
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-indigo-900 to-purple-800 px-6 py-8">
+        <div className="max-w-7xl mx-auto">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-4 transition-colors"
+          >
+            <ChevronLeft className="h-5 w-5" />
+            <span>Back to Dashboard</span>
+          </Link>
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Your Earnings</h1>
+          <p className="text-white/90">Track your referral income and payouts</p>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
+                <DollarSign className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Total Earnings</span>
+            </div>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white">
+              {formatCurrency(stats.totalEarnings)}
+            </p>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-400" />
+              </div>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Completed</span>
+            </div>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white">
+              {formatCurrency(stats.completedEarnings)}
+            </p>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
+                <Clock className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+              </div>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Pending</span>
+            </div>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white">
+              {formatCurrency(stats.pendingEarnings)}
+            </p>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                <Calendar className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+              </div>
+              <span className="text-sm text-gray-600 dark:text-gray-400">This Month</span>
+            </div>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white">
+              {formatCurrency(stats.thisMonth)}
+            </p>
+          </div>
+        </div>
+
+        {/* Transactions */}
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden">
+          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                Transaction History
+              </h2>
+              <div className="flex gap-3">
+                <select
+                  value={selectedPeriod}
+                  onChange={(e) => setSelectedPeriod(e.target.value)}
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="all">All Time</option>
+                  <option value="month">This Month</option>
+                  <option value="week">This Week</option>
+                </select>
+                <Button className="bg-indigo-600 hover:bg-indigo-700">
+                  <Download className="h-4 w-4 mr-2" />
+                  Export
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 dark:bg-slate-900/50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Business
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Customer
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Type
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Amount
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {transactions.map((transaction) => (
+                  <tr key={transaction.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
+                      {new Date(transaction.date).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                      {transaction.business}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+                      {transaction.customer}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400 capitalize">
+                      {transaction.type}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-white">
+                      {formatCurrency(transaction.amount)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {getStatusBadge(transaction.status)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {transactions.length === 0 && (
+            <div className="text-center py-12">
+              <DollarSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600 dark:text-gray-400">No transactions yet</p>
+              <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
+                Start referring customers to earn rewards
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
