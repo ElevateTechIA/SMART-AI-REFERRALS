@@ -3,11 +3,14 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { CheckCircle2, Users, Shield, X, Share2 } from 'lucide-react'
 import QRCode from 'qrcode'
+import { LanguageSwitcher } from '@/components/language-switcher'
 
 export default function LandingPage() {
+  const { t } = useTranslation()
   const [showQR, setShowQR] = useState(false)
   const [qrCode, setQrCode] = useState('')
 
@@ -68,12 +71,15 @@ export default function LandingPage() {
               </div>
             </button>
 
-            {/* Sign In Button */}
-            <Link href="/auth/signin">
-              <Button variant="ghost" className="text-white hover:bg-white/20">
-                Sign In
-              </Button>
-            </Link>
+            {/* Language Switcher & Sign In Button */}
+            <div className="flex items-center gap-2">
+              <LanguageSwitcher />
+              <Link href="/auth/signin">
+                <Button variant="ghost" className="text-white hover:bg-white/20">
+                  {t('auth.signIn')}
+                </Button>
+              </Link>
+            </div>
           </div>
         </nav>
 
@@ -84,10 +90,10 @@ export default function LandingPage() {
             <div className="space-y-8">
               <div>
                 <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-                  Turn Your Network Into <span className="text-blue-400">Real Income</span>
+                  {t('landing.heroTitle')} <span className="text-blue-400">{t('landing.heroTitleHighlight')}</span>
                 </h1>
                 <p className="text-xl md:text-2xl text-white/90 leading-relaxed">
-                  Share businesses you already trust. Earn money every time someone visits — automatically.
+                  {t('landing.heroSubtitle')}
                 </p>
               </div>
 
@@ -98,7 +104,7 @@ export default function LandingPage() {
                     size="lg"
                     className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-6 text-lg font-semibold rounded-xl shadow-2xl shadow-indigo-500/50 w-full sm:w-auto"
                   >
-                    Start Earning Free
+                    {t('landing.startEarningFree')}
                   </Button>
                 </Link>
                 <Link href="/business/register">
@@ -107,13 +113,13 @@ export default function LandingPage() {
                     variant="outline"
                     className="bg-white/10 backdrop-blur-sm border-2 border-white/30 text-white hover:bg-white/20 px-8 py-6 text-lg font-semibold rounded-xl w-full sm:w-auto"
                   >
-                    List Your Business
+                    {t('landing.listYourBusiness')}
                   </Button>
                 </Link>
               </div>
 
               <p className="text-white/80 text-sm">
-                No credit card required · Takes less than 1 minute
+                {t('landing.noCardRequired')}
               </p>
             </div>
 
@@ -142,7 +148,7 @@ export default function LandingPage() {
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center mb-8">
               <h2 className="text-2xl md:text-3xl font-bold text-white">
-                Trusted by local businesses <span className="text-blue-400">& creators</span>
+                {t('landing.trustedBy')} <span className="text-blue-400">{t('landing.trustedByHighlight')}</span>
               </h2>
             </div>
 
@@ -155,8 +161,8 @@ export default function LandingPage() {
                     <CheckCircle2 className="w-6 h-6 text-blue-400" />
                   </div>
                   <div>
-                    <h3 className="text-white font-bold text-lg">Pay per real</h3>
-                    <h3 className="text-white font-bold text-lg">customer</h3>
+                    <h3 className="text-white font-bold text-lg">{t('landing.payPerCustomer')}</h3>
+                    <h3 className="text-white font-bold text-lg">{t('landing.payPerCustomerLine2')}</h3>
                   </div>
                 </div>
               </div>
@@ -168,8 +174,8 @@ export default function LandingPage() {
                     <Users className="w-6 h-6 text-purple-400" />
                   </div>
                   <div>
-                    <h3 className="text-white font-bold text-lg">AI-verified visits</h3>
-                    <p className="text-white/70 text-sm">EWA hats</p>
+                    <h3 className="text-white font-bold text-lg">{t('landing.aiVerifiedVisits')}</h3>
+                    <p className="text-white/70 text-sm">{t('landing.aiVerifiedSubtext')}</p>
                   </div>
                 </div>
               </div>
@@ -181,8 +187,8 @@ export default function LandingPage() {
                     <Shield className="w-6 h-6 text-cyan-400" />
                   </div>
                   <div>
-                    <h3 className="text-white font-bold text-lg">Secure payouts</h3>
-                    <p className="text-white/70 text-sm">Save ewp</p>
+                    <h3 className="text-white font-bold text-lg">{t('landing.securePayouts')}</h3>
+                    <p className="text-white/70 text-sm">{t('landing.securePayoutsSubtext')}</p>
                   </div>
                 </div>
               </div>
@@ -194,19 +200,19 @@ export default function LandingPage() {
         <div className="py-16 bg-white/5 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-6 text-center">
             <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
-              This Is Not Just a Website. <span className="text-blue-400">It's an App.</span>
+              {t('landing.notJustWebsite')} <span className="text-blue-400">{t('landing.notJustWebsiteHighlight')}</span>
             </h2>
             <p className="text-xl text-white/90 mb-8">
-              Track referrals. See conversions. Withdraw earnings.
+              {t('landing.appDescription')}
               <br />
-              All in one dashboard.
+              {t('landing.appDescriptionLine2')}
             </p>
             <Link href="/dashboard">
               <Button
                 size="lg"
                 className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-6 text-lg font-semibold rounded-xl shadow-2xl shadow-indigo-500/50"
               >
-                Preview the Dashboard →
+                {t('landing.previewDashboard')}
               </Button>
             </Link>
           </div>
@@ -217,10 +223,10 @@ export default function LandingPage() {
           <div className="max-w-7xl mx-auto px-6">
             <div className="bg-white/10 backdrop-blur-md rounded-3xl p-6 md:p-12 border border-white/20">
               <h2 className="text-3xl md:text-5xl font-bold text-white text-center mb-4 md:mb-6">
-                Built For Everyone.
+                {t('landing.builtForEveryone')}
               </h2>
               <p className="text-lg md:text-xl text-white/90 text-center mb-8 md:mb-12">
-                Track referrals. See conversions. Withdraw earnings. All in one dashboard.
+                {t('landing.builtDescription')}
               </p>
 
               {/* Earnings Preview */}
@@ -241,17 +247,17 @@ export default function LandingPage() {
                 {/* Earnings Card - Show second on mobile */}
                 <div className="bg-gradient-to-br from-indigo-600/40 to-purple-600/40 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-white/20 order-2 md:order-1">
                   <div className="mb-4 md:mb-6">
-                    <p className="text-white/80 text-base md:text-lg mb-2">Passive Income</p>
+                    <p className="text-white/80 text-base md:text-lg mb-2">{t('landing.passiveIncome')}</p>
                     <div className="flex items-baseline gap-2 mb-1">
                       <span className="text-4xl md:text-5xl font-bold text-white">$350</span>
                     </div>
-                    <p className="text-white/70 text-sm md:text-base">44 Verified Visits</p>
+                    <p className="text-white/70 text-sm md:text-base">44 {t('landing.verifiedVisits')}</p>
                   </div>
                   <Button
                     size="lg"
                     className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm md:text-base"
                   >
-                    See How Much You Can Earn →
+                    {t('landing.seeHowMuch')}
                   </Button>
                 </div>
               </div>
@@ -263,7 +269,7 @@ export default function LandingPage() {
         <footer className="py-8 border-t border-white/10">
           <div className="max-w-7xl mx-auto px-6 text-center">
             <p className="text-white/60">
-              © 2024 Smart AI Referrals. All rights reserved.
+              {t('landing.allRightsReserved')}
             </p>
           </div>
         </footer>
@@ -292,8 +298,8 @@ export default function LandingPage() {
               <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Share2 className="h-8 w-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Share the App</h3>
-              <p className="text-sm text-gray-600">Scan this QR code to visit Smart AI Referrals</p>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">{t('landing.shareTheApp')}</h3>
+              <p className="text-sm text-gray-600">{t('landing.scanQR')}</p>
             </div>
 
             {/* QR Code */}
@@ -309,7 +315,7 @@ export default function LandingPage() {
 
             {/* URL */}
             <div className="bg-gray-50 rounded-xl p-4 mb-4">
-              <p className="text-xs text-gray-600 mb-1 text-center">Or visit</p>
+              <p className="text-xs text-gray-600 mb-1 text-center">{t('landing.orVisit')}</p>
               <p className="text-sm font-semibold text-indigo-600 text-center break-all">
                 smart-ai-referrals.vercel.app
               </p>
@@ -323,7 +329,7 @@ export default function LandingPage() {
                 }}
                 className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl"
               >
-                Copy Link
+                {t('landing.copyLink')}
               </Button>
               {navigator.share && (
                 <Button
@@ -337,7 +343,7 @@ export default function LandingPage() {
                   variant="outline"
                   className="flex-1 border-indigo-600 text-indigo-600 hover:bg-indigo-50 rounded-xl"
                 >
-                  Share
+                  {t('landing.share')}
                 </Button>
               )}
             </div>

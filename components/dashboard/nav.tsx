@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -13,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { ThemeSwitcher } from '@/components/theme-switcher'
+import { LanguageSwitcher } from '@/components/language-switcher'
 import { useAuth } from '@/lib/auth/context'
 import { cn } from '@/lib/utils'
 import {
@@ -31,6 +33,7 @@ export function DashboardNav() {
   const { user, signOut } = useAuth()
   const pathname = usePathname()
   const router = useRouter()
+  const { t } = useTranslation()
 
   const handleSignOut = async () => {
     await signOut()
@@ -39,31 +42,31 @@ export function DashboardNav() {
 
   const navItems = [
     {
-      label: 'Dashboard',
+      label: t('nav.dashboard'),
       href: '/dashboard',
       icon: LayoutDashboard,
       roles: ['consumer', 'referrer', 'business', 'admin'],
     },
     {
-      label: 'Business',
+      label: t('nav.business'),
       href: '/dashboard/business',
       icon: Building2,
       roles: ['business', 'admin'],
     },
     {
-      label: 'Referrals',
+      label: t('nav.referrals'),
       href: '/dashboard/referrals',
       icon: Share2,
       roles: ['referrer', 'admin'],
     },
     {
-      label: 'My Visits',
+      label: t('nav.myVisits'),
       href: '/dashboard/visits',
       icon: Gift,
       roles: ['consumer', 'referrer'],
     },
     {
-      label: 'Admin',
+      label: t('nav.admin'),
       href: '/dashboard/admin',
       icon: Shield,
       roles: ['admin'],
@@ -105,6 +108,7 @@ export function DashboardNav() {
         </div>
 
         <div className="flex items-center gap-4">
+          <LanguageSwitcher />
           <ThemeSwitcher />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -140,40 +144,19 @@ export function DashboardNav() {
               <DropdownMenuItem asChild>
                 <Link href="/dashboard/settings" className="cursor-pointer">
                   <Settings className="mr-2 h-4 w-4" />
-                  Settings
+                  {t('nav.settings')}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-600">
                 <LogOut className="mr-2 h-4 w-4" />
-                Sign out
+                {t('nav.signOut')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
 
-      {/* Mobile Navigation */}
-      <div className="md:hidden border-t">
-        <nav className="flex overflow-x-auto py-2 px-4 gap-2">
-          {filteredNavItems.map((item) => {
-            const Icon = item.icon
-            const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
-            return (
-              <Link key={item.href} href={item.href}>
-                <Button
-                  variant={isActive ? 'secondary' : 'ghost'}
-                  size="sm"
-                  className={cn('gap-2 whitespace-nowrap', isActive && 'bg-secondary')}
-                >
-                  <Icon className="w-4 h-4" />
-                  {item.label}
-                </Button>
-              </Link>
-            )
-          })}
-        </nav>
-      </div>
     </header>
   )
 }

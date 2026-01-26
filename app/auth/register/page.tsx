@@ -3,11 +3,13 @@
 import { useState, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { LanguageSwitcher } from '@/components/language-switcher'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { QrCode, Loader2, Users, Building2 } from 'lucide-react'
@@ -24,6 +26,7 @@ function RegisterContent() {
   const { signUp, signInWithGoogle } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
+  const { t } = useTranslation()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -112,12 +115,15 @@ function RegisterContent() {
               </div>
             </Link>
 
-            {/* Sign In Button */}
-            <Link href="/auth/login">
-              <Button variant="ghost" className="text-white hover:bg-white/20">
-                Sign In
-              </Button>
-            </Link>
+            {/* Language Switcher & Sign In Button */}
+            <div className="flex items-center gap-2">
+              <LanguageSwitcher />
+              <Link href="/auth/login">
+                <Button variant="ghost" className="text-white hover:bg-white/20">
+                  {t('auth.signIn')}
+                </Button>
+              </Link>
+            </div>
           </div>
         </nav>
 
@@ -125,88 +131,33 @@ function RegisterContent() {
         <div className="flex-1 flex items-center justify-center px-4 py-8">
           <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm shadow-2xl">
             <CardHeader className="text-center">
-              <CardTitle>Create an Account</CardTitle>
-              <CardDescription>Choose how you want to use the platform</CardDescription>
+              <CardTitle>{t('auth.createAccount')}</CardTitle>
+              <CardDescription>{t('auth.chooseHow')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="referrer" className="gap-2">
                     <Users className="w-4 h-4" />
-                    Earn Money
+                    {t('auth.earnMoney')}
                   </TabsTrigger>
                   <TabsTrigger value="business" className="gap-2">
                     <Building2 className="w-4 h-4" />
-                    Get Customers
+                    {t('auth.getCustomers')}
                   </TabsTrigger>
                 </TabsList>
                 <TabsContent value="referrer" className="text-sm text-gray-800 mt-4 font-medium">
-                  Start earning by referring customers to local businesses. Share your unique links and get paid for each successful referral.
+                  {t('auth.referrerDescription')}
                 </TabsContent>
                 <TabsContent value="business" className="text-sm text-gray-800 mt-4 font-medium">
-                  Grow your business with word-of-mouth marketing. Pay only when you get new customers through our referral network.
+                  {t('auth.businessDescription')}
                 </TabsContent>
               </Tabs>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="John Doe"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating account...
-                    </>
-                  ) : (
-                    `Create ${activeTab === 'business' ? 'Business' : 'Referrer'} Account`
-                  )}
-                </Button>
-              </form>
-
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-muted-foreground">Or continue with</span>
-                </div>
-              </div>
-
+              {/* Google Sign Up - Primary Option */}
               <Button
                 variant="outline"
-                className="w-full"
+                className="w-full mb-6"
                 onClick={handleGoogleSignUp}
                 disabled={loading}
               >
@@ -228,18 +179,75 @@ function RegisterContent() {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                 </svg>
-                Continue with Google
+                {t('auth.continueWithGoogle')}
               </Button>
+
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-2 text-muted-foreground">{t('auth.orContinueWith')}</span>
+                </div>
+              </div>
+
+              {/* Email/Password Form - Secondary Option */}
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">{t('auth.name')}</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder={t('auth.namePlaceholder')}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">{t('auth.email')}</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder={t('auth.emailPlaceholder')}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">{t('auth.password')}</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {t('auth.creatingAccount')}
+                    </>
+                  ) : (
+                    activeTab === 'business' ? t('auth.createBusinessAccount') : t('auth.createReferrerAccount')
+                  )}
+                </Button>
+              </form>
             </CardContent>
             <CardFooter className="flex flex-col gap-2">
               <p className="text-sm text-gray-700 text-center font-medium">
-                Already have an account?{' '}
+                {t('auth.haveAccount')}{' '}
                 <Link href="/auth/login" className="text-indigo-600 hover:text-indigo-700 font-semibold hover:underline">
-                  Sign in
+                  {t('auth.signIn')}
                 </Link>
               </p>
               <p className="text-xs text-gray-600 text-center">
-                By creating an account, you agree to our Terms of Service and Privacy Policy.
+                {t('auth.termsAgreement')}
               </p>
             </CardFooter>
           </Card>
@@ -249,7 +257,7 @@ function RegisterContent() {
         <footer className="py-8 border-t border-white/20">
           <div className="max-w-7xl mx-auto px-6 text-center">
             <p className="text-white/90 text-sm">
-              © 2024 Smart AI Referrals. All rights reserved.
+              {t('landing.allRightsReserved')}
             </p>
           </div>
         </footer>

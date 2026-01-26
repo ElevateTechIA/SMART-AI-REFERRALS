@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/lib/auth/context'
@@ -35,6 +36,7 @@ interface DashboardData {
 
 export default function EnhancedDashboardPage() {
   const { user } = useAuth()
+  const { t } = useTranslation()
   const [data, setData] = useState<DashboardData | null>(null)
   const [qrCode, setQrCode] = useState<string>('')
   const [loading, setLoading] = useState(true)
@@ -144,7 +146,7 @@ export default function EnhancedDashboardPage() {
         {/* My Referral Link */}
         <div className="bg-gradient-to-br from-indigo-900 to-purple-800 rounded-2xl p-6 shadow-xl">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-white">My Referral Link</h2>
+            <h2 className="text-lg font-bold text-white">{t('dashboard.myReferralLink')}</h2>
             <ChevronRight className="h-5 w-5 text-white/60" />
           </div>
 
@@ -157,7 +159,7 @@ export default function EnhancedDashboardPage() {
             </p>
             <Button onClick={copyLink} className="w-full mb-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg h-12 text-sm font-semibold">
               <Copy className="h-4 w-4 mr-2" />
-              Copy Link
+              {t('dashboard.copyLink')}
             </Button>
             <div className="flex gap-2 w-full">
               <button className="flex-1 h-12 bg-teal-500 hover:bg-teal-600 text-white rounded-lg flex items-center justify-center">
@@ -179,7 +181,7 @@ export default function EnhancedDashboardPage() {
         <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-lg font-bold text-gray-800 mb-1">Your Earnings</h2>
+              <h2 className="text-lg font-bold text-gray-800 mb-1">{t('dashboard.yourEarnings')}</h2>
               <p className="text-3xl font-bold text-gray-900">{formatCurrency(1250)}</p>
               <p className="text-sm text-gray-600">15 Month</p>
             </div>
@@ -212,18 +214,18 @@ export default function EnhancedDashboardPage() {
           {/* Commission Breakdown */}
           <div>
             <h3 className="text-sm font-semibold text-gray-800 mb-3">
-              Commission Breakdown
+              {t('dashboard.commissionBreakdown')}
             </h3>
             <div className="space-y-2">
               <div className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full bg-indigo-500"></div>
                 <span className="text-sm font-semibold text-gray-900">$1,100</span>
-                <span className="text-sm text-gray-600">Referrals</span>
+                <span className="text-sm text-gray-600">{t('dashboard.referrals')}</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full bg-purple-400"></div>
                 <span className="text-sm font-semibold text-gray-900">$150</span>
-                <span className="text-sm text-gray-600">Bonuses</span>
+                <span className="text-sm text-gray-600">{t('dashboard.bonuses')}</span>
               </div>
             </div>
           </div>
@@ -235,7 +237,7 @@ export default function EnhancedDashboardPage() {
         {/* Top Businesses This Week */}
         <div className="bg-gradient-to-br from-indigo-900 to-purple-800 rounded-2xl p-6 shadow-xl">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-white">Top Businesses This Week</h2>
+            <h2 className="text-lg font-bold text-white">{t('dashboard.topBusinessesWeek')}</h2>
             <ChevronRight className="h-5 w-5 text-white/60" />
           </div>
 
@@ -256,7 +258,7 @@ export default function EnhancedDashboardPage() {
                   <h3 className="text-white font-bold text-xl mb-2 leading-tight">Marina Boat Tours</h3>
                   <p className="text-white/95 text-base mb-4">$100 per new customer</p>
                   <Button size="sm" className="w-auto bg-blue-400 hover:bg-blue-500 rounded-lg h-10 px-6 text-sm font-semibold">
-                    Copy Link
+                    {t('dashboard.copyLink')}
                   </Button>
                 </div>
               </div>
@@ -297,7 +299,7 @@ export default function EnhancedDashboardPage() {
         >
           <div className="absolute inset-0 bg-gradient-to-b from-indigo-900/85 to-purple-800/85"></div>
           <div className="relative p-6">
-            <h2 className="text-lg font-bold text-white mb-4">Write a Review & Earn</h2>
+            <h2 className="text-lg font-bold text-white mb-4">{t('dashboard.writeReviewEarn')}</h2>
 
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
@@ -313,16 +315,16 @@ export default function EnhancedDashboardPage() {
             </div>
 
             <p className="text-white/95 text-sm mb-4">
-              Share your experience and earn rewards
+              {t('dashboard.shareExperience')}
             </p>
 
             <textarea
               className="w-full h-20 px-4 py-3 rounded-lg bg-white/95 text-gray-800 placeholder:text-gray-500 border-0 focus:ring-2 focus:ring-white/50 mb-4 text-sm resize-none"
-              placeholder="Write your review..."
+              placeholder={t('dashboard.writeReview')}
             ></textarea>
 
             <Button className="w-full bg-indigo-500 hover:bg-indigo-600 rounded-lg h-12 text-sm font-semibold">
-              Submit Review
+              {t('dashboard.submitReview')}
             </Button>
           </div>
         </div>
@@ -334,23 +336,23 @@ export default function EnhancedDashboardPage() {
         <div className="space-y-4">
           {/* Total Earnings */}
           <div className="bg-white/95 backdrop-blur-sm rounded-xl p-5 shadow-lg">
-            <p className="text-xs text-gray-600 mb-1">Total Earnings</p>
+            <p className="text-xs text-gray-600 mb-1">{t('dashboard.totalEarnings')}</p>
             <p className="text-3xl font-bold text-gray-900 mb-3">
               {formatCurrency(data?.stats.totalEarnings || 0)}
             </p>
             <Button size="sm" className="w-full bg-indigo-500 hover:bg-indigo-600 rounded-lg h-10 text-sm">
-              Withdraw
+              {t('dashboard.withdraw')}
             </Button>
           </div>
 
           {/* New Customers */}
           <div className="bg-white/95 backdrop-blur-sm rounded-xl p-5 shadow-lg">
-            <p className="text-xs text-gray-600 mb-1">New Customers</p>
+            <p className="text-xs text-gray-600 mb-1">{t('dashboard.newCustomers')}</p>
             <div className="flex items-baseline gap-2 mb-2">
               <p className="text-3xl font-bold text-gray-900">
                 {data?.stats.newCustomersThisMonth || 0}
               </p>
-              <p className="text-xs text-gray-500">This Month</p>
+              <p className="text-xs text-gray-500">{t('dashboard.thisMonth')}</p>
             </div>
             {/* Mini chart */}
             <div className="h-16 mt-2">
@@ -370,10 +372,10 @@ export default function EnhancedDashboardPage() {
 
           {/* Pending Payouts */}
           <div className="bg-white/95 backdrop-blur-sm rounded-xl p-5 shadow-lg">
-            <p className="text-xs text-gray-600 mb-1">Pending Payouts</p>
+            <p className="text-xs text-gray-600 mb-1">{t('dashboard.pendingPayouts')}</p>
             <p className="text-3xl font-bold text-gray-900 mb-3">$300</p>
             <Button size="sm" className="w-full bg-indigo-500 hover:bg-indigo-600 rounded-lg h-10 text-sm">
-              Review
+              {t('dashboard.review')}
             </Button>
           </div>
         </div>
@@ -381,7 +383,7 @@ export default function EnhancedDashboardPage() {
         {/* Recent Conversions */}
         <div className="bg-gradient-to-br from-indigo-900 to-purple-800 rounded-2xl p-5 shadow-xl">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-bold text-white">Recent Conversions</h2>
+            <h2 className="text-base font-bold text-white">{t('dashboard.recentConversions')}</h2>
             <ChevronRight className="h-5 w-5 text-white/60" />
           </div>
 
@@ -401,7 +403,7 @@ export default function EnhancedDashboardPage() {
                 </div>
                 {conversion.verified && (
                   <Badge className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
-                    Verified
+                    {t('dashboard.verified')}
                   </Badge>
                 )}
               </div>
@@ -418,7 +420,7 @@ export default function EnhancedDashboardPage() {
       <div className="flex gap-2 mb-6 overflow-x-visible pb-2">
         {/* Total Earnings */}
         <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3 shadow-lg flex-1 min-w-0 md:flex-none md:w-56">
-          <p className="text-[10px] text-gray-600 mb-0.5">Total Earnings:</p>
+          <p className="text-[10px] text-gray-600 mb-0.5">{t('dashboard.totalEarnings')}:</p>
           <p className="text-xl md:text-3xl font-bold text-gray-900 mb-2">
             {formatCurrency(data?.stats.totalEarnings || 0)}
           </p>
@@ -429,7 +431,7 @@ export default function EnhancedDashboardPage() {
 
         {/* New Customers */}
         <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3 shadow-lg flex-1 min-w-0 md:flex-none md:w-56">
-          <p className="text-[10px] text-gray-600 mb-0.5">New Customers:</p>
+          <p className="text-[10px] text-gray-600 mb-0.5">{t('dashboard.newCustomers')}:</p>
           <div className="flex items-baseline gap-1 mb-0.5">
             <p className="text-xl md:text-3xl font-bold text-gray-900">
               {data?.stats.newCustomersThisMonth || 0}
@@ -454,7 +456,7 @@ export default function EnhancedDashboardPage() {
 
         {/* Pending Payouts */}
         <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3 shadow-lg flex-1 min-w-0 md:flex-none md:w-56">
-          <p className="text-[10px] text-gray-600 mb-0.5">Pending Payouts:</p>
+          <p className="text-[10px] text-gray-600 mb-0.5">{t('dashboard.pendingPayouts')}:</p>
           <p className="text-xl md:text-3xl font-bold text-gray-900 mb-2">$300</p>
           <Button size="sm" className="w-full bg-indigo-500 hover:bg-indigo-600 rounded-lg h-8 md:h-10 text-[10px] md:text-sm">
             Review
@@ -469,12 +471,12 @@ export default function EnhancedDashboardPage() {
           {/* My Referral Link & Top Businesses - Two Column Layout */}
           <div className="bg-gradient-to-br from-indigo-900 to-purple-800 rounded-xl p-2.5 shadow-lg">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-sm font-bold text-white whitespace-nowrap">My Referral Link</h2>
+              <h2 className="text-sm font-bold text-white whitespace-nowrap">{t('dashboard.myReferralLink')}</h2>
               <Link
                 href="/dashboard/referrals"
                 className="text-[10px] text-white/90 hover:text-white flex items-center gap-0.5"
               >
-                Top Businesses This Week <ChevronRight className="h-3 w-3" />
+                {t('dashboard.topBusinessesWeek')} <ChevronRight className="h-3 w-3" />
               </Link>
             </div>
 
@@ -560,9 +562,9 @@ export default function EnhancedDashboardPage() {
             {/* Your Earnings Chart - Left Side */}
             <div className="bg-white/90 backdrop-blur-sm rounded-xl p-2.5 shadow-lg">
               <div className="mb-2">
-                <h2 className="text-sm font-bold text-gray-800 mb-0.5">Your Earnings:</h2>
+                <h2 className="text-sm font-bold text-gray-800 mb-0.5">{t('dashboard.yourEarnings')}:</h2>
                 <p className="text-xl font-bold text-gray-900">{formatCurrency(1250)}</p>
-                <p className="text-[10px] text-gray-600">This Month</p>
+                <p className="text-[10px] text-gray-600">{t('dashboard.thisMonth')}</p>
               </div>
 
               {/* Chart */}
@@ -589,18 +591,18 @@ export default function EnhancedDashboardPage() {
               {/* Commission Breakdown */}
               <div>
                 <h3 className="text-[10px] font-semibold text-gray-800 mb-1.5">
-                  Commission Breakdown
+                  {t('dashboard.commissionBreakdown')}
                 </h3>
                 <div className="space-y-1">
                   <div className="flex items-center gap-1.5">
                     <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
                     <span className="text-[10px] font-medium text-gray-900">$1,100</span>
-                    <span className="text-[10px] text-gray-600">Referrals</span>
+                    <span className="text-[10px] text-gray-600">{t('dashboard.referrals')}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <div className="w-2 h-2 rounded-full bg-purple-400"></div>
                     <span className="text-[10px] font-medium text-gray-900">$150</span>
-                    <span className="text-[10px] text-gray-600">Bonuses</span>
+                    <span className="text-[10px] text-gray-600">{t('dashboard.bonuses')}</span>
                   </div>
                 </div>
               </div>
@@ -617,7 +619,7 @@ export default function EnhancedDashboardPage() {
             >
               <div className="absolute inset-0 bg-gradient-to-b from-indigo-900/85 to-purple-800/85"></div>
               <div className="relative p-2.5">
-                <h2 className="text-sm font-bold text-white mb-2">Write a Review & Earn</h2>
+                <h2 className="text-sm font-bold text-white mb-2">{t('dashboard.writeReviewEarn')}</h2>
 
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <div className="w-5 h-5 bg-white/20 rounded-md flex items-center justify-center">
@@ -633,16 +635,16 @@ export default function EnhancedDashboardPage() {
                 </div>
 
                 <p className="text-white/95 text-[10px] mb-2">
-                  Share your experience for extra rewards.
+                  {t('dashboard.shareExperience')}
                 </p>
 
                 <textarea
                   className="w-full h-12 px-2 py-1.5 rounded-md bg-white/95 text-gray-800 placeholder:text-gray-500 border-0 focus:ring-2 focus:ring-white/50 mb-2 text-[10px]"
-                  placeholder="Write your review..."
+                  placeholder={t('dashboard.writeReview')}
                 ></textarea>
 
                 <Button className="w-full bg-indigo-500 hover:bg-indigo-600 rounded-md h-7 text-[10px] font-semibold">
-                  Submit Review
+                  {t('dashboard.submitReview')}
                 </Button>
               </div>
             </div>
@@ -688,17 +690,14 @@ export default function EnhancedDashboardPage() {
               </div>
             </div>
 
-            {/* Profile with notification */}
+            {/* Profile */}
             <div className="relative">
-              <div className="w-14 h-14 rounded-full border-2 border-white/30 overflow-hidden">
+              <div className="w-14 h-14 rounded-full border-2 border-white/30 overflow-hidden bg-white/10">
                 <img
-                  src={user?.photoURL || 'https://ui-avatars.com/api/?name=' + (user?.name || 'User')}
+                  src={user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=6366f1&color=fff`}
                   alt="Profile"
                   className="w-full h-full object-cover"
                 />
-              </div>
-              <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                3
               </div>
             </div>
           </div>
@@ -706,9 +705,9 @@ export default function EnhancedDashboardPage() {
           {/* Welcome message */}
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-1">
-              Welcome Back, {user?.name?.split(' ')[0] || 'Ethan'}!
+              {t('dashboard.welcomeBack', { name: user?.name?.split(' ')[0] || 'Ethan' })}
             </h1>
-            <p className="text-white/90 text-lg">Track, Refer, Earn!</p>
+            <p className="text-white/90 text-lg">{t('dashboard.trackReferEarn')}</p>
           </div>
         </div>
       </div>
@@ -767,9 +766,9 @@ export default function EnhancedDashboardPage() {
           {/* Bottom Profile Section */}
           <div className="p-4">
             <div className="flex items-center gap-3 px-4 py-3 bg-indigo-700/30 rounded-lg">
-              <div className="w-12 h-12 rounded-full border-2 border-white/30 overflow-hidden">
+              <div className="w-12 h-12 rounded-full border-2 border-white/30 overflow-hidden bg-white/10">
                 <img
-                  src={user?.photoURL || 'https://ui-avatars.com/api/?name=' + (user?.name || 'User')}
+                  src={user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=6366f1&color=fff`}
                   alt="Profile"
                   className="w-full h-full object-cover"
                 />
@@ -797,20 +796,17 @@ export default function EnhancedDashboardPage() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h1 className="text-4xl font-bold text-white mb-2">
-                  Welcome Back, {user?.name?.split(' ')[0] || 'Ethan'}!
+                  {t('dashboard.welcomeBack', { name: user?.name?.split(' ')[0] || 'Ethan' })}
                 </h1>
-                <p className="text-white/90 text-lg">Track, Refer, Earn!</p>
+                <p className="text-white/90 text-lg">{t('dashboard.trackReferEarn')}</p>
               </div>
               <div className="relative">
-                <div className="w-16 h-16 rounded-full border-2 border-white/30 overflow-hidden">
+                <div className="w-16 h-16 rounded-full border-2 border-white/30 overflow-hidden bg-white/10">
                   <img
-                    src={user?.photoURL || 'https://ui-avatars.com/api/?name=' + (user?.name || 'User')}
+                    src={user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=6366f1&color=fff`}
                     alt="Profile"
                     className="w-full h-full object-cover"
                   />
-                </div>
-                <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                  3
                 </div>
               </div>
             </div>
@@ -828,42 +824,6 @@ export default function EnhancedDashboardPage() {
 
       {/* Mobile Content */}
       <div className="md:hidden px-0 pb-24">{renderMobileContent()}</div>
-
-      {/* Bottom Navigation (Mobile Only) */}
-      <div className="fixed bottom-0 left-0 right-0 md:hidden bg-gradient-to-r from-indigo-900 to-purple-800 shadow-lg">
-        <div className="grid grid-cols-4 h-16 px-2">
-          <Link
-            href="/dashboard"
-            className="flex flex-col items-center justify-center gap-1 text-white"
-          >
-            <svg className="h-7 w-7" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-            </svg>
-            <span className="text-[10px] font-medium">Dashboard</span>
-          </Link>
-          <Link
-            href="/dashboard/referrals"
-            className="flex flex-col items-center justify-center gap-1 text-white/70 hover:text-white"
-          >
-            <QrCodeIcon className="h-7 w-7" />
-            <span className="text-[10px] font-medium">Referrals</span>
-          </Link>
-          <Link
-            href="/dashboard/earnings"
-            className="flex flex-col items-center justify-center gap-1 text-white/70 hover:text-white"
-          >
-            <DollarSign className="h-7 w-7" />
-            <span className="text-[10px] font-medium">Earnings</span>
-          </Link>
-          <Link
-            href="/dashboard/business"
-            className="flex flex-col items-center justify-center gap-1 text-white/70 hover:text-white"
-          >
-            <Building2 className="h-7 w-7" />
-            <span className="text-[10px] font-medium">Businesses</span>
-          </Link>
-        </div>
-      </div>
     </div>
   )
 }

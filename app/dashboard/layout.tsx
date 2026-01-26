@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useAuth } from '@/lib/auth/context'
 import { DashboardNav } from '@/components/dashboard/nav'
+import { BottomNav } from '@/components/dashboard/bottom-nav'
 import { Loader2 } from 'lucide-react'
 
 export default function DashboardLayout({
@@ -38,9 +39,10 @@ export default function DashboardLayout({
   return (
     <div className="min-h-screen bg-[#e9d5ff]">
       {!isMainDashboard && <DashboardNav />}
-      <main className={`container mx-auto px-4 ${isMainDashboard ? 'py-0' : 'py-8'}`}>
+      <main className={`container mx-auto px-4 ${isMainDashboard ? 'py-0' : 'py-8 pb-20 md:pb-8'}`}>
         {children}
       </main>
+      <BottomNav />
     </div>
   )
 }
