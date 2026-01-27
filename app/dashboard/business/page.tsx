@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { db } from '@/lib/firebase/client'
-import { collection, query, where, getDocs, orderBy, doc, getDoc } from 'firebase/firestore'
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore'
 import { apiPost } from '@/lib/api-client'
 import type { Business, Offer, Visit, Charge } from '@/lib/types'
 import { formatCurrency, formatDate, generateReferralUrl } from '@/lib/utils'
@@ -77,11 +77,10 @@ export default function BusinessDashboardPage() {
           } as Offer)
         }
 
-        // Fetch visits
+        // Fetch visits (without orderBy to avoid index requirement, sort client-side)
         const visitsQuery = query(
           collection(db, 'visits'),
-          where('businessId', '==', fetchedBusiness.id),
-          orderBy('createdAt', 'desc')
+          where('businessId', '==', fetchedBusiness.id)
         )
         const visitsSnapshot = await getDocs(visitsQuery)
         const fetchedVisits: Visit[] = []
@@ -94,13 +93,14 @@ export default function BusinessDashboardPage() {
             updatedAt: data.updatedAt?.toDate(),
           } as Visit)
         })
+        // Sort by createdAt descending client-side
+        fetchedVisits.sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0))
         setVisits(fetchedVisits)
 
-        // Fetch charges
+        // Fetch charges (without orderBy to avoid index requirement, sort client-side)
         const chargesQuery = query(
           collection(db, 'charges'),
-          where('businessId', '==', fetchedBusiness.id),
-          orderBy('createdAt', 'desc')
+          where('businessId', '==', fetchedBusiness.id)
         )
         const chargesSnapshot = await getDocs(chargesQuery)
         const fetchedCharges: Charge[] = []
@@ -113,6 +113,8 @@ export default function BusinessDashboardPage() {
             updatedAt: data.updatedAt?.toDate(),
           } as Charge)
         })
+        // Sort by createdAt descending client-side
+        fetchedCharges.sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0))
         setCharges(fetchedCharges)
       } catch (error) {
         console.error('Error fetching business data:', error)

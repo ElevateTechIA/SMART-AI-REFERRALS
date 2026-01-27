@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { BarChart, Bar, XAxis, ResponsiveContainer } from 'recharts'
 import QRCode from 'qrcode'
+import { ShareAppModal } from '@/components/share-app-modal'
 
 interface DashboardData {
   stats: {
@@ -42,6 +43,7 @@ export default function EnhancedDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [showHeader, setShowHeader] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
+  const [showShareModal, setShowShareModal] = useState(false)
 
   // Mock chart data for earnings
   const chartData = [
@@ -131,6 +133,10 @@ export default function EnhancedDashboardPage() {
     }
   }
 
+  const shareApp = () => {
+    setShowShareModal(true)
+  }
+
   // Mock recent conversions data
   const recentConversions = [
     { id: 1, name: 'Alex M.', type: 'Boat Rental', verified: true },
@@ -140,274 +146,271 @@ export default function EnhancedDashboardPage() {
   ]
 
   const renderDesktopContent = () => (
-    <div className="grid grid-cols-[1fr_1fr_380px] gap-6">
-      {/* Column 1: My Referral Link & Your Earnings */}
-      <div className="space-y-6">
-        {/* My Referral Link */}
-        <div className="bg-gradient-to-br from-indigo-900 to-purple-800 rounded-2xl p-6 shadow-xl">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-white">{t('dashboard.myReferralLink')}</h2>
-            <ChevronRight className="h-5 w-5 text-white/60" />
-          </div>
-
-          <div className="bg-white/95 rounded-xl p-6 flex flex-col items-center">
-            {qrCode && (
-              <img src={qrCode} alt="QR Code" className="w-48 h-48 mb-4" />
-            )}
-            <p className="text-sm text-gray-600 text-center mb-4 truncate w-full">
-              smartreferrals.co/r/boat...
-            </p>
-            <Button onClick={copyLink} className="w-full mb-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg h-12 text-sm font-semibold">
-              <Copy className="h-4 w-4 mr-2" />
-              {t('dashboard.copyLink')}
-            </Button>
-            <div className="flex gap-2 w-full">
-              <button className="flex-1 h-12 bg-teal-500 hover:bg-teal-600 text-white rounded-lg flex items-center justify-center">
-                <MessageCircle className="h-5 w-5" />
-              </button>
-              <button className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center">
-                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                </svg>
-              </button>
-              <button className="flex-1 h-12 bg-gray-500 hover:bg-gray-600 text-white rounded-lg flex items-center justify-center" onClick={share}>
-                <Share2 className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
+    <div className="space-y-6">
+      {/* Top Row: Stats Cards */}
+      <div className="grid grid-cols-3 gap-6">
+        {/* Total Earnings */}
+        <div className="bg-white/95 backdrop-blur-sm rounded-xl p-5 shadow-lg">
+          <p className="text-xs text-gray-600 mb-1">{t('dashboard.totalEarnings')}:</p>
+          <p className="text-3xl font-bold text-gray-900 mb-3">
+            {formatCurrency(data?.stats.totalEarnings || 0)}
+          </p>
+          <Button size="sm" className="w-full bg-indigo-500 hover:bg-indigo-600 rounded-lg h-10 text-sm">
+            {t('dashboard.withdraw')}
+          </Button>
         </div>
 
-        {/* Your Earnings Chart */}
-        <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-lg font-bold text-gray-800 mb-1">{t('dashboard.yourEarnings')}</h2>
-              <p className="text-3xl font-bold text-gray-900">{formatCurrency(1250)}</p>
-              <p className="text-sm text-gray-600">15 Month</p>
-            </div>
-            <button className="text-sm text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
-              This Referal <ChevronRight className="h-4 w-4" />
-            </button>
+        {/* New Customers */}
+        <div className="bg-white/95 backdrop-blur-sm rounded-xl p-5 shadow-lg">
+          <p className="text-xs text-gray-600 mb-1">{t('dashboard.newCustomers')}:</p>
+          <div className="flex items-baseline gap-2 mb-2">
+            <p className="text-3xl font-bold text-gray-900">
+              {data?.stats.newCustomersThisMonth || 0}
+            </p>
+            <p className="text-xs text-gray-500">{t('dashboard.thisMonth')}</p>
           </div>
-
-          {/* Chart */}
-          <div className="h-48 mb-6">
+          {/* Mini chart */}
+          <div className="h-16 mt-2">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <XAxis
-                  dataKey="date"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: '#6b7280', fontSize: 12 }}
-                />
-                <Bar dataKey="amount" fill="url(#earningsGradient)" radius={[8, 8, 0, 0]} />
+              <BarChart data={chartData.slice(0, 4)}>
+                <Bar dataKey="amount" fill="url(#miniGradient)" radius={[4, 4, 0, 0]} />
                 <defs>
-                  <linearGradient id="earningsGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#818cf8" stopOpacity={1} />
-                    <stop offset="100%" stopColor="#6366f1" stopOpacity={0.8} />
+                  <linearGradient id="miniGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#818cf8" stopOpacity={0.8} />
+                    <stop offset="100%" stopColor="#6366f1" stopOpacity={0.6} />
                   </linearGradient>
                 </defs>
               </BarChart>
             </ResponsiveContainer>
           </div>
+        </div>
 
-          {/* Commission Breakdown */}
-          <div>
-            <h3 className="text-sm font-semibold text-gray-800 mb-3">
-              {t('dashboard.commissionBreakdown')}
-            </h3>
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-indigo-500"></div>
-                <span className="text-sm font-semibold text-gray-900">$1,100</span>
-                <span className="text-sm text-gray-600">{t('dashboard.referrals')}</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-purple-400"></div>
-                <span className="text-sm font-semibold text-gray-900">$150</span>
-                <span className="text-sm text-gray-600">{t('dashboard.bonuses')}</span>
-              </div>
-            </div>
-          </div>
+        {/* Pending Payouts */}
+        <div className="bg-white/95 backdrop-blur-sm rounded-xl p-5 shadow-lg">
+          <p className="text-xs text-gray-600 mb-1">{t('dashboard.pendingPayouts')}:</p>
+          <p className="text-3xl font-bold text-gray-900 mb-3">$300</p>
+          <Button size="sm" className="w-full bg-indigo-500 hover:bg-indigo-600 rounded-lg h-10 text-sm">
+            {t('dashboard.review')} &gt;
+          </Button>
         </div>
       </div>
 
-      {/* Column 2: Top Businesses & Write a Review */}
-      <div className="space-y-6">
-        {/* Top Businesses This Week */}
-        <div className="bg-gradient-to-br from-indigo-900 to-purple-800 rounded-2xl p-6 shadow-xl">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-white">{t('dashboard.topBusinessesWeek')}</h2>
-            <ChevronRight className="h-5 w-5 text-white/60" />
-          </div>
-
-          <div className="space-y-4">
-            {/* Marina Boat Tours */}
-            <div
-              className="relative overflow-hidden rounded-xl h-56"
-              style={{
-                backgroundImage: 'url(/dashboard/assets/marina-boat-tours-background.png)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-              <div className="relative h-full p-6 flex flex-col justify-between">
-                <div className="flex-1"></div>
-                <div>
-                  <h3 className="text-white font-bold text-xl mb-2 leading-tight">Marina Boat Tours</h3>
-                  <p className="text-white/95 text-base mb-4">$100 per new customer</p>
-                  <Button size="sm" className="w-auto bg-blue-400 hover:bg-blue-500 rounded-lg h-10 px-6 text-sm font-semibold">
-                    {t('dashboard.copyLink')}
-                  </Button>
-                </div>
-              </div>
+      {/* Main Grid: 3 Columns */}
+      <div className="grid grid-cols-[1fr_1.2fr_1fr] gap-6">
+        {/* Column 1: My Referral Link & Your Earnings */}
+        <div className="space-y-6">
+          {/* My Referral Link */}
+          <div className="bg-gradient-to-br from-indigo-900 to-purple-800 rounded-2xl p-5 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-bold text-white">{t('dashboard.myReferralLink')}</h2>
+              <ChevronRight className="h-4 w-4 text-white/60" />
             </div>
 
-            {/* Bella Spa & Wellness */}
-            <div
-              className="relative overflow-hidden rounded-xl h-56"
-              style={{
-                backgroundImage: 'url(/dashboard/assets/bella-spa-candles-background.png)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-t from-purple-900/80 via-purple-900/30 to-transparent"></div>
-              <div className="relative h-full p-6 flex flex-col justify-between">
-                <div className="flex-1"></div>
-                <div>
-                  <h3 className="text-white font-bold text-xl mb-2 leading-tight">Bella Spa & Wellness</h3>
-                  <p className="text-yellow-300 text-base mb-4">Get 20% Cash Back</p>
-                  <Button size="sm" className="w-auto bg-blue-400 hover:bg-blue-500 rounded-lg h-10 px-6 text-sm font-semibold">
-                    Whatsapp
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Write a Review & Earn */}
-        <div
-          className="relative overflow-hidden rounded-2xl shadow-xl"
-          style={{
-            backgroundImage: 'url(/dashboard/assets/bella-spa-review-background.jpg)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-b from-indigo-900/85 to-purple-800/85"></div>
-          <div className="relative p-6">
-            <h2 className="text-lg font-bold text-white mb-4">{t('dashboard.writeReviewEarn')}</h2>
-
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                <Building2 className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-white font-semibold text-base">Bella Spa & Wellness</span>
-            </div>
-
-            <div className="flex gap-1 mb-4">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star key={star} className="h-6 w-6 fill-yellow-400 text-yellow-400" />
-              ))}
-            </div>
-
-            <p className="text-white/95 text-sm mb-4">
-              {t('dashboard.shareExperience')}
-            </p>
-
-            <textarea
-              className="w-full h-20 px-4 py-3 rounded-lg bg-white/95 text-gray-800 placeholder:text-gray-500 border-0 focus:ring-2 focus:ring-white/50 mb-4 text-sm resize-none"
-              placeholder={t('dashboard.writeReview')}
-            ></textarea>
-
-            <Button className="w-full bg-indigo-500 hover:bg-indigo-600 rounded-lg h-12 text-sm font-semibold">
-              {t('dashboard.submitReview')}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Column 3: Stats & Recent Conversions */}
-      <div className="space-y-6">
-        {/* Stats Cards */}
-        <div className="space-y-4">
-          {/* Total Earnings */}
-          <div className="bg-white/95 backdrop-blur-sm rounded-xl p-5 shadow-lg">
-            <p className="text-xs text-gray-600 mb-1">{t('dashboard.totalEarnings')}</p>
-            <p className="text-3xl font-bold text-gray-900 mb-3">
-              {formatCurrency(data?.stats.totalEarnings || 0)}
-            </p>
-            <Button size="sm" className="w-full bg-indigo-500 hover:bg-indigo-600 rounded-lg h-10 text-sm">
-              {t('dashboard.withdraw')}
-            </Button>
-          </div>
-
-          {/* New Customers */}
-          <div className="bg-white/95 backdrop-blur-sm rounded-xl p-5 shadow-lg">
-            <p className="text-xs text-gray-600 mb-1">{t('dashboard.newCustomers')}</p>
-            <div className="flex items-baseline gap-2 mb-2">
-              <p className="text-3xl font-bold text-gray-900">
-                {data?.stats.newCustomersThisMonth || 0}
+            <div className="bg-white/95 rounded-xl p-4 flex flex-col items-center">
+              {qrCode && (
+                <img src={qrCode} alt="QR Code" className="w-40 h-40 mb-3" />
+              )}
+              <p className="text-xs text-gray-600 text-center mb-3 truncate w-full">
+                smartreferrals.io//boat...
               </p>
-              <p className="text-xs text-gray-500">{t('dashboard.thisMonth')}</p>
+              <Button onClick={copyLink} className="w-full mb-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg h-11 text-sm font-semibold">
+                <Copy className="h-4 w-4 mr-2" />
+                {t('dashboard.copyLink')}
+              </Button>
             </div>
-            {/* Mini chart */}
-            <div className="h-16 mt-2">
+          </div>
+
+          {/* Your Earnings Chart */}
+          <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-5 shadow-xl">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h2 className="text-base font-bold text-gray-800 mb-1">{t('dashboard.yourEarnings')}:</h2>
+                <p className="text-3xl font-bold text-gray-900">{formatCurrency(1250)}</p>
+              </div>
+              <button className="text-xs text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
+                {t('dashboard.thisMonth')} &gt;
+              </button>
+            </div>
+            <p className="text-xs text-gray-600 mb-4">{t('dashboard.thisMonth')}</p>
+
+            {/* Chart */}
+            <div className="h-40 mb-4">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData.slice(0, 4)}>
-                  <Bar dataKey="amount" fill="url(#miniGradient)" radius={[4, 4, 0, 0]} />
+                <BarChart data={chartData}>
+                  <XAxis
+                    dataKey="date"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#6b7280', fontSize: 10 }}
+                  />
+                  <Bar dataKey="amount" fill="url(#earningsGradient)" radius={[6, 6, 0, 0]} />
                   <defs>
-                    <linearGradient id="miniGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#818cf8" stopOpacity={0.8} />
-                      <stop offset="100%" stopColor="#6366f1" stopOpacity={0.6} />
+                    <linearGradient id="earningsGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#818cf8" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#6366f1" stopOpacity={0.8} />
                     </linearGradient>
                   </defs>
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          </div>
 
-          {/* Pending Payouts */}
-          <div className="bg-white/95 backdrop-blur-sm rounded-xl p-5 shadow-lg">
-            <p className="text-xs text-gray-600 mb-1">{t('dashboard.pendingPayouts')}</p>
-            <p className="text-3xl font-bold text-gray-900 mb-3">$300</p>
-            <Button size="sm" className="w-full bg-indigo-500 hover:bg-indigo-600 rounded-lg h-10 text-sm">
-              {t('dashboard.review')}
-            </Button>
+            {/* Commission Breakdown */}
+            <div>
+              <h3 className="text-xs font-semibold text-gray-800 mb-2">
+                {t('dashboard.commissionBreakdown')}
+              </h3>
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-indigo-500"></div>
+                  <span className="text-xs font-semibold text-gray-900">$1,100</span>
+                  <span className="text-xs text-gray-600">{t('dashboard.referrals')}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-purple-400"></div>
+                  <span className="text-xs font-semibold text-gray-900">$150</span>
+                  <span className="text-xs text-gray-600">{t('dashboard.bonuses')}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Recent Conversions */}
-        <div className="bg-gradient-to-br from-indigo-900 to-purple-800 rounded-2xl p-5 shadow-xl">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-bold text-white">{t('dashboard.recentConversions')}</h2>
-            <ChevronRight className="h-5 w-5 text-white/60" />
+        {/* Column 2: Top Businesses & Write a Review */}
+        <div className="space-y-6">
+          {/* Top Businesses This Week */}
+          <div className="bg-gradient-to-br from-indigo-900 to-purple-800 rounded-2xl p-5 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-bold text-white">{t('dashboard.topBusinessesWeek')}</h2>
+              <div className="flex items-center gap-2">
+                <button className="text-white/60 hover:text-white">
+                  <ChevronRight className="h-4 w-4 rotate-180" />
+                </button>
+                <button className="text-white/60 hover:text-white">
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              {/* Marina Boat Tours */}
+              <div
+                className="relative overflow-hidden rounded-xl h-52"
+                style={{
+                  backgroundImage: 'url(/dashboard/assets/marina-boat-tours-background.png)',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                <div className="relative h-full p-4 flex flex-col justify-between">
+                  <div className="flex-1"></div>
+                  <div>
+                    <h3 className="text-white font-bold text-base mb-1.5 leading-tight">Marina Boat Tours</h3>
+                    <p className="text-white/95 text-xs mb-3">$100 per new customer</p>
+                    <Button size="sm" className="w-full bg-blue-400 hover:bg-blue-500 rounded-lg h-9 text-xs font-semibold">
+                      {t('dashboard.copyLink')}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bella Spa & Wellness */}
+              <div
+                className="relative overflow-hidden rounded-xl h-52"
+                style={{
+                  backgroundImage: 'url(/dashboard/assets/bella-spa-candles-background.png)',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-t from-purple-900/80 via-purple-900/30 to-transparent"></div>
+                <div className="relative h-full p-4 flex flex-col justify-between">
+                  <div className="flex-1"></div>
+                  <div>
+                    <h3 className="text-white font-bold text-base mb-1.5 leading-tight">Bella Spa & Wellness</h3>
+                    <p className="text-yellow-300 text-xs mb-3">Get 20% Cash Back</p>
+                    <Button size="sm" className="w-full bg-blue-400 hover:bg-blue-500 rounded-lg h-9 text-xs font-semibold">
+                      Whatsapp
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-3">
-            {recentConversions.map((conversion) => (
-              <div key={conversion.id} className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                <div className="w-10 h-10 rounded-full bg-white/20 overflow-hidden flex-shrink-0">
-                  <img
-                    src={`https://ui-avatars.com/api/?name=${conversion.name}&background=random`}
-                    alt={conversion.name}
-                    className="w-full h-full object-cover"
-                  />
+          {/* Write a Review & Earn */}
+          <div
+            className="relative overflow-hidden rounded-2xl shadow-xl"
+            style={{
+              backgroundImage: 'url(/dashboard/assets/bella-spa-review-background.jpg)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-b from-indigo-900/85 to-purple-800/85"></div>
+            <div className="relative p-5">
+              <h2 className="text-base font-bold text-white mb-3">{t('dashboard.writeReviewEarn')}</h2>
+
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                  <Building2 className="h-5 w-5 text-white" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-white font-semibold text-sm">{conversion.name}</p>
-                  <p className="text-white/70 text-xs">{conversion.type}</p>
-                </div>
-                {conversion.verified && (
-                  <Badge className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
-                    {t('dashboard.verified')}
-                  </Badge>
-                )}
+                <span className="text-white font-semibold text-sm">Bella Spa & Wellness</span>
               </div>
-            ))}
+
+              <div className="flex gap-1 mb-3">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star key={star} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                ))}
+              </div>
+
+              <p className="text-white/95 text-xs mb-3">
+                {t('dashboard.shareExperience')}
+              </p>
+
+              <textarea
+                className="w-full h-16 px-3 py-2 rounded-lg bg-white/95 text-gray-800 placeholder:text-gray-500 border-0 focus:ring-2 focus:ring-white/50 mb-3 text-xs resize-none"
+                placeholder={t('dashboard.writeReview')}
+              ></textarea>
+
+              <Button className="w-full bg-indigo-500 hover:bg-indigo-600 rounded-lg h-10 text-xs font-semibold">
+                {t('dashboard.submitReview')}
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Column 3: Recent Conversions */}
+        <div>
+          {/* Recent Conversions */}
+          <div className="bg-gradient-to-br from-indigo-900 to-purple-800 rounded-2xl p-5 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-bold text-white">{t('dashboard.recentConversions')}</h2>
+              <ChevronRight className="h-4 w-4 text-white/60" />
+            </div>
+
+            <div className="space-y-3">
+              {recentConversions.map((conversion) => (
+                <div key={conversion.id} className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <div className="w-10 h-10 rounded-full bg-white/20 overflow-hidden flex-shrink-0">
+                    <img
+                      src={`https://ui-avatars.com/api/?name=${conversion.name}&background=random`}
+                      alt={conversion.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-semibold text-sm">{conversion.name}</p>
+                    <p className="text-white/70 text-xs">{conversion.type}</p>
+                  </div>
+                  {conversion.verified && (
+                    <Badge className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                      {t('dashboard.verified')}
+                    </Badge>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -679,16 +682,19 @@ export default function EnhancedDashboardPage() {
         <div className="relative z-10">
           {/* Top bar with logo and profile */}
           <div className="flex items-center justify-between mb-8">
-            {/* Logo */}
-            <div className="flex items-center gap-3">
+            {/* Logo - tap to share app */}
+            <button
+              onClick={shareApp}
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            >
               <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center p-2">
                 <QrCodeIcon className="w-full h-full text-theme-primary" />
               </div>
-              <div className="flex flex-col">
+              <div className="flex flex-col text-left">
                 <span className="text-white font-bold text-lg leading-tight">SMART AI</span>
                 <span className="text-white font-bold text-lg leading-tight">REFERRALS</span>
               </div>
-            </div>
+            </button>
 
             {/* Profile */}
             <div className="relative">
@@ -716,17 +722,20 @@ export default function EnhancedDashboardPage() {
       <div className="hidden md:flex min-h-screen">
         {/* Desktop Sidebar */}
         <aside className="w-80 bg-gradient-to-b from-indigo-900 via-indigo-900 to-purple-900 flex flex-col">
-          {/* Logo */}
+          {/* Logo - tap to share app */}
           <div className="p-8">
-            <div className="flex items-center gap-3">
+            <button
+              onClick={shareApp}
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            >
               <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center p-2.5">
                 <QrCodeIcon className="w-full h-full text-indigo-900" />
               </div>
-              <div className="flex flex-col">
+              <div className="flex flex-col text-left">
                 <span className="text-white font-bold text-xl leading-tight">SMART AI</span>
                 <span className="text-white font-bold text-xl leading-tight">REFERRALS</span>
               </div>
-            </div>
+            </button>
           </div>
 
           {/* Navigation Menu */}
@@ -800,13 +809,17 @@ export default function EnhancedDashboardPage() {
                 </h1>
                 <p className="text-white/90 text-lg">{t('dashboard.trackReferEarn')}</p>
               </div>
-              <div className="relative">
-                <div className="w-16 h-16 rounded-full border-2 border-white/30 overflow-hidden bg-white/10">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full border-2 border-white/30 overflow-hidden bg-white/10">
                   <img
                     src={user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=6366f1&color=fff`}
                     alt="Profile"
                     className="w-full h-full object-cover"
                   />
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-white font-semibold text-base">Admin</span>
+                  <ChevronRight className="h-5 w-5 text-white/80 rotate-90" />
                 </div>
               </div>
             </div>
@@ -824,6 +837,12 @@ export default function EnhancedDashboardPage() {
 
       {/* Mobile Content */}
       <div className="md:hidden px-0 pb-24">{renderMobileContent()}</div>
+
+      {/* Share App Modal */}
+      <ShareAppModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+      />
     </div>
   )
 }

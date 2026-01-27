@@ -66,6 +66,8 @@ export function BottomNav() {
     }
   }, [lastScrollY])
 
+  const isAdmin = user?.roles.includes('admin')
+
   const navItems = [
     {
       label: t('nav.dashboard'),
@@ -97,19 +99,14 @@ export function BottomNav() {
       icon: Gift,
       roles: ['consumer', 'referrer'],
     },
-    {
-      label: t('nav.admin'),
-      href: '/dashboard/admin',
-      icon: Shield,
-      roles: ['admin'],
-    },
   ]
 
+  // Filter nav items by user roles, take first 3 items to leave room for admin + language
   const filteredNavItems = navItems.filter((item) =>
     item.roles.some((role) => user?.roles.includes(role as never))
-  ).slice(0, 4) // Show 4 main navigation items
+  ).slice(0, isAdmin ? 3 : 4)
 
-  const isSettingsActive = pathname === '/dashboard/settings'
+  const isAdminActive = pathname === '/dashboard/admin' || pathname.startsWith('/dashboard/admin/')
 
   return (
     <nav
@@ -136,6 +133,20 @@ export function BottomNav() {
             </Link>
           )
         })}
+
+        {/* Admin Link - only for admin users */}
+        {isAdmin && (
+          <Link
+            href="/dashboard/admin"
+            className={cn(
+              'flex flex-col items-center justify-center gap-1 transition-colors',
+              isAdminActive ? 'text-white' : 'text-white/60 hover:text-white'
+            )}
+          >
+            <Shield className="h-5 w-5" />
+            <span className="text-[9px] font-medium">{t('nav.admin')}</span>
+          </Link>
+        )}
 
         {/* Language Switcher */}
         <DropdownMenu>
