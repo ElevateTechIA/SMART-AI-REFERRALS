@@ -1,10 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils'
+import { useAuth } from '@/lib/auth/context'
+import { useToast } from '@/components/ui/use-toast'
+import { apiGet } from '@/lib/api-client'
 import {
   DollarSign,
   TrendingUp,
@@ -12,6 +15,7 @@ import {
   Download,
   ChevronLeft,
   Clock,
+  Loader2,
 } from 'lucide-react'
 
 interface Transaction {
@@ -22,66 +26,67 @@ interface Transaction {
   amount: number
   status: 'completed' | 'pending' | 'processing'
   type: 'referral' | 'bonus'
+  earningType?: string
+  earningStatus?: string
+  visitId?: string | null
+  createdAt?: string | null
+}
+
+interface EarningsStats {
+  totalEarnings: number
+  pendingEarnings: number
+  completedEarnings: number
+  thisMonth: number
+}
+
+interface EarningsResponse {
+  success: boolean
+  stats: EarningsStats
+  transactions: Transaction[]
 }
 
 export default function EarningsPage() {
+  const { user } = useAuth()
+  const { toast } = useToast()
   const [selectedPeriod, setSelectedPeriod] = useState('all')
+  const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState<EarningsStats>({
+    totalEarnings: 0,
+    pendingEarnings: 0,
+    completedEarnings: 0,
+    thisMonth: 0,
+  })
+  const [transactions, setTransactions] = useState<Transaction[]>([])
 
-  // Mock data
-  const stats = {
-    totalEarnings: 1250,
-    pendingEarnings: 300,
-    completedEarnings: 950,
-    thisMonth: 450,
-  }
+  useEffect(() => {
+    const fetchEarnings = async () => {
+      if (!user) return
 
-  const transactions: Transaction[] = [
-    {
-      id: '1',
-      date: '2024-03-17',
-      business: 'Marina Boat Tours',
-      customer: 'Alex M.',
-      amount: 100,
-      status: 'completed',
-      type: 'referral',
-    },
-    {
-      id: '2',
-      date: '2024-03-15',
-      business: 'Bella Spa & Wellness',
-      customer: 'Sarah T.',
-      amount: 50,
-      status: 'completed',
-      type: 'referral',
-    },
-    {
-      id: '3',
-      date: '2024-03-12',
-      business: 'Marina Boat Tours',
-      customer: 'David S.',
-      amount: 100,
-      status: 'pending',
-      type: 'referral',
-    },
-    {
-      id: '4',
-      date: '2024-03-10',
-      business: 'Bonus Reward',
-      customer: 'Monthly Bonus',
-      amount: 50,
-      status: 'completed',
-      type: 'bonus',
-    },
-    {
-      id: '5',
-      date: '2024-03-08',
-      business: 'Bella Spa & Wellness',
-      customer: 'Emma L.',
-      amount: 50,
-      status: 'processing',
-      type: 'referral',
-    },
-  ]
+      try {
+        setLoading(true)
+        const result = await apiGet<EarningsResponse>(`/api/earnings?period=${selectedPeriod}`)
+
+        if (!result.ok) {
+          throw new Error(result.error || 'Failed to load earnings')
+        }
+
+        const data = result.data!
+        setStats(data.stats)
+        setTransactions(data.transactions)
+      } catch (error) {
+        console.error('Error fetching earnings:', error)
+        toast({
+          title: 'Error',
+          description: 'Failed to load earnings data',
+          variant: 'destructive',
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchEarnings()
+  }, [user, selectedPeriod, toast])
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -91,6 +96,14 @@ export default function EarningsPage() {
     }
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending
     return <Badge className={config.className}>{config.label}</Badge>
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
   }
 
   return (
@@ -178,7 +191,7 @@ export default function EarningsPage() {
                 >
                   <option value="all">All Time</option>
                   <option value="month">This Month</option>
-                  <option value="week">This Week</option>
+                  <option value="year">This Year</option>
                 </select>
                 <Button className="bg-indigo-600 hover:bg-indigo-700 rounded-lg">
                   <Download className="h-4 w-4 mr-2" />
