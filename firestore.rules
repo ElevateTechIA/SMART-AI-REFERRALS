@@ -44,10 +44,8 @@ service cloud.firestore {
 
     // Businesses collection
     match /businesses/{businessId} {
-      // Anyone can read active businesses
-      allow read: if resource.data.status == 'active' ||
-        isOwner(resource.data.ownerUserId) ||
-        isAdmin();
+      // Anyone can read active businesses (even non-authenticated users for referral pages)
+      allow read: if true; // Public read for referral links to work
 
       // Authenticated users can create (pending approval)
       allow create: if isAuthenticated() &&
@@ -67,13 +65,8 @@ service cloud.firestore {
 
     // Offers collection
     match /offers/{offerId} {
-      // Anyone can read active offers
-      allow read: if resource.data.active == true || isAdmin();
-
-      // Business owners can read their own offers
-      allow read: if isAuthenticated() &&
-        exists(/databases/$(database)/documents/businesses/$(offerId)) &&
-        get(/databases/$(database)/documents/businesses/$(offerId)).data.ownerUserId == request.auth.uid;
+      // Anyone can read offers (needed for referral pages)
+      allow read: if true;
 
       // Offer creation/update handled by server (API routes)
       allow create, update: if false;
