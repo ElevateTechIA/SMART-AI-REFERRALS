@@ -465,7 +465,6 @@ function ReferralPageContent() {
                   </Link>
                 </p>
               </div>
-              </form>
             ) : (
               <div className="space-y-3">
                 <Button
