@@ -10,6 +10,7 @@ import { useToast } from '@/components/ui/use-toast'
 import { apiGet } from '@/lib/api-client'
 import type { Business, Visit, Earning } from '@/lib/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
+import { PendingVisits } from '@/components/dashboard/pending-visits'
 import {
   Gift,
   MapPin,
@@ -156,6 +157,9 @@ export default function VisitsPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Pending Visits */}
+      <PendingVisits />
 
       {/* Become a Referrer CTA */}
       <Card className="bg-primary/5 border-primary">
