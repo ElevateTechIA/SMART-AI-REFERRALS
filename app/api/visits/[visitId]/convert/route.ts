@@ -71,6 +71,27 @@ export async function POST(
       )
     }
 
+    // Check-in requirement for new visits with QR tokens
+    if (visit.checkInToken && visit.status !== 'CHECKED_IN') {
+      return NextResponse.json(
+        {
+          error:
+            visit.status === 'CREATED'
+              ? 'El cliente debe hacer check-in primero. Por favor escanea su código QR.'
+              : 'La visita no puede ser convertida desde el estado actual',
+        },
+        { status: 400 }
+      )
+    }
+
+    // Legacy visits without check-in token can convert from CREATED or CHECKED_IN
+    if (!visit.checkInToken && visit.status !== 'CREATED' && visit.status !== 'CHECKED_IN') {
+      return NextResponse.json(
+        { error: 'Visit has already been converted or rejected' },
+        { status: 400 }
+      )
+    }
+
     // Check if already converted
     if (visit.status === 'CONVERTED') {
       return NextResponse.json(

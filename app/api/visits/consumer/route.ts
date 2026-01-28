@@ -42,6 +42,10 @@ export async function GET(request: NextRequest) {
         attributionType: data.attributionType,
         createdAt: data.createdAt?.toDate() || null,
         updatedAt: data.updatedAt?.toDate() || null,
+        checkInToken: data.checkInToken || null,
+        checkInTokenExpiry: data.checkInTokenExpiry?.toDate() || null,
+        checkInTokenUsed: data.checkInTokenUsed || false,
+        checkedInAt: data.checkedInAt?.toDate() || null,
         business: businessData
           ? {
               id: businessDoc.id,

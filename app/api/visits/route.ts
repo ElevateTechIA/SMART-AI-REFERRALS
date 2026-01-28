@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAdminDb, verifyAuth } from '@/lib/firebase/admin'
 import { FieldValue } from 'firebase-admin/firestore'
 import type { Visit, AttributionType } from '@/lib/types'
+import { generateCheckInToken } from '@/lib/qr-checkin'
 
 export const dynamic = 'force-dynamic'
 
@@ -60,6 +61,10 @@ export async function POST(request: NextRequest) {
     // Determine attribution type
     const attributionType: AttributionType = referrerUserId ? 'REFERRER' : 'PLATFORM'
 
+    // Generate check-in token (storing plain token, protected by Firestore rules)
+    const plainToken = generateCheckInToken()
+    const tokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+
     // Use transaction for atomic fraud check and visit creation
     const result = await getAdminDb().runTransaction(async (transaction) => {
       // Check if consumer already has a visit to this business (anti-fraud)
@@ -84,6 +89,9 @@ export async function POST(request: NextRequest) {
         isNewCustomer,
         userAgent,
         ipAddress,
+        checkInToken: plainToken, // Store plain token (protected by Firestore rules)
+        checkInTokenExpiry: tokenExpiry,
+        checkInTokenUsed: false,
         createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
       }
@@ -125,6 +133,8 @@ export async function POST(request: NextRequest) {
         attributionType,
         status: 'CREATED',
         isNewCustomer,
+        checkInToken: plainToken, // Plain token sent only once!
+        checkInTokenExpiry: tokenExpiry,
       }
     })
 

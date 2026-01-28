@@ -73,6 +73,12 @@ export interface Visit {
   createdAt: Date
   updatedAt: Date
   convertedAt?: Date
+  // QR Check-in fields
+  checkInToken?: string // Hashed token (SHA-256) for validation
+  checkInTokenExpiry?: Date // Expires 7 days from creation
+  checkInTokenUsed?: boolean // Prevents token reuse (single-use)
+  checkedInAt?: Date // Timestamp when business scanned QR
+  checkInByUserId?: string // Business user who performed check-in (audit trail)
 }
 
 // Earning Type

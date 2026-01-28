@@ -10,7 +10,6 @@ import { useToast } from '@/components/ui/use-toast'
 import { apiGet } from '@/lib/api-client'
 import type { Business, Visit, Earning } from '@/lib/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
-import { PendingVisits } from '@/components/dashboard/pending-visits'
 import {
   Gift,
   MapPin,
@@ -20,7 +19,10 @@ import {
   Share2,
   ArrowRight,
   Building2,
+  QrCode,
 } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { generateCheckInQRImage, getDaysRemaining } from '@/lib/qr-checkin'
 
 interface VisitsApiResponse {
   visits: (Visit & { business?: Business })[]
@@ -33,6 +35,7 @@ export default function VisitsPage() {
   const [visits, setVisits] = useState<(Visit & { business?: Business })[]>([])
   const [rewards, setRewards] = useState<Earning[]>([])
   const [loading, setLoading] = useState(true)
+  const [qrCodes, setQrCodes] = useState<Map<string, string>>(new Map())
 
   useEffect(() => {
     const fetchData = async () => {
@@ -76,6 +79,36 @@ export default function VisitsPage() {
 
     fetchData()
   }, [user, toast])
+
+  // Generate QR codes for CREATED visits with check-in tokens
+  useEffect(() => {
+    const generateQRs = async () => {
+      const createdVisits = visits.filter(
+        (v) => v.status === 'CREATED' && v.checkInToken
+      )
+      const qrMap = new Map<string, string>()
+
+      for (const visit of createdVisits) {
+        try {
+          // checkInToken here is the plain token (not hashed)
+          // that was received when the visit was created
+          const qrImage = await generateCheckInQRImage(
+            visit.id,
+            visit.checkInToken!
+          )
+          qrMap.set(visit.id, qrImage)
+        } catch (err) {
+          console.error('QR generation error:', err)
+        }
+      }
+
+      setQrCodes(qrMap)
+    }
+
+    if (visits.length > 0) {
+      generateQRs()
+    }
+  }, [visits])
 
   if (loading) {
     return (
@@ -158,8 +191,116 @@ export default function VisitsPage() {
         </Card>
       </div>
 
-      {/* Pending Visits */}
-      <PendingVisits />
+      {/* Pending Visits - Now showing CREATED visits from Firestore */}
+      {stats.pending > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight">Visitas Pendientes</h2>
+              <p className="text-muted-foreground">
+                Muestra estos códigos QR en el negocio para hacer check-in
+              </p>
+            </div>
+            <Badge variant="secondary" className="text-sm">
+              {stats.pending} pendientes
+            </Badge>
+          </div>
+
+          {visits
+            .filter((v) => v.status === 'CREATED' || v.status === 'CHECKED_IN')
+            .map((visit) => {
+              const qrImage = qrCodes.get(visit.id)
+              const daysRemaining = visit.checkInTokenExpiry
+                ? getDaysRemaining(visit.checkInTokenExpiry)
+                : 0
+
+              return (
+                <Card key={visit.id} className="border-primary bg-primary/5">
+                  <CardHeader>
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-start gap-4">
+                        <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <Building2 className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-xl">
+                            {visit.business?.name || 'Unknown Business'}
+                          </CardTitle>
+                          <CardDescription className="mt-1">
+                            {visit.business?.category}
+                          </CardDescription>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Creada el {formatDate(visit.createdAt)}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge
+                        variant={visit.status === 'CHECKED_IN' ? 'default' : 'secondary'}
+                      >
+                        {visit.status === 'CHECKED_IN' ? 'Check-In Hecho' : 'Pendiente'}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+
+                  {visit.status === 'CREATED' && qrImage && visit.checkInToken && (
+                    <CardContent className="space-y-4">
+                      <div className="flex flex-col items-center gap-4">
+                        <div className="text-center">
+                          <p className="text-sm font-semibold mb-2">
+                            Código QR de Check-In
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Muestra este código al personal del negocio
+                          </p>
+                        </div>
+
+                        <div className="flex justify-center">
+                          <img
+                            src={qrImage}
+                            alt="Check-in QR Code"
+                            className="rounded-lg border-2 border-primary w-64 h-64"
+                          />
+                        </div>
+
+                        <Alert className="w-full">
+                          <Clock className="h-4 w-4" />
+                          <AlertDescription>
+                            El QR expira en {daysRemaining}{' '}
+                            {daysRemaining === 1 ? 'día' : 'días'}
+                          </AlertDescription>
+                        </Alert>
+
+                        <div className="bg-blue-50 rounded-lg p-4 w-full">
+                          <p className="text-sm font-semibold mb-2 text-blue-900">
+                            Instrucciones:
+                          </p>
+                          <div className="text-xs text-blue-900 space-y-1">
+                            <p>1. Muestra este QR al personal del negocio</p>
+                            <p>2. Ellos lo escanearán para confirmar tu llegada</p>
+                            <p>3. Después de tu compra, marcarán la conversión</p>
+                            <p>4. ¡Tus recompensas serán procesadas!</p>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  )}
+
+                  {visit.status === 'CHECKED_IN' && (
+                    <CardContent>
+                      <Alert className="border-green-500 bg-green-50">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <AlertDescription className="text-green-900">
+                          ¡Check-in completado! El negocio confirmará tu compra para
+                          procesar las recompensas.
+                        </AlertDescription>
+                      </Alert>
+                    </CardContent>
+                  )}
+                </Card>
+              )
+            })}
+        </div>
+      )}
 
       {/* Become a Referrer CTA */}
       <Card className="bg-primary/5 border-primary">
@@ -199,47 +340,52 @@ export default function VisitsPage() {
           ) : (
             <div className="divide-y">
               {visits.map((visit) => (
-                <div
-                  key={visit.id}
-                  className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                      <Building2 className="h-6 w-6 text-muted-foreground" />
+                <div key={visit.id} className="py-4">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-start gap-4">
+                      <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                        <Building2 className="h-6 w-6 text-muted-foreground" />
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="font-semibold break-words">
+                          {visit.business?.name || 'Unknown Business'}
+                        </h4>
+                        <p className="text-sm text-muted-foreground break-words">
+                          {visit.business?.category}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Visited {formatDate(visit.createdAt)}
+                        </p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <h4 className="font-semibold break-words">
-                        {visit.business?.name || 'Unknown Business'}
-                      </h4>
-                      <p className="text-sm text-muted-foreground break-words">
-                        {visit.business?.category}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Visited {formatDate(visit.createdAt)}
-                      </p>
-                    </div>
-                  </div>
 
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <Badge
-                        variant={
-                          visit.status === 'CONVERTED'
-                            ? 'success'
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <Badge
+                          variant={
+                            visit.status === 'CONVERTED'
+                              ? 'success'
+                              : visit.status === 'CHECKED_IN'
+                              ? 'default'
+                              : visit.status === 'REJECTED'
+                              ? 'destructive'
+                              : 'secondary'
+                          }
+                        >
+                          {visit.status === 'CONVERTED'
+                            ? 'Confirmed'
+                            : visit.status === 'CHECKED_IN'
+                            ? 'Checked In'
                             : visit.status === 'REJECTED'
-                            ? 'destructive'
-                            : 'secondary'
-                        }
-                      >
-                        {visit.status === 'CONVERTED'
-                          ? 'Confirmed'
-                          : visit.status === 'REJECTED'
-                          ? 'Rejected'
-                          : 'Pending'}
-                      </Badge>
-                      {visit.attributionType === 'REFERRER' && (
-                        <p className="text-xs text-muted-foreground mt-1">Via referral</p>
-                      )}
+                            ? 'Rejected'
+                            : 'Pending'}
+                        </Badge>
+                        {visit.attributionType === 'REFERRER' && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Via referral
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

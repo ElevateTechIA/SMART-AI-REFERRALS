@@ -26,7 +26,9 @@ import {
   Plus,
   Copy,
   ExternalLink,
+  Camera,
 } from 'lucide-react'
+import { QRScanner } from '@/components/business/qr-scanner'
 
 export default function BusinessDashboardPage() {
   const { user } = useAuth()
@@ -131,6 +133,49 @@ export default function BusinessDashboardPage() {
     fetchBusinessData()
   }, [user, toast])
 
+  const handleCheckIn = async (scanResult: { visitId: string; token: string }) => {
+    try {
+      const result = await apiPost<{ success: boolean; error?: string }>(
+        `/api/visits/${scanResult.visitId}/check-in`,
+        { token: scanResult.token }
+      )
+
+      if (!result.ok) {
+        throw new Error(result.error || 'Check-in failed')
+      }
+
+      // Update local state - refetch data to get latest
+      if (user && business) {
+        const visitsQuery = query(
+          collection(db, 'visits'),
+          where('businessId', '==', business.id)
+        )
+        const visitsSnapshot = await getDocs(visitsQuery)
+        const fetchedVisits: Visit[] = []
+        visitsSnapshot.forEach((doc) => {
+          const data = doc.data()
+          fetchedVisits.push({
+            id: doc.id,
+            ...data,
+            createdAt: data.createdAt?.toDate(),
+            updatedAt: data.updatedAt?.toDate(),
+            checkedInAt: data.checkedInAt?.toDate(),
+          } as Visit)
+        })
+        fetchedVisits.sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0))
+        setVisits(fetchedVisits)
+      }
+
+      toast({
+        title: 'Check-In Exitoso',
+        description: 'Cliente verificado exitosamente.',
+      })
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Check-in failed'
+      throw new Error(errorMessage)
+    }
+  }
+
   const handleConfirmConversion = async (visitId: string) => {
     if (!user || !business) return
 
@@ -208,7 +253,8 @@ export default function BusinessDashboardPage() {
   const stats = {
     totalVisits: visits.length,
     conversions: visits.filter((v) => v.status === 'CONVERTED').length,
-    pending: visits.filter((v) => v.status === 'CREATED' || v.status === 'CHECKED_IN').length,
+    pending: visits.filter((v) => v.status === 'CREATED').length,
+    checkedIn: visits.filter((v) => v.status === 'CHECKED_IN').length,
     totalOwed: charges.filter((c) => c.status === 'OWED').reduce((sum, c) => sum + c.amount, 0),
     totalPaid: charges.filter((c) => c.status === 'PAID').reduce((sum, c) => sum + c.amount, 0),
   }
@@ -253,7 +299,7 @@ export default function BusinessDashboardPage() {
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalVisits}</div>
             <p className="text-xs text-muted-foreground">
-              {stats.pending} pending confirmation
+              {stats.pending} pending check-in
             </p>
           </CardContent>
         </Card>
@@ -400,20 +446,40 @@ export default function BusinessDashboardPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="pending">
-            <TabsList>
+          <Tabs defaultValue="scanner">
+            <TabsList className="grid w-full grid-cols-5">
+              <TabsTrigger value="scanner">
+                <Camera className="h-4 w-4 mr-2" />
+                Scanner
+              </TabsTrigger>
               <TabsTrigger value="pending">
-                Pending ({stats.pending})
+                Pendientes ({stats.pending})
+              </TabsTrigger>
+              <TabsTrigger value="checkedin">
+                Check-In ({stats.checkedIn})
               </TabsTrigger>
               <TabsTrigger value="converted">
-                Converted ({stats.conversions})
+                Convertidos ({stats.conversions})
               </TabsTrigger>
-              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="all">Todos</TabsTrigger>
             </TabsList>
+
+            <TabsContent value="scanner" className="mt-4">
+              <QRScanner onScanSuccess={handleCheckIn} />
+            </TabsContent>
 
             <TabsContent value="pending" className="mt-4">
               <VisitsList
-                visits={visits.filter((v) => v.status === 'CREATED' || v.status === 'CHECKED_IN')}
+                visits={visits.filter((v) => v.status === 'CREATED')}
+                onConfirm={handleConfirmConversion}
+                converting={converting}
+                showActions={false}
+              />
+            </TabsContent>
+
+            <TabsContent value="checkedin" className="mt-4">
+              <VisitsList
+                visits={visits.filter((v) => v.status === 'CHECKED_IN')}
                 onConfirm={handleConfirmConversion}
                 converting={converting}
                 showActions

@@ -15,7 +15,6 @@ import { doc, getDoc } from 'firebase/firestore'
 import { apiPost } from '@/lib/api-client'
 import type { Business, Offer } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
-import { saveVisitIntent, removeVisitIntent } from '@/lib/visit-intents'
 import {
   MapPin,
   Phone,
@@ -99,19 +98,18 @@ function ReferralPageContent() {
     fetchBusinessAndOffer()
   }, [businessId, toast])
 
-  // Save visit intent when business is loaded (for later retrieval)
+  // Auto-create visit if user is already logged in when landing on referral page
   useEffect(() => {
-    if (business && user) {
-      // Save to localStorage so user can come back later
-      saveVisitIntent({
-        businessId: business.id,
-        businessName: business.name,
-        businessCategory: business.category,
-        referrerId: referrerId,
-        offerId: offer?.id || null,
-      })
+    const autoCreateVisit = async () => {
+      if (business && user && !authLoading && !visitCreated) {
+        // Create visit directly in Firestore (no localStorage)
+        await handleCreateVisit()
+      }
     }
-  }, [business, user, referrerId, offer])
+
+    autoCreateVisit()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [business, user, authLoading])
 
   const handleCreateVisit = async () => {
     if (!user || !business) return
@@ -131,9 +129,6 @@ function ReferralPageContent() {
       if (!result.ok) {
         throw new Error(result.error || 'Failed to create visit')
       }
-
-      // Remove from pending visits (localStorage)
-      removeVisitIntent(business.id)
 
       setVisitCreated(true)
       toast({
