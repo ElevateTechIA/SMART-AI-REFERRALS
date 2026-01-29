@@ -8,11 +8,14 @@ import { Button } from '@/components/ui/button'
 import { CheckCircle2, Users, Shield, X, Share2 } from 'lucide-react'
 import QRCode from 'qrcode'
 import { LanguageSwitcher } from '@/components/language-switcher'
+import { RegisterShareModal } from '@/components/register-share-modal'
 
 export default function LandingPage() {
   const { t } = useTranslation()
   const [showQR, setShowQR] = useState(false)
   const [qrCode, setQrCode] = useState('')
+  const [showReferrerModal, setShowReferrerModal] = useState(false)
+  const [showBusinessModal, setShowBusinessModal] = useState(false)
 
   useEffect(() => {
     generateQRCode()
@@ -99,23 +102,21 @@ export default function LandingPage() {
 
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/auth/register">
-                  <Button
-                    size="lg"
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-6 text-lg font-semibold rounded-xl shadow-2xl shadow-indigo-500/50 w-full sm:w-auto"
-                  >
-                    {t('landing.startEarningFree')}
-                  </Button>
-                </Link>
-                <Link href="/business/register">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="bg-white/10 backdrop-blur-sm border-2 border-white/30 text-white hover:bg-white/20 px-8 py-6 text-lg font-semibold rounded-xl w-full sm:w-auto"
-                  >
-                    {t('landing.listYourBusiness')}
-                  </Button>
-                </Link>
+                <Button
+                  size="lg"
+                  onClick={() => setShowReferrerModal(true)}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-6 text-lg font-semibold rounded-xl shadow-2xl shadow-indigo-500/50 w-full sm:w-auto"
+                >
+                  {t('landing.startEarningFree')}
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={() => setShowBusinessModal(true)}
+                  className="bg-white/10 backdrop-blur-sm border-2 border-white/30 text-white hover:bg-white/20 px-8 py-6 text-lg font-semibold rounded-xl w-full sm:w-auto"
+                >
+                  {t('landing.listYourBusiness')}
+                </Button>
               </div>
 
               <p className="text-white/80 text-sm">
@@ -350,6 +351,18 @@ export default function LandingPage() {
           </div>
         </div>
       )}
+
+      {/* Register Share Modals */}
+      <RegisterShareModal
+        isOpen={showReferrerModal}
+        onClose={() => setShowReferrerModal(false)}
+        type="referrer"
+      />
+      <RegisterShareModal
+        isOpen={showBusinessModal}
+        onClose={() => setShowBusinessModal(false)}
+        type="business"
+      />
     </div>
   )
 }

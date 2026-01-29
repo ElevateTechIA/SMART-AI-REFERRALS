@@ -13,7 +13,8 @@
     "close": "Cerrar",
     "confirm": "Confirmar",
     "search": "Buscar",
-    "filter": "Filtrar"
+    "filter": "Filtrar",
+    "goToLink": "Ir al Registro"
   },
   "nav": {
     "dashboard": "Panel",
@@ -54,7 +55,13 @@
     "createBusinessAccount": "Crear Cuenta de Negocio",
     "continueWithGoogle": "Continuar con Google",
     "orContinueWith": "O continuar con",
-    "termsAgreement": "Al crear una cuenta, aceptas nuestros Términos de Servicio y Política de Privacidad."
+    "termsAgreement": "Al crear una cuenta, aceptas nuestros Términos de Servicio y Política de Privacidad.",
+    "startEarningMoney": "Comienza a Ganar Dinero",
+    "createReferrerAccountDesc": "Crea tu cuenta de referidor y comienza a ganar con tus referidos",
+    "earnWithReferrals": "Comparte negocios en los que confías y recibe pago por cada referido exitoso",
+    "growYourBusiness": "Haz Crecer Tu Negocio",
+    "createBusinessAccountDesc": "Crea tu cuenta de negocio y comienza a conseguir clientes",
+    "payPerCustomer": "Solo paga cuando obtengas clientes reales y verificados a través de nuestra red de referidos"
   },
   "dashboard": {
     "welcomeBack": "¡Bienvenido de nuevo, {{name}}!",

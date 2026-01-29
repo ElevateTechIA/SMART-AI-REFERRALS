@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -12,10 +12,9 @@ import { GoogleAuthButton } from '@/components/auth/google-auth-button'
 import { AuthDivider } from '@/components/auth/auth-divider'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
-import { Loader2, Users } from 'lucide-react'
+import { Loader2, Building2 } from 'lucide-react'
 
-function RegisterContent() {
-  const searchParams = useSearchParams()
+function BusinessRegisterContent() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -24,13 +23,6 @@ function RegisterContent() {
   const { toast } = useToast()
   const router = useRouter()
   const { t } = useTranslation()
-
-  // Redirect to business registration if type=business query param is present
-  useEffect(() => {
-    if (searchParams.get('type') === 'business') {
-      router.replace('/auth/register/business')
-    }
-  }, [searchParams, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -42,8 +34,8 @@ function RegisterContent() {
         title: 'Account created',
         description: 'Welcome to Smart AI Referrals!',
       })
-      // Always redirect to referrer dashboard
-      router.push('/dashboard')
+      // Redirect to business setup
+      router.push('/dashboard/business/setup')
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to create account'
       toast({
@@ -64,8 +56,8 @@ function RegisterContent() {
         title: 'Account created',
         description: 'Welcome to Smart AI Referrals!',
       })
-      // Always redirect to referrer dashboard
-      router.push('/dashboard')
+      // Redirect to business setup
+      router.push('/dashboard/business/setup')
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to sign up with Google'
       toast({
@@ -83,11 +75,11 @@ function RegisterContent() {
       <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm shadow-2xl">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <Users className="w-12 h-12 text-indigo-600" />
+            <Building2 className="w-12 h-12 text-indigo-600" />
           </div>
-          <CardTitle className="text-2xl">{t('auth.startEarningMoney')}</CardTitle>
+          <CardTitle className="text-2xl">{t('auth.growYourBusiness')}</CardTitle>
           <CardDescription className="text-base">
-            {t('auth.createReferrerAccountDesc')}
+            {t('auth.createBusinessAccountDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -114,7 +106,7 @@ function RegisterContent() {
                   {t('auth.creatingAccount')}
                 </>
               ) : (
-                t('auth.createReferrerAccount')
+                t('auth.createBusinessAccount')
               )}
             </Button>
           </form>
@@ -135,7 +127,7 @@ function RegisterContent() {
   )
 }
 
-export default function RegisterPage() {
+export default function BusinessRegisterPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen relative overflow-hidden">
@@ -156,7 +148,7 @@ export default function RegisterPage() {
         </div>
       </div>
     }>
-      <RegisterContent />
+      <BusinessRegisterContent />
     </Suspense>
   )
 }

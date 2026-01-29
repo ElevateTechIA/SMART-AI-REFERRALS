@@ -13,7 +13,8 @@
     "close": "Close",
     "confirm": "Confirm",
     "search": "Search",
-    "filter": "Filter"
+    "filter": "Filter",
+    "goToLink": "Go to Registration"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -54,7 +55,13 @@
     "createBusinessAccount": "Create Business Account",
     "continueWithGoogle": "Continue with Google",
     "orContinueWith": "Or continue with",
-    "termsAgreement": "By creating an account, you agree to our Terms of Service and Privacy Policy."
+    "termsAgreement": "By creating an account, you agree to our Terms of Service and Privacy Policy.",
+    "startEarningMoney": "Start Earning Money",
+    "createReferrerAccountDesc": "Create your referrer account and start earning from referrals",
+    "earnWithReferrals": "Share businesses you trust and get paid for every successful referral",
+    "growYourBusiness": "Grow Your Business",
+    "createBusinessAccountDesc": "Create your business account and start getting customers",
+    "payPerCustomer": "Only pay when you get real, verified customers through our referral network"
   },
   "dashboard": {
     "welcomeBack": "Welcome Back, {{name}}!",

@@ -8,8 +8,8 @@ export default function BusinessRegisterRedirect() {
   const router = useRouter()
 
   useEffect(() => {
-    // Redirect to main register page with business type
-    router.replace('/auth/register?type=business')
+    // Redirect to business registration page
+    router.replace('/auth/register/business')
   }, [router])
 
   return (
