@@ -11,6 +11,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
@@ -24,14 +26,23 @@ import {
   Shield,
   User,
   Languages,
+  Settings,
+  LogOut,
 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 export function BottomNav() {
-  const { user } = useAuth()
+  const { user, signOut } = useAuth()
   const pathname = usePathname()
+  const router = useRouter()
   const { t, i18n } = useTranslation()
   const [isVisible, setIsVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
+
+  const handleSignOut = async () => {
+    await signOut()
+    router.push('/')
+  }
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -101,10 +112,10 @@ export function BottomNav() {
     },
   ]
 
-  // Filter nav items by user roles, take first 3 items to leave room for admin + language
+  // Filter nav items by user roles, take first 3 items to leave room for profile
   const filteredNavItems = navItems.filter((item) =>
     item.roles.some((role) => user?.roles.includes(role as never))
-  ).slice(0, isAdmin ? 3 : 4)
+  ).slice(0, 3)
 
   const isAdminActive = pathname === '/dashboard/admin' || pathname.startsWith('/dashboard/admin/')
 
@@ -134,20 +145,6 @@ export function BottomNav() {
           )
         })}
 
-        {/* Admin Link - only for admin users */}
-        {isAdmin && (
-          <Link
-            href="/dashboard/admin"
-            className={cn(
-              'flex flex-col items-center justify-center gap-1 transition-colors',
-              isAdminActive ? 'text-white' : 'text-white/60 hover:text-white'
-            )}
-          >
-            <Shield className="h-5 w-5" />
-            <span className="text-[9px] font-medium">{t('nav.admin')}</span>
-          </Link>
-        )}
-
         {/* Language Switcher */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -171,6 +168,68 @@ export function BottomNav() {
                 {language.name}
               </DropdownMenuItem>
             ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* User Profile Menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              className={cn(
+                'flex flex-col items-center justify-center gap-1 transition-colors text-white/60 hover:text-white'
+              )}
+            >
+              <Avatar className="h-5 w-5">
+                <AvatarImage src={user?.photoURL} alt={user?.name} />
+                <AvatarFallback className="text-[8px]">
+                  {user?.name?.charAt(0).toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-[9px] font-medium">{t('nav.profile')}</span>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-64 mb-2">
+            <DropdownMenuLabel className="font-normal">
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">{user?.name}</p>
+                <p className="text-xs leading-none text-muted-foreground">
+                  {user?.email}
+                </p>
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {user?.roles.map((role) => (
+                    <span
+                      key={role}
+                      className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full capitalize"
+                    >
+                      {t(`roles.${role}`)}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {isAdmin && (
+              <>
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard/admin" className="cursor-pointer">
+                    <Shield className="mr-2 h-4 w-4" />
+                    {t('nav.admin')}
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            )}
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/settings" className="cursor-pointer">
+                <Settings className="mr-2 h-4 w-4" />
+                {t('nav.settings')}
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-600">
+              <LogOut className="mr-2 h-4 w-4" />
+              {t('nav.signOut')}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
