@@ -123,7 +123,11 @@ export function DashboardNav() {
           <ThemeSwitcher />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+              <Button
+                variant="ghost"
+                className="relative h-8 w-8 rounded-full"
+                onClick={() => console.log('Profile avatar clicked!', user)}
+              >
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={user?.photoURL} alt={user?.name} />
                   <AvatarFallback>
