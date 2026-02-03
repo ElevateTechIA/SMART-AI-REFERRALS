@@ -5,10 +5,11 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
-import { CheckCircle2, Users, Shield, X, Share2 } from 'lucide-react'
+import { CheckCircle2, Users, Shield, X, Share2, MessageCircle } from 'lucide-react'
 import QRCode from 'qrcode'
 import { LanguageSwitcher } from '@/components/language-switcher'
 import { RegisterShareModal } from '@/components/register-share-modal'
+import { RegistrationChatbot } from '@/components/chatbot/RegistrationChatbot'
 
 export default function LandingPage() {
   const { t } = useTranslation()
@@ -16,6 +17,7 @@ export default function LandingPage() {
   const [qrCode, setQrCode] = useState('')
   const [showReferrerModal, setShowReferrerModal] = useState(false)
   const [showBusinessModal, setShowBusinessModal] = useState(false)
+  const [showChatbot, setShowChatbot] = useState(false)
 
   useEffect(() => {
     generateQRCode()
@@ -363,6 +365,26 @@ export default function LandingPage() {
         onClose={() => setShowBusinessModal(false)}
         type="business"
       />
+
+      {/* Registration Chatbot */}
+      {showChatbot ? (
+        <RegistrationChatbot
+          language={t('app.name') === 'Smart AI Referrals' ? 'en' : 'es'}
+          onClose={() => setShowChatbot(false)}
+          onComplete={() => setShowChatbot(false)}
+        />
+      ) : (
+        <button
+          onClick={() => setShowChatbot(true)}
+          className="fixed bottom-6 right-6 w-14 h-14 bg-indigo-600 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-indigo-700 transition-all hover:scale-105 z-50 group"
+          aria-label={t('landing.chatWithUs')}
+        >
+          <MessageCircle className="w-6 h-6" />
+          <span className="absolute right-full mr-3 px-3 py-1.5 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+            {t('landing.chatWithUs')}
+          </span>
+        </button>
+      )}
     </div>
   )
 }
