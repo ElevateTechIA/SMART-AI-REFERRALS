@@ -19,8 +19,8 @@ interface AuthContextType {
   user: User | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<void>
-  signUp: (email: string, password: string, name: string) => Promise<void>
-  signInWithGoogle: () => Promise<void>
+  signUp: (email: string, password: string, name: string, role?: UserRole) => Promise<void>
+  signInWithGoogle: (role?: UserRole) => Promise<void>
   signOut: () => Promise<void>
   refreshUser: () => Promise<void>
 }
@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: data.email,
         name: data.name,
         photoURL: data.photoURL,
-        roles: data.roles || ['consumer'],
+        roles: data.roles || ['referrer'],
         createdAt: data.createdAt?.toDate() || new Date(),
         updatedAt: data.updatedAt?.toDate() || new Date(),
       }
@@ -51,17 +51,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const createUserDocument = async (
     firebaseUser: FirebaseUser,
-    name?: string
+    name?: string,
+    role?: UserRole
   ): Promise<User> => {
     // Admin role is only assigned through server-side scripts (scripts/make-admin.js)
     // Never assign admin role on client side to prevent privilege escalation
-    const defaultRoles: UserRole[] = ['consumer']
+    // Default to 'referrer' for new users (most common case)
+    const userRole: UserRole = role === 'admin' ? 'referrer' : (role || 'referrer')
+    const roles: UserRole[] = [userRole]
 
     const userData = {
       email: firebaseUser.email!,
       name: name || firebaseUser.displayName || 'User',
       photoURL: firebaseUser.photoURL || null,
-      roles: defaultRoles,
+      roles: roles,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     }
@@ -104,17 +107,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await signInWithEmailAndPassword(auth, email, password)
   }
 
-  const signUp = async (email: string, password: string, name: string) => {
+  const signUp = async (email: string, password: string, name: string, role?: UserRole) => {
     const credential = await createUserWithEmailAndPassword(auth, email, password)
     await updateProfile(credential.user, { displayName: name })
-    await createUserDocument(credential.user, name)
+    await createUserDocument(credential.user, name, role)
   }
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (role?: UserRole) => {
     const result = await signInWithPopup(auth, googleProvider)
     const existingUser = await fetchUserData(result.user)
     if (!existingUser) {
-      await createUserDocument(result.user)
+      await createUserDocument(result.user, undefined, role)
     }
   }
 

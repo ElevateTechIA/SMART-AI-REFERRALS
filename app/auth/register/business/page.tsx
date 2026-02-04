@@ -36,7 +36,7 @@ function BusinessRegisterContent() {
     setLoading(true)
 
     try {
-      await signUp(email, password, name)
+      await signUp(email, password, name, 'business')
       toast({
         title: 'Account created',
         description: 'Welcome to Smart AI Referrals!',
@@ -58,7 +58,7 @@ function BusinessRegisterContent() {
   const handleGoogleSignUp = async () => {
     setLoading(true)
     try {
-      await signInWithGoogle()
+      await signInWithGoogle('business')
       toast({
         title: 'Account created',
         description: 'Welcome to Smart AI Referrals!',

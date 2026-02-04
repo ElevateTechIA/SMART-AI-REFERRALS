@@ -152,7 +152,8 @@ function ReferralPageContent() {
     setRegistering(true)
 
     try {
-      await signUp(email, password, name)
+      // Users registering via referral link are consumers
+      await signUp(email, password, name, 'consumer')
       toast({
         title: 'Account created!',
         description: 'Now let\'s record your visit.',
@@ -173,7 +174,8 @@ function ReferralPageContent() {
   const handleGoogleSignUp = async () => {
     setRegistering(true)
     try {
-      await signInWithGoogle()
+      // Users registering via referral link are consumers
+      await signInWithGoogle('consumer')
       toast({
         title: 'Signed in!',
         description: 'Now let\'s record your visit.',

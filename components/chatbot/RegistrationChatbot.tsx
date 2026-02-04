@@ -253,7 +253,9 @@ export function RegistrationChatbot({
     )
 
     try {
-      await signInWithGoogle()
+      // Pass the correct role based on registration type
+      const role = registrationType === 'business' ? 'business' : 'referrer'
+      await signInWithGoogle(role)
 
       // If business registration, try to create business
       if (registrationType === 'business' && collectedData.business?.name) {
@@ -329,10 +331,13 @@ export function RegistrationChatbot({
     )
 
     try {
+      // Pass the correct role based on registration type
+      const role = registrationType === 'business' ? 'business' : 'referrer'
       await signUp(
         collectedData.user.email,
         collectedData.user.password,
-        collectedData.user.name
+        collectedData.user.name,
+        role
       )
 
       // If business registration, create business
