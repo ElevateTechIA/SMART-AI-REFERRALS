@@ -135,6 +135,40 @@ export const themes = {
       textSecondary: '#fed7aa',
       textMuted: '#fdba74',
     }
+  },
+
+  cleanBlue: {
+    name: 'Clean Blue',
+    colors: {
+      // Light theme with blue accents (white background)
+      gradientFrom: '#60A5FA',
+      gradientVia: '#3B82F6',
+      gradientTo: '#1D4ED8',
+
+      primary: '#3B82F6',
+      primaryLight: '#60A5FA',
+      primaryDark: '#1D4ED8',
+
+      secondary: '#6B7280',
+      secondaryLight: '#9CA3AF',
+
+      accent: '#22C55E',
+      accentHover: '#16A34A',
+
+      success: '#22C55E',
+      warning: '#F59E0B',
+      error: '#EF4444',
+
+      // Clean white cards with subtle borders
+      cardBg: 'rgba(255, 255, 255, 0.95)',
+      cardBgHover: 'rgba(255, 255, 255, 1)',
+      cardBorder: 'rgba(229, 231, 235, 1)',
+
+      // Dark text on light background
+      textPrimary: '#111827',
+      textSecondary: '#4B5563',
+      textMuted: '#9CA3AF',
+    }
   }
 }
 
