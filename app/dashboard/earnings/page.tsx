@@ -109,7 +109,7 @@ export default function EarningsPage() {
   return (
     <div className="min-h-screen">
       {/* Header with gradient matching dashboard */}
-      <div className="bg-gradient-to-br from-indigo-900 to-purple-800 px-6 py-8">
+      <div className="bg-gradient-to-br from-blue-900 to-blue-700 px-6 py-8">
         <div className="max-w-7xl mx-auto">
           <Link
             href="/dashboard"
@@ -129,8 +129,8 @@ export default function EarningsPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white/95 backdrop-blur-sm rounded-xl p-6 shadow-xl">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                <DollarSign className="h-6 w-6 text-indigo-600" />
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <DollarSign className="h-6 w-6 text-blue-600" />
               </div>
               <span className="text-sm text-gray-600">Total Earnings</span>
             </div>
@@ -165,8 +165,8 @@ export default function EarningsPage() {
 
           <div className="bg-white/95 backdrop-blur-sm rounded-xl p-6 shadow-xl">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Calendar className="h-6 w-6 text-purple-600" />
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Calendar className="h-6 w-6 text-blue-600" />
               </div>
               <span className="text-sm text-gray-600">This Month</span>
             </div>
@@ -187,13 +187,13 @@ export default function EarningsPage() {
                 <select
                   value={selectedPeriod}
                   onChange={(e) => setSelectedPeriod(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500"
+                  className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="all">All Time</option>
                   <option value="month">This Month</option>
                   <option value="year">This Year</option>
                 </select>
-                <Button className="bg-indigo-600 hover:bg-indigo-700 rounded-lg">
+                <Button className="bg-blue-600 hover:bg-blue-700 rounded-lg">
                   <Download className="h-4 w-4 mr-2" />
                   Export
                 </Button>

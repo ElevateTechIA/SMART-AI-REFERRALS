@@ -109,7 +109,7 @@ export default function EnhancedDashboardPage() {
         width: 200,
         margin: 2,
         color: {
-          dark: '#1a0b2e',
+          dark: '#1D4ED8',
           light: '#ffffff',
         },
       })
@@ -155,7 +155,7 @@ export default function EnhancedDashboardPage() {
           <p className="text-3xl font-bold text-gray-900 mb-3">
             {formatCurrency(data?.stats.totalEarnings || 0)}
           </p>
-          <Button size="sm" className="w-full bg-indigo-500 hover:bg-indigo-600 rounded-lg h-10 text-sm">
+          <Button size="sm" className="w-full bg-blue-500 hover:bg-blue-600 rounded-lg h-10 text-sm">
             {t('dashboard.withdraw')}
           </Button>
         </div>
@@ -176,8 +176,8 @@ export default function EnhancedDashboardPage() {
                 <Bar dataKey="amount" fill="url(#miniGradient)" radius={[4, 4, 0, 0]} />
                 <defs>
                   <linearGradient id="miniGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#818cf8" stopOpacity={0.8} />
-                    <stop offset="100%" stopColor="#6366f1" stopOpacity={0.6} />
+                    <stop offset="0%" stopColor="var(--theme-primaryLight)" stopOpacity={0.8} />
+                    <stop offset="100%" stopColor="var(--theme-primary)" stopOpacity={0.6} />
                   </linearGradient>
                 </defs>
               </BarChart>
@@ -189,7 +189,7 @@ export default function EnhancedDashboardPage() {
         <div className="bg-white/95 backdrop-blur-sm rounded-xl p-5 shadow-lg">
           <p className="text-xs text-gray-600 mb-1">{t('dashboard.pendingPayouts')}:</p>
           <p className="text-3xl font-bold text-gray-900 mb-3">$300</p>
-          <Button size="sm" className="w-full bg-indigo-500 hover:bg-indigo-600 rounded-lg h-10 text-sm">
+          <Button size="sm" className="w-full bg-blue-500 hover:bg-blue-600 rounded-lg h-10 text-sm">
             {t('dashboard.review')} &gt;
           </Button>
         </div>
@@ -200,7 +200,7 @@ export default function EnhancedDashboardPage() {
         {/* Column 1: My Referral Link & Your Earnings */}
         <div className="space-y-6">
           {/* My Referral Link */}
-          <div className="bg-gradient-to-br from-indigo-900 to-purple-800 rounded-2xl p-5 shadow-xl">
+          <div className="bg-gradient-to-br from-blue-900 to-blue-700 rounded-2xl p-5 shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-bold text-white">{t('dashboard.myReferralLink')}</h2>
               <ChevronRight className="h-4 w-4 text-white/60" />
@@ -213,7 +213,7 @@ export default function EnhancedDashboardPage() {
               <p className="text-xs text-gray-600 text-center mb-3 truncate w-full">
                 smartreferrals.io//boat...
               </p>
-              <Button onClick={copyLink} className="w-full mb-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg h-11 text-sm font-semibold">
+              <Button onClick={copyLink} className="w-full mb-2 bg-blue-600 hover:bg-blue-700 rounded-lg h-11 text-sm font-semibold">
                 <Copy className="h-4 w-4 mr-2" />
                 {t('dashboard.copyLink')}
               </Button>
@@ -227,7 +227,7 @@ export default function EnhancedDashboardPage() {
                 <h2 className="text-base font-bold text-gray-800 mb-1">{t('dashboard.yourEarnings')}:</h2>
                 <p className="text-3xl font-bold text-gray-900">{formatCurrency(1250)}</p>
               </div>
-              <button className="text-xs text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
+              <button className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1">
                 {t('dashboard.thisMonth')} &gt;
               </button>
             </div>
@@ -246,8 +246,8 @@ export default function EnhancedDashboardPage() {
                   <Bar dataKey="amount" fill="url(#earningsGradient)" radius={[6, 6, 0, 0]} />
                   <defs>
                     <linearGradient id="earningsGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#818cf8" stopOpacity={1} />
-                      <stop offset="100%" stopColor="#6366f1" stopOpacity={0.8} />
+                      <stop offset="0%" stopColor="var(--theme-primaryLight)" stopOpacity={1} />
+                      <stop offset="100%" stopColor="var(--theme-primary)" stopOpacity={0.8} />
                     </linearGradient>
                   </defs>
                 </BarChart>
@@ -261,12 +261,12 @@ export default function EnhancedDashboardPage() {
               </h3>
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-indigo-500"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-blue-500"></div>
                   <span className="text-xs font-semibold text-gray-900">$1,100</span>
                   <span className="text-xs text-gray-600">{t('dashboard.referrals')}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-purple-400"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-blue-400"></div>
                   <span className="text-xs font-semibold text-gray-900">$150</span>
                   <span className="text-xs text-gray-600">{t('dashboard.bonuses')}</span>
                 </div>
@@ -278,7 +278,7 @@ export default function EnhancedDashboardPage() {
         {/* Column 2: Top Businesses & Write a Review */}
         <div className="space-y-6">
           {/* Top Businesses This Week */}
-          <div className="bg-gradient-to-br from-indigo-900 to-purple-800 rounded-2xl p-5 shadow-xl">
+          <div className="bg-gradient-to-br from-blue-900 to-blue-700 rounded-2xl p-5 shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-bold text-white">{t('dashboard.topBusinessesWeek')}</h2>
               <div className="flex items-center gap-2">
@@ -323,7 +323,7 @@ export default function EnhancedDashboardPage() {
                   backgroundPosition: 'center',
                 }}
               >
-                <div className="absolute inset-0 bg-gradient-to-t from-purple-900/80 via-purple-900/30 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-blue-900/80 via-blue-900/30 to-transparent"></div>
                 <div className="relative h-full p-4 flex flex-col justify-between">
                   <div className="flex-1"></div>
                   <div>
@@ -347,7 +347,7 @@ export default function EnhancedDashboardPage() {
               backgroundPosition: 'center',
             }}
           >
-            <div className="absolute inset-0 bg-gradient-to-b from-indigo-900/85 to-purple-800/85"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-blue-900/85 to-blue-700/85"></div>
             <div className="relative p-5">
               <h2 className="text-base font-bold text-white mb-3">{t('dashboard.writeReviewEarn')}</h2>
 
@@ -373,7 +373,7 @@ export default function EnhancedDashboardPage() {
                 placeholder={t('dashboard.writeReview')}
               ></textarea>
 
-              <Button className="w-full bg-indigo-500 hover:bg-indigo-600 rounded-lg h-10 text-xs font-semibold">
+              <Button className="w-full bg-blue-500 hover:bg-blue-600 rounded-lg h-10 text-xs font-semibold">
                 {t('dashboard.submitReview')}
               </Button>
             </div>
@@ -383,7 +383,7 @@ export default function EnhancedDashboardPage() {
         {/* Column 3: Recent Conversions */}
         <div>
           {/* Recent Conversions */}
-          <div className="bg-gradient-to-br from-indigo-900 to-purple-800 rounded-2xl p-5 shadow-xl">
+          <div className="bg-gradient-to-br from-blue-900 to-blue-700 rounded-2xl p-5 shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-bold text-white">{t('dashboard.recentConversions')}</h2>
               <ChevronRight className="h-4 w-4 text-white/60" />
@@ -427,7 +427,7 @@ export default function EnhancedDashboardPage() {
           <p className="text-xl md:text-3xl font-bold text-gray-900 mb-2">
             {formatCurrency(data?.stats.totalEarnings || 0)}
           </p>
-          <Button size="sm" className="w-full bg-indigo-500 hover:bg-indigo-600 rounded-lg h-8 md:h-10 text-[10px] md:text-sm">
+          <Button size="sm" className="w-full bg-blue-500 hover:bg-blue-600 rounded-lg h-8 md:h-10 text-[10px] md:text-sm">
             Copy Link
           </Button>
         </div>
@@ -448,8 +448,8 @@ export default function EnhancedDashboardPage() {
                 <Bar dataKey="amount" fill="url(#miniGradient)" radius={[4, 4, 0, 0]} />
                 <defs>
                   <linearGradient id="miniGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#818cf8" stopOpacity={0.8} />
-                    <stop offset="100%" stopColor="#6366f1" stopOpacity={0.6} />
+                    <stop offset="0%" stopColor="var(--theme-primaryLight)" stopOpacity={0.8} />
+                    <stop offset="100%" stopColor="var(--theme-primary)" stopOpacity={0.6} />
                   </linearGradient>
                 </defs>
               </BarChart>
@@ -461,7 +461,7 @@ export default function EnhancedDashboardPage() {
         <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3 shadow-lg flex-1 min-w-0 md:flex-none md:w-56">
           <p className="text-[10px] text-gray-600 mb-0.5">{t('dashboard.pendingPayouts')}:</p>
           <p className="text-xl md:text-3xl font-bold text-gray-900 mb-2">$300</p>
-          <Button size="sm" className="w-full bg-indigo-500 hover:bg-indigo-600 rounded-lg h-8 md:h-10 text-[10px] md:text-sm">
+          <Button size="sm" className="w-full bg-blue-500 hover:bg-blue-600 rounded-lg h-8 md:h-10 text-[10px] md:text-sm">
             Review
           </Button>
         </div>
@@ -472,7 +472,7 @@ export default function EnhancedDashboardPage() {
         {/* Left Column */}
         <div className="space-y-2">
           {/* My Referral Link & Top Businesses - Two Column Layout */}
-          <div className="bg-gradient-to-br from-indigo-900 to-purple-800 rounded-xl p-2.5 shadow-lg">
+          <div className="bg-gradient-to-br from-blue-900 to-blue-700 rounded-xl p-2.5 shadow-lg">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-sm font-bold text-white whitespace-nowrap">{t('dashboard.myReferralLink')}</h2>
               <Link
@@ -492,7 +492,7 @@ export default function EnhancedDashboardPage() {
                 <p className="text-[9px] text-gray-600 text-center mb-1.5 truncate w-full">
                   smartreferrals.i...
                 </p>
-                <Button onClick={copyLink} className="w-full mb-1.5 bg-indigo-600 hover:bg-indigo-700 rounded-md h-7 text-[10px] font-medium">
+                <Button onClick={copyLink} className="w-full mb-1.5 bg-blue-600 hover:bg-blue-700 rounded-md h-7 text-[10px] font-medium">
                   <Copy className="h-2.5 w-2.5 mr-0.5" />
                   Copy Link
                 </Button>
@@ -544,7 +544,7 @@ export default function EnhancedDashboardPage() {
                     backgroundPosition: 'center',
                   }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-t from-purple-900/80 via-purple-900/30 to-transparent"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-blue-900/80 via-blue-900/30 to-transparent"></div>
                   <div className="relative h-full p-3 flex flex-col justify-between">
                     <div className="flex-1"></div>
                     <div>
@@ -583,8 +583,8 @@ export default function EnhancedDashboardPage() {
                     <Bar dataKey="amount" fill="url(#earningsGradient)" radius={[3, 3, 0, 0]} />
                     <defs>
                       <linearGradient id="earningsGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#818cf8" stopOpacity={1} />
-                        <stop offset="100%" stopColor="#6366f1" stopOpacity={0.8} />
+                        <stop offset="0%" stopColor="var(--theme-primaryLight)" stopOpacity={1} />
+                        <stop offset="100%" stopColor="var(--theme-primary)" stopOpacity={0.8} />
                       </linearGradient>
                     </defs>
                   </BarChart>
@@ -598,12 +598,12 @@ export default function EnhancedDashboardPage() {
                 </h3>
                 <div className="space-y-1">
                   <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+                    <div className="w-2 h-2 rounded-full bg-blue-500"></div>
                     <span className="text-[10px] font-medium text-gray-900">$1,100</span>
                     <span className="text-[10px] text-gray-600">{t('dashboard.referrals')}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-purple-400"></div>
+                    <div className="w-2 h-2 rounded-full bg-blue-400"></div>
                     <span className="text-[10px] font-medium text-gray-900">$150</span>
                     <span className="text-[10px] text-gray-600">{t('dashboard.bonuses')}</span>
                   </div>
@@ -620,7 +620,7 @@ export default function EnhancedDashboardPage() {
                 backgroundPosition: 'center',
               }}
             >
-              <div className="absolute inset-0 bg-gradient-to-b from-indigo-900/85 to-purple-800/85"></div>
+              <div className="absolute inset-0 bg-gradient-to-b from-blue-900/85 to-blue-700/85"></div>
               <div className="relative p-2.5">
                 <h2 className="text-sm font-bold text-white mb-2">{t('dashboard.writeReviewEarn')}</h2>
 
@@ -646,7 +646,7 @@ export default function EnhancedDashboardPage() {
                   placeholder={t('dashboard.writeReview')}
                 ></textarea>
 
-                <Button className="w-full bg-indigo-500 hover:bg-indigo-600 rounded-md h-7 text-[10px] font-semibold">
+                <Button className="w-full bg-blue-500 hover:bg-blue-600 rounded-md h-7 text-[10px] font-semibold">
                   {t('dashboard.submitReview')}
                 </Button>
               </div>
@@ -700,7 +700,7 @@ export default function EnhancedDashboardPage() {
             <div className="relative">
               <div className="w-14 h-14 rounded-full border-2 border-white/30 overflow-hidden bg-white/10">
                 <img
-                  src={user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=6366f1&color=fff`}
+                  src={user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=3B82F6&color=fff`}
                   alt="Profile"
                   className="w-full h-full object-cover"
                 />
@@ -721,7 +721,7 @@ export default function EnhancedDashboardPage() {
       {/* Desktop Layout */}
       <div className="hidden md:flex min-h-screen">
         {/* Desktop Sidebar */}
-        <aside className="w-80 bg-gradient-to-b from-indigo-900 via-indigo-900 to-purple-900 flex flex-col">
+        <aside className="w-80 bg-gradient-to-b from-blue-900 via-blue-900 to-blue-800 flex flex-col">
           {/* Logo - tap to share app */}
           <div className="p-8">
             <button
@@ -729,7 +729,7 @@ export default function EnhancedDashboardPage() {
               className="flex items-center gap-3 hover:opacity-80 transition-opacity"
             >
               <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center p-2.5">
-                <QrCodeIcon className="w-full h-full text-indigo-900" />
+                <QrCodeIcon className="w-full h-full text-blue-900" />
               </div>
               <div className="flex flex-col text-left">
                 <span className="text-white font-bold text-xl leading-tight">SMART AI</span>
@@ -742,7 +742,7 @@ export default function EnhancedDashboardPage() {
           <nav className="flex-1 px-4">
             <Link
               href="/dashboard"
-              className="flex items-center gap-4 px-6 py-4 mb-2 bg-indigo-700/50 rounded-lg text-white"
+              className="flex items-center gap-4 px-6 py-4 mb-2 bg-blue-700/50 rounded-lg text-white"
             >
               <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
@@ -751,21 +751,21 @@ export default function EnhancedDashboardPage() {
             </Link>
             <Link
               href="/dashboard/referrals"
-              className="flex items-center gap-4 px-6 py-4 mb-2 text-white/80 hover:bg-indigo-700/30 rounded-lg transition-colors"
+              className="flex items-center gap-4 px-6 py-4 mb-2 text-white/80 hover:bg-blue-700/30 rounded-lg transition-colors"
             >
               <Users className="h-6 w-6" />
               <span className="text-base font-medium">My Referrals</span>
             </Link>
             <Link
               href="/dashboard/earnings"
-              className="flex items-center gap-4 px-6 py-4 mb-2 text-white/80 hover:bg-indigo-700/30 rounded-lg transition-colors"
+              className="flex items-center gap-4 px-6 py-4 mb-2 text-white/80 hover:bg-blue-700/30 rounded-lg transition-colors"
             >
               <DollarSign className="h-6 w-6" />
               <span className="text-base font-medium">Earnings</span>
             </Link>
             <Link
               href="/dashboard/business"
-              className="flex items-center gap-4 px-6 py-4 mb-2 text-white/80 hover:bg-indigo-700/30 rounded-lg transition-colors"
+              className="flex items-center gap-4 px-6 py-4 mb-2 text-white/80 hover:bg-blue-700/30 rounded-lg transition-colors"
             >
               <Building2 className="h-6 w-6" />
               <span className="text-base font-medium">Businesses</span>
@@ -774,10 +774,10 @@ export default function EnhancedDashboardPage() {
 
           {/* Bottom Profile Section */}
           <div className="p-4">
-            <div className="flex items-center gap-3 px-4 py-3 bg-indigo-700/30 rounded-lg">
+            <div className="flex items-center gap-3 px-4 py-3 bg-blue-700/30 rounded-lg">
               <div className="w-12 h-12 rounded-full border-2 border-white/30 overflow-hidden bg-white/10">
                 <img
-                  src={user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=6366f1&color=fff`}
+                  src={user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=3B82F6&color=fff`}
                   alt="Profile"
                   className="w-full h-full object-cover"
                 />
@@ -812,7 +812,7 @@ export default function EnhancedDashboardPage() {
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full border-2 border-white/30 overflow-hidden bg-white/10">
                   <img
-                    src={user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=6366f1&color=fff`}
+                    src={user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=3B82F6&color=fff`}
                     alt="Profile"
                     className="w-full h-full object-cover"
                   />
