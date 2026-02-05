@@ -37,7 +37,7 @@ export function ShareAppModal({ isOpen, onClose }: ShareAppModalProps) {
         width: 280,
         margin: 2,
         color: {
-          dark: '#4f46e5',
+          dark: '#1D4ED8',
           light: '#ffffff',
         },
       })
@@ -96,7 +96,7 @@ export function ShareAppModal({ isOpen, onClose }: ShareAppModalProps) {
 
         {/* Header */}
         <div className="text-center mb-6">
-          <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Share2 className="h-8 w-8 text-white" />
           </div>
           <h3 className="text-2xl font-bold text-gray-900 mb-2">
@@ -108,7 +108,7 @@ export function ShareAppModal({ isOpen, onClose }: ShareAppModalProps) {
         </div>
 
         {/* QR Code */}
-        <div className="bg-white rounded-2xl p-4 border-2 border-indigo-100 mb-6">
+        <div className="bg-white rounded-2xl p-4 border-2 border-blue-100 mb-6">
           {qrCode && (
             <img
               src={qrCode}
@@ -123,7 +123,7 @@ export function ShareAppModal({ isOpen, onClose }: ShareAppModalProps) {
           <p className="text-xs text-gray-600 mb-1 text-center">
             {t('landing.orVisit', 'Or visit')}
           </p>
-          <p className="text-sm font-semibold text-indigo-600 text-center break-all">
+          <p className="text-sm font-semibold text-blue-600 text-center break-all">
             {appUrl.replace('https://', '').replace('http://', '')}
           </p>
         </div>
@@ -132,7 +132,7 @@ export function ShareAppModal({ isOpen, onClose }: ShareAppModalProps) {
         <div className="flex gap-3">
           <Button
             onClick={copyLink}
-            className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl"
+            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl"
           >
             {t('landing.copyLink', 'Copy Link')}
           </Button>
@@ -140,7 +140,7 @@ export function ShareAppModal({ isOpen, onClose }: ShareAppModalProps) {
             <Button
               onClick={shareApp}
               variant="outline"
-              className="flex-1 border-indigo-600 text-indigo-600 hover:bg-indigo-50 rounded-xl"
+              className="flex-1 border-blue-600 text-blue-600 hover:bg-blue-50 rounded-xl"
             >
               {t('landing.share', 'Share')}
             </Button>

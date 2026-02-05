@@ -37,7 +37,7 @@ export default function DashboardLayout({
   const isMainDashboard = pathname === '/dashboard'
 
   return (
-    <div className="min-h-screen bg-[#e9d5ff]">
+    <div className="min-h-screen bg-gray-100">
       {!isMainDashboard && <DashboardNav />}
       <main className={`container mx-auto px-4 ${isMainDashboard ? 'py-0' : 'py-8 pb-20 md:pb-8'}`}>
         {children}

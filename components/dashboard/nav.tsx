@@ -85,98 +85,100 @@ export function DashboardNav() {
   )
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-theme-cardBorder glass-card">
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-6">
-          <button
-            onClick={handleShareApp}
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-            title={t('share.shareApp', 'Share App')}
-          >
-            <div className="w-8 h-8 bg-theme-primary rounded-lg flex items-center justify-center glow">
-              <QrCode className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold hidden md:inline-block text-theme-textPrimary">Smart AI Referrals</span>
-          </button>
-          <nav className="hidden md:flex items-center gap-1">
-            {filteredNavItems.map((item) => {
-              const Icon = item.icon
-              const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
-              return (
-                <Link key={item.href} href={item.href}>
-                  <Button
-                    variant={isActive ? 'secondary' : 'ghost'}
-                    size="sm"
-                    className={cn('gap-2', isActive && 'bg-secondary')}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {item.label}
-                  </Button>
-                </Link>
-              )
-            })}
-          </nav>
-        </div>
+    <>
+      <header className="sticky top-0 z-50 w-full border-b border-theme-cardBorder glass-card">
+        <div className="container flex h-16 items-center justify-between">
+          <div className="flex items-center gap-6">
+            <button
+              onClick={handleShareApp}
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+              title={t('share.shareApp', 'Share App')}
+            >
+              <div className="w-8 h-8 bg-theme-primary rounded-lg flex items-center justify-center glow">
+                <QrCode className="w-4 h-4 text-white" />
+              </div>
+              <span className="font-bold hidden md:inline-block text-theme-textPrimary">Smart AI Referrals</span>
+            </button>
+            <nav className="hidden md:flex items-center gap-1">
+              {filteredNavItems.map((item) => {
+                const Icon = item.icon
+                const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+                return (
+                  <Link key={item.href} href={item.href}>
+                    <Button
+                      variant={isActive ? 'secondary' : 'ghost'}
+                      size="sm"
+                      className={cn('gap-2', isActive && 'bg-secondary')}
+                    >
+                      <Icon className="w-4 h-4" />
+                      {item.label}
+                    </Button>
+                  </Link>
+                )
+              })}
+            </nav>
+          </div>
 
-        <div className="flex items-center gap-4">
-          <LanguageSwitcher />
-          <ThemeSwitcher />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="relative h-8 w-8 rounded-full"
-                onClick={() => console.log('Profile avatar clicked!', user)}
-              >
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={user?.photoURL} alt={user?.name} />
-                  <AvatarFallback>
-                    {user?.name?.charAt(0).toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{user?.name}</p>
-                  <p className="text-xs leading-none text-muted-foreground">
-                    {user?.email}
-                  </p>
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {user?.roles.map((role) => (
-                      <span
-                        key={role}
-                        className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full capitalize"
-                      >
-                        {role}
-                      </span>
-                    ))}
+          <div className="flex items-center gap-4">
+            <LanguageSwitcher />
+            <ThemeSwitcher />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="relative h-8 w-8 rounded-full"
+                  onClick={() => console.log('Profile avatar clicked!', user)}
+                >
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user?.photoURL} alt={user?.name} />
+                    <AvatarFallback>
+                      {user?.name?.charAt(0).toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{user?.name}</p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user?.email}
+                    </p>
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {user?.roles.map((role) => (
+                        <span
+                          key={role}
+                          className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full capitalize"
+                        >
+                          {role}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/dashboard/settings" className="cursor-pointer">
-                  <Settings className="mr-2 h-4 w-4" />
-                  {t('nav.settings')}
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-600">
-                <LogOut className="mr-2 h-4 w-4" />
-                {t('nav.signOut')}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard/settings" className="cursor-pointer">
+                    <Settings className="mr-2 h-4 w-4" />
+                    {t('nav.settings')}
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-600">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  {t('nav.signOut')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
-      </div>
+      </header>
 
-      {/* Share App Modal */}
+      {/* Share App Modal - rendered outside header to avoid stacking context issues */}
       <ShareAppModal
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
       />
-    </header>
+    </>
   )
 }
