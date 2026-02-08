@@ -92,3 +92,43 @@ export function apiPut<T = unknown>(endpoint: string, body: unknown) {
 export function apiDelete<T = unknown>(endpoint: string) {
   return apiClient<T>(endpoint, { method: 'DELETE' })
 }
+
+/**
+ * Helper for FormData uploads (images, files)
+ * Does NOT set Content-Type - browser sets multipart/form-data boundary automatically
+ */
+export async function apiUpload<T = unknown>(
+  endpoint: string,
+  formData: FormData
+): Promise<{ data: T; ok: boolean; status: number; error?: string }> {
+  try {
+    const user = auth.currentUser
+    if (!user) {
+      return { data: null as T, ok: false, status: 401, error: 'Not authenticated' }
+    }
+
+    const token = await user.getIdToken()
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      return { data, ok: false, status: response.status, error: data.error || 'Upload failed' }
+    }
+
+    return { data, ok: true, status: response.status }
+  } catch (error) {
+    console.error('Upload request failed:', error)
+    return {
+      data: null as T,
+      ok: false,
+      status: 500,
+      error: error instanceof Error ? error.message : 'Upload failed',
+    }
+  }
+}

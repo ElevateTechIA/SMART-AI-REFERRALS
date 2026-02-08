@@ -10,7 +10,7 @@ import {
   signOut as firebaseSignOut,
   updateProfile,
 } from 'firebase/auth'
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, getDoc, getDocFromServer, setDoc, serverTimestamp } from 'firebase/firestore'
 import { auth, db, googleProvider } from '@/lib/firebase/client'
 import type { User, UserRole } from '@/lib/types'
 
@@ -42,6 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         name: data.name,
         photoURL: data.photoURL,
         roles: data.roles || ['referrer'],
+        referrerStatus: data.referrerStatus,
         createdAt: data.createdAt?.toDate() || new Date(),
         updatedAt: data.updatedAt?.toDate() || new Date(),
       }
@@ -60,7 +61,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const userRole: UserRole = role === 'admin' ? 'referrer' : (role || 'referrer')
     const roles: UserRole[] = [userRole]
 
-    const userData = {
+    // Set referrerStatus to pending if registering as referrer
+    const referrerStatus = userRole === 'referrer' ? 'pending' : undefined
+
+    const userData: Record<string, unknown> = {
       email: firebaseUser.email!,
       name: name || firebaseUser.displayName || 'User',
       photoURL: firebaseUser.photoURL || null,
@@ -69,14 +73,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       updatedAt: serverTimestamp(),
     }
 
+    if (referrerStatus) {
+      userData.referrerStatus = referrerStatus
+    }
+
     await setDoc(doc(db, 'users', firebaseUser.uid), userData)
 
     return {
       id: firebaseUser.uid,
-      email: userData.email,
-      name: userData.name,
-      photoURL: userData.photoURL || undefined,
-      roles: userData.roles,
+      email: userData.email as string,
+      name: userData.name as string,
+      photoURL: (userData.photoURL as string) || undefined,
+      roles: userData.roles as UserRole[],
+      referrerStatus: referrerStatus as User['referrerStatus'],
       createdAt: new Date(),
       updatedAt: new Date(),
     }
@@ -128,9 +137,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = async () => {
     if (firebaseUser) {
-      const userData = await fetchUserData(firebaseUser)
-      if (userData) {
-        setUser(userData)
+      try {
+        // Use getDocFromServer to bypass Firestore client cache
+        const userDoc = await getDocFromServer(doc(db, 'users', firebaseUser.uid))
+        if (userDoc.exists()) {
+          const data = userDoc.data()
+          setUser({
+            id: userDoc.id,
+            email: data.email,
+            name: data.name,
+            photoURL: data.photoURL,
+            roles: data.roles || ['referrer'],
+            referrerStatus: data.referrerStatus,
+            createdAt: data.createdAt?.toDate() || new Date(),
+            updatedAt: data.updatedAt?.toDate() || new Date(),
+          })
+        }
+      } catch (error) {
+        console.error('Error refreshing user data:', error)
+        // Fallback to regular getDoc if server fetch fails
+        const userData = await fetchUserData(firebaseUser)
+        if (userData) {
+          setUser(userData)
+        }
       }
     }
   }

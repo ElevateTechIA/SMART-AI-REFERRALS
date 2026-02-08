@@ -14,6 +14,7 @@ import { formatCurrency, formatDate } from '@/lib/utils'
 import {
   Building2,
   Users,
+  UserCheck,
   DollarSign,
   AlertTriangle,
   CheckCircle,
@@ -34,6 +35,7 @@ interface AdminStats {
   totalUsers: number
   totalBusinesses: number
   pendingBusinesses: number
+  pendingReferrers: number
   totalVisits: number
   totalConversions: number
   totalRevenue: number
@@ -41,7 +43,7 @@ interface AdminStats {
 }
 
 export default function AdminDashboardPage() {
-  const { user } = useAuth()
+  const { user, refreshUser } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
 
@@ -156,6 +158,50 @@ export default function AdminDashboardPage() {
     }
   }
 
+  const handleReferrerAction = async (userId: string, action: 'approve' | 'suspend') => {
+    if (!user) return
+
+    setActionLoading(userId)
+    try {
+      const result = await apiPost<{ success: boolean; error?: string }>(
+        `/api/admin/referrers/${userId}/approve`,
+        { action }
+      )
+
+      if (!result.ok) {
+        throw new Error(result.error || `Failed to ${action} referrer`)
+      }
+
+      // Update local state
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === userId
+            ? { ...u, referrerStatus: action === 'approve' ? 'active' : 'suspended' }
+            : u
+        )
+      )
+
+      // Refresh auth context user (important when admin approves themselves)
+      await refreshUser()
+
+      toast({
+        title: 'Success',
+        description: `Referrer ${action}d successfully`,
+      })
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : `Failed to ${action} referrer`
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      })
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const referrers = users.filter((u) => u.roles.includes('referrer'))
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -265,6 +311,7 @@ export default function AdminDashboardPage() {
       <Tabs defaultValue="businesses">
         <TabsList>
           <TabsTrigger value="businesses">Businesses</TabsTrigger>
+          <TabsTrigger value="referrers">Referrers</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="visits">Recent Visits</TabsTrigger>
         </TabsList>
@@ -347,6 +394,136 @@ export default function AdminDashboardPage() {
                               <>
                                 <XCircle className="h-4 w-4 mr-1" />
                                 Suspend
+                              </>
+                            )}
+                          </Button>
+                        )}
+
+                        {business.status === 'suspended' && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleBusinessAction(business.id, 'approve')}
+                            disabled={actionLoading === business.id}
+                          >
+                            {actionLoading === business.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <>
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                                Reactivate
+                              </>
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="referrers" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <UserCheck className="h-5 w-5" />
+                All Referrers
+              </CardTitle>
+              <CardDescription>
+                Approve or suspend referrer accounts
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {referrers.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">
+                  No referrers registered yet
+                </p>
+              ) : (
+                <div className="divide-y">
+                  {referrers.map((referrer) => (
+                    <div
+                      key={referrer.id}
+                      className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                          <span className="font-semibold">
+                            {referrer.name?.charAt(0).toUpperCase() || 'U'}
+                          </span>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold">{referrer.name}</h4>
+                          <p className="text-sm text-muted-foreground">{referrer.email}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Registered {formatDate(referrer.createdAt)}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant={
+                            referrer.referrerStatus === 'active'
+                              ? 'success'
+                              : referrer.referrerStatus === 'pending'
+                              ? 'warning'
+                              : referrer.referrerStatus === 'suspended'
+                              ? 'destructive'
+                              : 'secondary'
+                          }
+                        >
+                          {referrer.referrerStatus || 'pending'}
+                        </Badge>
+
+                        {(!referrer.referrerStatus || referrer.referrerStatus === 'pending') && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleReferrerAction(referrer.id, 'approve')}
+                            disabled={actionLoading === referrer.id}
+                          >
+                            {actionLoading === referrer.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <>
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                                Approve
+                              </>
+                            )}
+                          </Button>
+                        )}
+
+                        {referrer.referrerStatus === 'active' && (
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleReferrerAction(referrer.id, 'suspend')}
+                            disabled={actionLoading === referrer.id}
+                          >
+                            {actionLoading === referrer.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <>
+                                <XCircle className="h-4 w-4 mr-1" />
+                                Suspend
+                              </>
+                            )}
+                          </Button>
+                        )}
+
+                        {referrer.referrerStatus === 'suspended' && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleReferrerAction(referrer.id, 'approve')}
+                            disabled={actionLoading === referrer.id}
+                          >
+                            {actionLoading === referrer.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <>
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                                Reactivate
                               </>
                             )}
                           </Button>

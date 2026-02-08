@@ -129,6 +129,18 @@
     --theme-textPrimary: #F9FAFB;
     --theme-textSecondary: #D1D5DB;
     --theme-textMuted: #9CA3AF;
+
+    /* Dark gray scale overrides */
+    --theme-gray-50: #111827;
+    --theme-gray-100: #1F2937;
+    --theme-gray-200: #374151;
+    --theme-gray-300: #4B5563;
+    --theme-gray-400: #6B7280;
+    --theme-gray-500: #9CA3AF;
+    --theme-gray-600: #D1D5DB;
+    --theme-gray-700: #E5E7EB;
+    --theme-gray-800: #F3F4F6;
+    --theme-gray-900: #F9FAFB;
   }
 }
 
@@ -186,6 +198,10 @@
     transition: all 0.2s ease;
   }
 
+  .dark .card-clean {
+    background: #1F2937;
+  }
+
   .card-clean:hover {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
     border-color: var(--theme-gray-300);
@@ -196,6 +212,10 @@
     background: white;
     border-radius: 1.25rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  }
+
+  .dark .card-elevated {
+    background: #1F2937;
   }
 
   /* ===== BLUE BUTTON (Primary action) ===== */
@@ -243,8 +263,16 @@
     transition: all 0.2s ease;
   }
 
+  .dark .btn-outline-blue {
+    background: #1F2937;
+  }
+
   .btn-outline-blue:hover {
     background: #EFF6FF;
+  }
+
+  .dark .btn-outline-blue:hover {
+    background: #1E3A8A;
   }
 
   /* ===== BADGE STYLES ===== */
@@ -257,6 +285,11 @@
     font-weight: 600;
   }
 
+  .dark .badge-blue {
+    background: rgba(37, 99, 235, 0.2);
+    color: #60A5FA;
+  }
+
   .badge-green {
     background: #F0FDF4;
     color: #16A34A;
@@ -266,6 +299,11 @@
     font-weight: 600;
   }
 
+  .dark .badge-green {
+    background: rgba(22, 163, 74, 0.2);
+    color: #4ADE80;
+  }
+
   .badge-amber {
     background: #FFFBEB;
     color: #D97706;
@@ -273,6 +311,11 @@
     border-radius: 9999px;
     font-size: 0.75rem;
     font-weight: 600;
+  }
+
+  .dark .badge-amber {
+    background: rgba(217, 119, 6, 0.2);
+    color: #FBBF24;
   }
 
   /* ===== PROGRESS BAR ===== */
@@ -310,6 +353,10 @@
   .avatar-ring {
     border: 3px solid white;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .dark .avatar-ring {
+    border-color: #374151;
   }
 
   /* ===== LEGACY GRADIENT BACKGROUNDS ===== */
@@ -478,6 +525,12 @@
     background: white;
     border-top: 1px solid var(--theme-gray-200);
     box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);
+  }
+
+  .dark .bottom-nav {
+    background: #111827;
+    border-top-color: #374151;
+    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.3);
   }
 
   .bottom-nav-item {

@@ -49,6 +49,7 @@ export async function GET(request: NextRequest) {
           name: data.name,
           email: data.email,
           roles: data.roles || ['consumer'],
+          referrerStatus: data.referrerStatus || null,
           createdAt: data.createdAt?.toDate() || null,
           updatedAt: data.updatedAt?.toDate() || null,
         }

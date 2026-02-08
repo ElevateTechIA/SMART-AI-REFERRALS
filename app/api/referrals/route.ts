@@ -17,6 +17,11 @@ export async function GET(request: NextRequest) {
     const userId = authResult.uid
     const db = getAdminDb()
 
+    // Fetch user's referrerStatus from server (authoritative source)
+    const userDoc = await db.collection('users').doc(userId).get()
+    const userData = userDoc.data()
+    const referrerStatus = userData?.referrerStatus || null
+
     // Fetch active businesses with active offers
     // Note: Avoiding orderBy to prevent needing composite indexes
     const businessesSnapshot = await db
@@ -32,6 +37,7 @@ export async function GET(request: NextRequest) {
       address: string
       phone: string
       website?: string
+      images: string[]
       status: string
       createdAt: Date | null
       offer?: {
@@ -59,6 +65,7 @@ export async function GET(request: NextRequest) {
           address: businessData.address,
           phone: businessData.phone,
           website: businessData.website,
+          images: businessData.images || [],
           status: businessData.status,
           createdAt: businessData.createdAt?.toDate() || null,
           offer: {
@@ -135,6 +142,7 @@ export async function GET(request: NextRequest) {
       businesses,
       referrals,
       earnings,
+      referrerStatus,
     })
   } catch (error) {
     console.error('Error fetching referrals data:', error)

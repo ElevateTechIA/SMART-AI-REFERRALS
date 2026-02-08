@@ -1,6 +1,9 @@
 // User Roles
 export type UserRole = 'admin' | 'business' | 'referrer' | 'consumer'
 
+// Referrer Status
+export type ReferrerStatus = 'pending' | 'active' | 'suspended'
+
 // User Profile
 export interface User {
   id: string
@@ -8,6 +11,7 @@ export interface User {
   name: string
   photoURL?: string
   roles: UserRole[]
+  referrerStatus?: ReferrerStatus
   createdAt: Date
   updatedAt: Date
 }
@@ -180,6 +184,7 @@ export interface ReferrerStats {
 export interface AdminStats {
   totalBusinesses: number
   pendingBusinesses: number
+  pendingReferrers: number
   totalUsers: number
   totalVisits: number
   totalConversions: number

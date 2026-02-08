@@ -3,45 +3,42 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { apiGet } from '@/lib/api-client'
 import type { Business, Offer, Visit, Earning } from '@/lib/types'
-import { formatCurrency, formatDate, generateReferralUrl } from '@/lib/utils'
-import QRCode from 'qrcode'
+import { formatCurrency, formatDate } from '@/lib/utils'
+import { ReferralCardCarousel } from '@/components/referral-card-carousel'
 import {
   DollarSign,
   Users,
   TrendingUp,
-  Copy,
   Loader2,
   QrCode,
-  Download,
-  Share2,
   Building2,
+  Clock,
+  ShieldAlert,
 } from 'lucide-react'
 
 interface ReferralsApiResponse {
-  businesses: (Business & { offer?: Offer })[]
+  businesses: (Business & { offer?: Offer; images?: string[] })[]
   referrals: Visit[]
   earnings: Earning[]
+  referrerStatus: string | null
 }
 
 function ReferralsContent() {
-  const searchParams = useSearchParams()
-  const selectedBusinessId = searchParams.get('business')
+  useSearchParams() // keep Suspense boundary working
 
   const { user } = useAuth()
   const { toast } = useToast()
-  const [businesses, setBusinesses] = useState<(Business & { offer?: Offer })[]>([])
+  const [businesses, setBusinesses] = useState<(Business & { offer?: Offer; images?: string[] })[]>([])
   const [referrals, setReferrals] = useState<Visit[]>([])
   const [earnings, setEarnings] = useState<Earning[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedBusiness, setSelectedBusiness] = useState<string | null>(selectedBusinessId)
-  const [qrCode, setQrCode] = useState<string | null>(null)
+  const [serverReferrerStatus, setServerReferrerStatus] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,12 +53,11 @@ function ReferralsContent() {
 
         const data = result.data!
 
-        // Parse dates from API response
         const businessList = data.businesses.map((b) => ({
           ...b,
           createdAt: b.createdAt ? new Date(b.createdAt) : undefined,
           updatedAt: b.updatedAt ? new Date(b.updatedAt) : undefined,
-        })) as (Business & { offer?: Offer })[]
+        })) as (Business & { offer?: Offer; images?: string[] })[]
 
         const referralsList = data.referrals.map((r) => ({
           ...r,
@@ -78,13 +74,7 @@ function ReferralsContent() {
         setBusinesses(businessList)
         setReferrals(referralsList)
         setEarnings(earningsList)
-
-        // Set initial selected business
-        if (selectedBusinessId && businessList.some((b) => b.id === selectedBusinessId)) {
-          setSelectedBusiness(selectedBusinessId)
-        } else if (businessList.length > 0) {
-          setSelectedBusiness(businessList[0].id)
-        }
+        setServerReferrerStatus(data.referrerStatus)
       } catch (error) {
         console.error('Error fetching data:', error)
         toast({
@@ -98,60 +88,7 @@ function ReferralsContent() {
     }
 
     fetchData()
-  }, [user, selectedBusinessId, toast])
-
-  // Generate QR code when business is selected
-  useEffect(() => {
-    const generateQR = async () => {
-      if (!selectedBusiness || !user) return
-      const url = generateReferralUrl(selectedBusiness, user.id)
-      try {
-        const qr = await QRCode.toDataURL(url, { width: 300, margin: 2 })
-        setQrCode(qr)
-      } catch (error) {
-        console.error('Error generating QR code:', error)
-      }
-    }
-    generateQR()
-  }, [selectedBusiness, user])
-
-  const copyReferralLink = () => {
-    if (!selectedBusiness || !user) return
-    const url = generateReferralUrl(selectedBusiness, user.id)
-    navigator.clipboard.writeText(url)
-    toast({
-      title: 'Link Copied',
-      description: 'Referral link copied to clipboard',
-    })
-  }
-
-  const downloadQRCode = () => {
-    if (!qrCode) return
-    const link = document.createElement('a')
-    link.download = 'referral-qr-code.png'
-    link.href = qrCode
-    link.click()
-  }
-
-  const shareLink = async () => {
-    if (!selectedBusiness || !user) return
-    const url = generateReferralUrl(selectedBusiness, user.id)
-    const business = businesses.find((b) => b.id === selectedBusiness)
-
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `Check out ${business?.name}!`,
-          text: `I recommend ${business?.name}. Use my referral link to get rewards!`,
-          url,
-        })
-      } catch (error) {
-        // User cancelled
-      }
-    } else {
-      copyReferralLink()
-    }
-  }
+  }, [user, toast])
 
   if (loading) {
     return (
@@ -172,7 +109,12 @@ function ReferralsContent() {
       .reduce((sum, e) => sum + e.amount, 0),
   }
 
-  const currentBusiness = businesses.find((b) => b.id === selectedBusiness)
+  // Admins bypass referrer approval entirely
+  const isAdmin = user?.roles?.includes('admin')
+  const isReferrer = user?.roles?.includes('referrer')
+  const isReferrerApproved = isAdmin || serverReferrerStatus === 'active'
+  const isReferrerSuspended = !isAdmin && isReferrer && serverReferrerStatus === 'suspended'
+  const isReferrerPending = !isAdmin && isReferrer && (!serverReferrerStatus || serverReferrerStatus === 'pending')
 
   return (
     <div className="space-y-6 max-w-full overflow-hidden">
@@ -182,6 +124,36 @@ function ReferralsContent() {
           Share referral links and earn commissions when friends visit
         </p>
       </div>
+
+      {/* Pending Approval Banner */}
+      {isReferrerPending && (
+        <Card className="border-yellow-300 bg-yellow-50">
+          <CardContent className="flex items-center gap-4 py-4">
+            <Clock className="h-8 w-8 text-yellow-600 flex-shrink-0" />
+            <div>
+              <h3 className="font-semibold text-yellow-800">Pending Approval</h3>
+              <p className="text-sm text-yellow-700">
+                Your referrer account is pending admin approval. You will be able to share referral links once approved.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Suspended Banner */}
+      {isReferrerSuspended && (
+        <Card className="border-red-300 bg-red-50">
+          <CardContent className="flex items-center gap-4 py-4">
+            <ShieldAlert className="h-8 w-8 text-red-600 flex-shrink-0" />
+            <div>
+              <h3 className="font-semibold text-red-800">Account Suspended</h3>
+              <p className="text-sm text-red-700">
+                Your referrer account has been suspended. Please contact support for more information.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4">
@@ -231,130 +203,76 @@ function ReferralsContent() {
         </Card>
       </div>
 
-      <div className="grid gap-4 sm:gap-8 lg:grid-cols-2">
-        {/* QR Code & Referral Link */}
+      {/* Referral Cards Carousel */}
+      {isReferrerApproved && businesses.length > 0 && (
+        <div className="overflow-hidden -mx-4 px-4">
+          <div className="mb-3">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <QrCode className="h-5 w-5" />
+              Your Referral Cards
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Swipe to browse businesses. Share your unique link or QR code.
+            </p>
+          </div>
+          <ReferralCardCarousel businesses={businesses} userId={user!.id} />
+        </div>
+      )}
+
+      {!isReferrerApproved && (
         <Card className="min-w-0 overflow-hidden">
-          <CardHeader className="p-4 sm:p-6">
-            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-              <QrCode className="h-4 w-4 sm:h-5 sm:w-5" />
-              Your Referral Link
-            </CardTitle>
-            <CardDescription className="text-xs sm:text-sm">
-              Select a business and share your unique referral link
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
-            {businesses.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8 text-sm">
-                No businesses available for referral yet.
-              </p>
-            ) : (
-              <>
-                {/* Business Selector - scrollable on mobile */}
-                <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
-                  {businesses.map((business) => (
-                    <Button
-                      key={business.id}
-                      variant={selectedBusiness === business.id ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setSelectedBusiness(business.id)}
-                      className="text-xs sm:text-sm whitespace-nowrap"
-                    >
-                      {business.name}
-                    </Button>
-                  ))}
-                </div>
+          <CardContent className="py-8 text-center text-muted-foreground text-sm">
+            {isReferrerSuspended
+              ? 'Your referrer account is suspended. You cannot share referral links.'
+              : isReferrerPending
+              ? 'Your account is pending approval. Once approved, your referral cards will appear here.'
+              : 'Referral cards will appear here once businesses are available.'}
+          </CardContent>
+        </Card>
+      )}
 
-                {currentBusiness && (
-                  <>
-                    {/* Business Info */}
-                    <div className="bg-muted/50 rounded-lg p-3 sm:p-4">
-                      <h4 className="font-semibold text-sm sm:text-base">{currentBusiness.name}</h4>
-                      <p className="text-xs sm:text-sm text-muted-foreground">{currentBusiness.category}</p>
-                      {currentBusiness.offer && (
-                        <div className="mt-2">
-                          <Badge variant="secondary" className="text-xs">
-                            Earn {formatCurrency(currentBusiness.offer.referrerCommissionAmount)} per referral
-                          </Badge>
-                        </div>
-                      )}
-                    </div>
+      {isReferrerApproved && businesses.length === 0 && (
+        <Card className="min-w-0 overflow-hidden">
+          <CardContent className="py-8 text-center text-muted-foreground text-sm">
+            No businesses available for referral yet.
+          </CardContent>
+        </Card>
+      )}
 
-                    {/* QR Code */}
-                    {qrCode && (
-                      <div className="flex justify-center">
-                        <img
-                          src={qrCode}
-                          alt="Referral QR Code"
-                          className="rounded-lg border w-40 h-40 sm:w-auto sm:h-auto max-w-[200px]"
-                        />
-                      </div>
-                    )}
+      {/* Referral History */}
+      <Card className="min-w-0 overflow-hidden">
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-base sm:text-lg">Referral History</CardTitle>
+          <CardDescription className="text-xs sm:text-sm">Your recent referrals and their status</CardDescription>
+        </CardHeader>
+        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+          <Tabs defaultValue="all">
+            <TabsList className="mb-4 w-full justify-start">
+              <TabsTrigger value="all" className="text-xs sm:text-sm">All</TabsTrigger>
+              <TabsTrigger value="pending" className="text-xs sm:text-sm">Pending</TabsTrigger>
+              <TabsTrigger value="converted" className="text-xs sm:text-sm">Converted</TabsTrigger>
+            </TabsList>
 
-                    {/* Link and Actions */}
-                    <div className="space-y-2">
-                      <div className="bg-muted rounded-md px-3 py-2 text-xs sm:text-sm font-mono overflow-x-auto whitespace-nowrap">
-                        {generateReferralUrl(selectedBusiness!, user?.id)}
-                      </div>
-                      <div className="grid grid-cols-3 gap-2">
-                        <Button onClick={copyReferralLink} className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-4">
-                          <Copy className="h-3 w-3 sm:h-4 sm:w-4" />
-                          <span className="hidden sm:inline">Copy Link</span>
-                          <span className="sm:hidden">Copy</span>
-                        </Button>
-                        <Button variant="outline" onClick={downloadQRCode} className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-4">
-                          <Download className="h-3 w-3 sm:h-4 sm:w-4" />
-                          <span className="hidden sm:inline">Download QR</span>
-                          <span className="sm:hidden">QR</span>
-                        </Button>
-                        <Button variant="outline" onClick={shareLink} className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-4">
-                          <Share2 className="h-3 w-3 sm:h-4 sm:w-4" />
-                          Share
-                        </Button>
-                      </div>
-                    </div>
-                  </>
+            <TabsContent value="all">
+              <ReferralList referrals={referrals} businesses={businesses} />
+            </TabsContent>
+            <TabsContent value="pending">
+              <ReferralList
+                referrals={referrals.filter(
+                  (r) => r.status === 'CREATED' || r.status === 'CHECKED_IN'
                 )}
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Referral History */}
-        <Card className="min-w-0 overflow-hidden">
-          <CardHeader className="p-4 sm:p-6">
-            <CardTitle className="text-base sm:text-lg">Referral History</CardTitle>
-            <CardDescription className="text-xs sm:text-sm">Your recent referrals and their status</CardDescription>
-          </CardHeader>
-          <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
-            <Tabs defaultValue="all">
-              <TabsList className="mb-4 w-full justify-start">
-                <TabsTrigger value="all" className="text-xs sm:text-sm">All</TabsTrigger>
-                <TabsTrigger value="pending" className="text-xs sm:text-sm">Pending</TabsTrigger>
-                <TabsTrigger value="converted" className="text-xs sm:text-sm">Converted</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="all">
-                <ReferralList referrals={referrals} businesses={businesses} />
-              </TabsContent>
-              <TabsContent value="pending">
-                <ReferralList
-                  referrals={referrals.filter(
-                    (r) => r.status === 'CREATED' || r.status === 'CHECKED_IN'
-                  )}
-                  businesses={businesses}
-                />
-              </TabsContent>
-              <TabsContent value="converted">
-                <ReferralList
-                  referrals={referrals.filter((r) => r.status === 'CONVERTED')}
-                  businesses={businesses}
-                />
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-      </div>
+                businesses={businesses}
+              />
+            </TabsContent>
+            <TabsContent value="converted">
+              <ReferralList
+                referrals={referrals.filter((r) => r.status === 'CONVERTED')}
+                businesses={businesses}
+              />
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
 
       {/* Earnings Ledger */}
       <Card className="min-w-0 overflow-hidden">

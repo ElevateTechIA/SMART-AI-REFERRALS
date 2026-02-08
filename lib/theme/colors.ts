@@ -173,7 +173,7 @@ export const themes = {
 }
 
 // Default theme
-export const defaultTheme = 'purple'
+export const defaultTheme = 'cleanBlue'
 
 // Get current theme
 export function getTheme(themeName: keyof typeof themes = defaultTheme) {

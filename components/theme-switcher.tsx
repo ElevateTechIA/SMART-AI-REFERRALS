@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useTheme } from '@/lib/theme/theme-provider'
+import { useTheme, type Mode } from '@/lib/theme/theme-provider'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -11,10 +11,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Palette, Check } from 'lucide-react'
+import { Palette, Check, Sun, Moon, Monitor } from 'lucide-react'
+
+const modeOptions: { value: Mode; label: string; icon: typeof Sun }[] = [
+  { value: 'light', label: 'Light', icon: Sun },
+  { value: 'dark', label: 'Dark', icon: Moon },
+  { value: 'system', label: 'Auto', icon: Monitor },
+]
 
 export function ThemeSwitcher() {
-  const { theme, setTheme, availableThemes } = useTheme()
+  const { theme, setTheme, mode, setMode, availableThemes } = useTheme()
   const [isOpen, setIsOpen] = useState(false)
 
   return (
@@ -26,7 +32,29 @@ export function ThemeSwitcher() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>Choose Theme</DropdownMenuLabel>
+        {/* Mode Section */}
+        <DropdownMenuLabel>Mode</DropdownMenuLabel>
+        <div className="flex gap-1 px-2 pb-2">
+          {modeOptions.map(({ value, label, icon: Icon }) => (
+            <button
+              key={value}
+              onClick={() => setMode(value)}
+              className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                mode === value
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted hover:bg-muted/80 text-muted-foreground'
+              }`}
+            >
+              <Icon className="h-3.5 w-3.5" />
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <DropdownMenuSeparator />
+
+        {/* Color Theme Section */}
+        <DropdownMenuLabel>Color Theme</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {Object.entries(availableThemes).map(([key, themeData]) => (
           <DropdownMenuItem

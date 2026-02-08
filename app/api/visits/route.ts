@@ -53,6 +53,24 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Verify referrer is approved before allowing referral attribution
+    if (referrerUserId) {
+      const referrerDoc = await getAdminDb().collection('users').doc(referrerUserId).get()
+      if (!referrerDoc.exists) {
+        return NextResponse.json(
+          { error: 'Referrer not found' },
+          { status: 404 }
+        )
+      }
+      const referrerData = referrerDoc.data()
+      if (referrerData?.referrerStatus !== 'active') {
+        return NextResponse.json(
+          { error: 'Referrer is not approved to make referrals' },
+          { status: 403 }
+        )
+      }
+    }
+
     // Get user's request metadata
     const userAgent = request.headers.get('user-agent') || undefined
     const forwardedFor = request.headers.get('x-forwarded-for')
