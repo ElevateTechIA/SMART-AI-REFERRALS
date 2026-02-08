@@ -7,6 +7,8 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut as firebaseSignOut,
   updateProfile,
 } from 'firebase/auth'
@@ -92,6 +94,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
+    // Handle pending redirect result (mobile fallback for Google sign-in)
+    getRedirectResult(auth)
+      .then(async (result) => {
+        if (result) {
+          const existingUser = await fetchUserData(result.user)
+          if (!existingUser) {
+            let role: UserRole | undefined
+            try {
+              const stored = sessionStorage.getItem('pendingAuthRole')
+              if (stored) role = stored as UserRole
+              sessionStorage.removeItem('pendingAuthRole')
+            } catch {
+              // sessionStorage may be unavailable
+            }
+            await createUserDocument(result.user, undefined, role)
+          }
+        }
+      })
+      .catch(() => {
+        // Redirect result errors are non-fatal (e.g. missing initial state)
+      })
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setFirebaseUser(firebaseUser)
       if (firebaseUser) {
@@ -123,10 +147,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signInWithGoogle = async (role?: UserRole) => {
-    const result = await signInWithPopup(auth, googleProvider)
-    const existingUser = await fetchUserData(result.user)
-    if (!existingUser) {
-      await createUserDocument(result.user, undefined, role)
+    try {
+      const result = await signInWithPopup(auth, googleProvider)
+      const existingUser = await fetchUserData(result.user)
+      if (!existingUser) {
+        await createUserDocument(result.user, undefined, role)
+      }
+    } catch (error: unknown) {
+      const firebaseError = error as { code?: string }
+      // Popup blocked or closed on mobile - fall back to redirect
+      if (
+        firebaseError.code === 'auth/popup-blocked' ||
+        firebaseError.code === 'auth/popup-closed-by-user' ||
+        firebaseError.code === 'auth/cancelled-popup-request'
+      ) {
+        try {
+          if (role) sessionStorage.setItem('pendingAuthRole', role)
+        } catch {
+          // sessionStorage may be unavailable
+        }
+        await signInWithRedirect(auth, googleProvider)
+      } else {
+        throw error
+      }
     }
   }
 
