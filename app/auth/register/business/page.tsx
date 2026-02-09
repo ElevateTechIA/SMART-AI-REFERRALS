@@ -4,56 +4,25 @@ import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useTranslation } from 'react-i18next'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { AuthPageLayout } from '@/components/auth/auth-page-layout'
-import { AuthFormFields } from '@/components/auth/auth-form-fields'
 import { GoogleAuthButton } from '@/components/auth/google-auth-button'
-import { AuthDivider } from '@/components/auth/auth-divider'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { Loader2, Building2 } from 'lucide-react'
 
 function BusinessRegisterContent() {
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const { signUp, signInWithGoogle, user, loading: authLoading } = useAuth()
+  const { signInWithGoogle, user, loading: authLoading } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
   const { t } = useTranslation()
 
-  // Redirect to dashboard if user is already logged in
   useEffect(() => {
     if (!authLoading && user) {
       router.push('/dashboard')
     }
   }, [user, authLoading, router])
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-
-    try {
-      await signUp(email, password, name, 'business')
-      toast({
-        title: 'Account created',
-        description: 'Welcome to Smart AI Referrals!',
-      })
-      // Redirect to business setup
-      router.push('/dashboard/business/setup')
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create account'
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const handleGoogleSignUp = async () => {
     setLoading(true)
@@ -63,7 +32,6 @@ function BusinessRegisterContent() {
         title: 'Account created',
         description: 'Welcome to Smart AI Referrals!',
       })
-      // Redirect to business setup
       router.push('/dashboard/business/setup')
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to sign up with Google'
@@ -89,34 +57,8 @@ function BusinessRegisterContent() {
             {t('auth.createBusinessAccountDesc')}
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          {/* Google Sign Up - Primary Option */}
+        <CardContent className="px-8 pb-6">
           <GoogleAuthButton onClick={handleGoogleSignUp} loading={loading} />
-
-          <AuthDivider />
-
-          {/* Email/Password Form - Secondary Option */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <AuthFormFields
-              name={name}
-              setName={setName}
-              email={email}
-              setEmail={setEmail}
-              password={password}
-              setPassword={setPassword}
-              loading={loading}
-            />
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {t('auth.creatingAccount')}
-                </>
-              ) : (
-                t('auth.createBusinessAccount')
-              )}
-            </Button>
-          </form>
         </CardContent>
         <CardFooter className="flex flex-col gap-2">
           <p className="text-sm text-gray-700 text-center font-medium">
@@ -138,7 +80,6 @@ export default function BusinessRegisterPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen relative overflow-hidden">
-        {/* Background Image */}
         <div
           className="absolute inset-0 z-0"
           style={{

@@ -38,7 +38,7 @@ export function RegistrationChatbot({
   onComplete,
 }: RegistrationChatbotProps) {
   const router = useRouter()
-  const { signUp, signInWithGoogle } = useAuth()
+  const { signInWithGoogle } = useAuth()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [isMinimized, setIsMinimized] = useState(false)
 
@@ -189,11 +189,7 @@ export function RegistrationChatbot({
   // Handle quick actions
   const handleQuickAction = (action: QuickAction) => {
     if (action.type === 'auth') {
-      if (action.value === 'google') {
-        handleGoogleAuth()
-      } else {
-        handleEmailAuth()
-      }
+      handleGoogleAuth()
     } else if (action.type === 'confirm') {
       handleConfirm()
     } else if (action.type === 'cancel') {
@@ -209,14 +205,16 @@ export function RegistrationChatbot({
     }
   }
 
-  // Handle confirmation
+  // Handle confirmation - go straight to Google auth
   const handleConfirm = () => {
     setShowSummary(false)
     setCurrentState('auth_method')
-    addMessage('assistant', getStatePrompt('auth_method', language), [
-      { label: 'Continue with Google', value: 'google', type: 'auth' },
-      { label: language === 'es' ? 'Usar email y contraseña' : 'Use email & password', value: 'email', type: 'auth' },
-    ])
+    addMessage('assistant',
+      language === 'es'
+        ? '¡Perfecto! Vamos a crear tu cuenta con Google.'
+        : 'Perfect! Let\'s create your account with Google.',
+      [{ label: 'Continue with Google', value: 'google', type: 'auth' }]
+    )
   }
 
   // Handle registration
@@ -307,85 +305,6 @@ export function RegistrationChatbot({
           ? 'No se pudo completar el registro con Google. ¿Quieres intentar con email?'
           : 'Could not complete Google sign-up. Would you like to try with email?'
       )
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  // Handle Email Auth
-  const handleEmailAuth = async () => {
-    if (!collectedData.user?.email || !collectedData.user?.password || !collectedData.user?.name) {
-      addMessage(
-        'assistant',
-        language === 'es'
-          ? 'Falta información. Por favor completa tu nombre, email y contraseña.'
-          : 'Missing information. Please complete your name, email, and password.'
-      )
-      return
-    }
-
-    setIsLoading(true)
-    addMessage(
-      'assistant',
-      language === 'es' ? 'Creando tu cuenta...' : 'Creating your account...'
-    )
-
-    try {
-      // Pass the correct role based on registration type
-      const role = registrationType === 'business' ? 'business' : 'referrer'
-      await signUp(
-        collectedData.user.email,
-        collectedData.user.password,
-        collectedData.user.name,
-        role
-      )
-
-      // If business registration, create business
-      if (registrationType === 'business' && collectedData.business?.name) {
-        await apiPost('/api/businesses', {
-          name: collectedData.business.name,
-          category: collectedData.business.category || 'other',
-          description: collectedData.business.description || '',
-          address: collectedData.business.address,
-          phone: collectedData.business.phone,
-          website: collectedData.business.website || undefined,
-        })
-      }
-
-      addMessage(
-        'assistant',
-        language === 'es'
-          ? '¡Cuenta creada exitosamente! Redirigiéndote a tu panel...'
-          : 'Account created successfully! Redirecting you to your dashboard...'
-      )
-
-      setTimeout(() => {
-        onComplete?.()
-        if (registrationType === 'business') {
-          router.push('/dashboard/business/offer')
-        } else {
-          router.push('/dashboard')
-        }
-      }, 1500)
-    } catch (error: unknown) {
-      console.error('Email auth error:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-
-      if (errorMessage.includes('email-already-in-use')) {
-        addMessage(
-          'assistant',
-          language === 'es'
-            ? 'Este email ya está registrado. ¿Quieres intentar con otro email o usar Google?'
-            : 'This email is already registered. Would you like to try another email or use Google?'
-        )
-      } else {
-        addMessage(
-          'assistant',
-          language === 'es'
-            ? 'Hubo un error al crear tu cuenta. Por favor intenta de nuevo.'
-            : 'There was an error creating your account. Please try again.'
-        )
-      }
     } finally {
       setIsLoading(false)
     }

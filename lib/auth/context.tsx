@@ -4,13 +4,10 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import {
   User as FirebaseUser,
   onAuthStateChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
   signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
   signOut as firebaseSignOut,
-  updateProfile,
 } from 'firebase/auth'
 import { doc, getDoc, getDocFromServer, setDoc, serverTimestamp } from 'firebase/firestore'
 import { auth, db, googleProvider } from '@/lib/firebase/client'
@@ -20,8 +17,6 @@ interface AuthContextType {
   firebaseUser: FirebaseUser | null
   user: User | null
   loading: boolean
-  signIn: (email: string, password: string) => Promise<void>
-  signUp: (email: string, password: string, name: string, role?: UserRole) => Promise<void>
   signInWithGoogle: (role?: UserRole) => Promise<void>
   signOut: () => Promise<void>
   refreshUser: () => Promise<void>
@@ -136,16 +131,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => unsubscribe()
   }, [])
 
-  const signIn = async (email: string, password: string) => {
-    await signInWithEmailAndPassword(auth, email, password)
-  }
-
-  const signUp = async (email: string, password: string, name: string, role?: UserRole) => {
-    const credential = await createUserWithEmailAndPassword(auth, email, password)
-    await updateProfile(credential.user, { displayName: name })
-    await createUserDocument(credential.user, name, role)
-  }
-
   const signInWithGoogle = async (role?: UserRole) => {
     try {
       const result = await signInWithPopup(auth, googleProvider)
@@ -213,8 +198,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         firebaseUser,
         user,
         loading,
-        signIn,
-        signUp,
         signInWithGoogle,
         signOut,
         refreshUser,
