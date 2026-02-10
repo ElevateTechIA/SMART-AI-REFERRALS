@@ -49,13 +49,13 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
 
   const copyLink = () => {
     navigator.clipboard.writeText(referralUrl)
-    toast({ title: 'Link Copied', description: 'Referral link copied to clipboard' })
+    toast({ title: 'Link Copied', description: 'Promo link copied to clipboard' })
   }
 
   const downloadQR = () => {
     if (!qrCode) return
     const link = document.createElement('a')
-    link.download = `${business.name.replace(/\s+/g, '-')}-referral-qr.png`
+    link.download = `${business.name.replace(/\s+/g, '-')}-promo-qr.png`
     link.href = qrCode
     link.click()
   }
@@ -65,7 +65,7 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
       try {
         await navigator.share({
           title: `Check out ${business.name}!`,
-          text: `I recommend ${business.name}. Use my referral link to get rewards!`,
+          text: `I recommend ${business.name}. Use my link to get rewards!`,
           url: referralUrl,
         })
       } catch {

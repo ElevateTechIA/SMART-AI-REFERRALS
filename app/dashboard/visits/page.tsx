@@ -136,13 +136,13 @@ export default function VisitsPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">My Visits</h1>
           <p className="text-muted-foreground">
-            Track your visits and rewards from referrals
+            Track your visits and rewards from promotions
           </p>
         </div>
         <Link href="/dashboard/referrals">
           <Button className="gap-2">
             <Share2 className="h-4 w-4" />
-            Start Referring
+            Start Promoting
           </Button>
         </Link>
       </div>
@@ -316,7 +316,7 @@ export default function VisitsPage() {
         <CardContent>
           <Link href="/dashboard/referrals">
             <Button className="gap-2">
-              Get Referral Links <ArrowRight className="h-4 w-4" />
+              Get Promo Links <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
         </CardContent>
@@ -334,7 +334,7 @@ export default function VisitsPage() {
               <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="font-semibold mb-2">No Visits Yet</h3>
               <p className="text-muted-foreground mb-4">
-                Scan a referral QR code or use a referral link to get started!
+                Scan a promo QR code or use a promo link to get started!
               </p>
             </div>
           ) : (
@@ -382,7 +382,7 @@ export default function VisitsPage() {
                         </Badge>
                         {visit.attributionType === 'REFERRER' && (
                           <p className="text-xs text-muted-foreground mt-1">
-                            Via referral
+                            Via promotion
                           </p>
                         )}
                       </div>

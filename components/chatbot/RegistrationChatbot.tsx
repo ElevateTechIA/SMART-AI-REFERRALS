@@ -348,7 +348,7 @@ export function RegistrationChatbot({
               <p className="text-white/70 text-xs">
                 {registrationType === 'business'
                   ? language === 'es' ? 'Registro de Negocio' : 'Business Registration'
-                  : language === 'es' ? 'Registro de Referidor' : 'Referrer Registration'
+                  : language === 'es' ? 'Registro de Promotor' : 'Promoter Registration'
                 }
               </p>
             )}

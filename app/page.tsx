@@ -92,7 +92,7 @@ export default function LandingPage() {
         <div className="flex-1 flex items-center">
           <div className="max-w-7xl mx-auto px-6 py-12 grid lg:grid-cols-2 gap-12 items-center w-full">
             {/* Left Column - Text Content */}
-            <div className="space-y-8">
+            <div className="space-y-8 text-center lg:text-left">
               <div>
                 <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
                   {t('landing.heroTitle')} <span className="text-blue-400">{t('landing.heroTitleHighlight')}</span>
@@ -103,7 +103,7 @@ export default function LandingPage() {
               </div>
 
               {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 items-center lg:items-start">
                 <Button
                   size="lg"
                   onClick={() => setShowReferrerModal(true)}

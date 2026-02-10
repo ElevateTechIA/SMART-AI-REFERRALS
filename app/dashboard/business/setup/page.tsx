@@ -82,7 +82,7 @@ export default function BusinessSetupPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Register Your Business</h1>
         <p className="text-muted-foreground">
-          Fill out the form below to get started with referral marketing
+          Fill out the form below to get started with promotion marketing
         </p>
       </div>
 

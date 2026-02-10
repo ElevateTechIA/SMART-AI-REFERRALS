@@ -48,7 +48,7 @@ export async function POST(
     const userData = userDoc.data()
     if (!userData?.roles?.includes('referrer')) {
       return NextResponse.json(
-        { error: 'User is not a referrer' },
+        { error: 'User is not a promoter' },
         { status: 400 }
       )
     }
@@ -62,12 +62,12 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      message: `Referrer ${action}d successfully`,
+      message: `Promoter ${action}d successfully`,
     })
   } catch (error) {
-    console.error('Error updating referrer status:', error)
+    console.error('Error updating promoter status:', error)
     return NextResponse.json(
-      { error: 'Failed to update referrer status' },
+      { error: 'Failed to update promoter status' },
       { status: 500 }
     )
   }

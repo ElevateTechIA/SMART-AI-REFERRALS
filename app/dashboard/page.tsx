@@ -127,7 +127,7 @@ export default function EnhancedDashboardPage() {
   const share = () => {
     if (navigator.share) {
       navigator.share({
-        title: 'My Referral Link',
+        title: 'My Promo Link',
         url: 'smartreferrals.io///boat...',
       })
     }
@@ -141,8 +141,8 @@ export default function EnhancedDashboardPage() {
   const recentConversions = [
     { id: 1, name: 'Alex M.', type: 'Boat Rental', verified: true },
     { id: 2, name: 'Sarah T.', type: 'Spa Visit', verified: true },
-    { id: 3, name: 'Sarah T.', type: 'Care Referral', verified: true },
-    { id: 4, name: 'David S.', type: 'Cafe Referral', verified: true },
+    { id: 3, name: 'Sarah T.', type: 'Care Promo', verified: true },
+    { id: 4, name: 'David S.', type: 'Cafe Promo', verified: true },
   ]
 
   const renderDesktopContent = () => (
@@ -754,7 +754,7 @@ export default function EnhancedDashboardPage() {
               className="flex items-center gap-4 px-6 py-4 mb-2 text-white/80 hover:bg-blue-700/30 rounded-lg transition-colors"
             >
               <Users className="h-6 w-6" />
-              <span className="text-base font-medium">My Referrals</span>
+              <span className="text-base font-medium">My Promotions</span>
             </Link>
             <Link
               href="/dashboard/earnings"

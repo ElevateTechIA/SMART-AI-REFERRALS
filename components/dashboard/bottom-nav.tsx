@@ -82,16 +82,16 @@ export function BottomNav() {
       roles: ['referrer', 'admin'],
     },
     {
-      label: t('nav.earnings'),
-      href: '/dashboard/earnings',
-      icon: DollarSign,
-      roles: ['referrer', 'business', 'admin'],
-    },
-    {
       label: t('nav.business'),
       href: '/dashboard/business',
       icon: Building2,
       roles: ['business', 'admin'],
+    },
+    {
+      label: t('nav.earnings'),
+      href: '/dashboard/earnings',
+      icon: DollarSign,
+      roles: ['referrer', 'business', 'admin'],
     },
     {
       label: t('nav.visits'),
@@ -101,10 +101,10 @@ export function BottomNav() {
     },
   ]
 
-  // Filter nav items by user roles, take first 3 items to leave room for language switcher
+  // Filter nav items by user roles
   const filteredNavItems = navItems.filter((item) =>
     item.roles.some((role) => user?.roles.includes(role as never))
-  ).slice(0, 3)
+  )
 
   return (
     <nav
@@ -113,7 +113,7 @@ export function BottomNav() {
         isVisible ? 'translate-y-0' : 'translate-y-full'
       )}
     >
-      <div className="grid grid-cols-4 h-16 px-1">
+      <div className="grid h-16 px-1" style={{ gridTemplateColumns: `repeat(${filteredNavItems.length + 1}, minmax(0, 1fr))` }}>
         {filteredNavItems.map((item) => {
           const Icon = item.icon
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
@@ -127,7 +127,7 @@ export function BottomNav() {
               )}
             >
               <Icon className="h-5 w-5" />
-              <span className="text-[9px] font-medium">{item.label}</span>
+              <span className={cn("font-medium truncate max-w-full", filteredNavItems.length > 4 ? "text-[8px]" : "text-[9px]")}>{item.label}</span>
             </Link>
           )
         })}

@@ -169,7 +169,7 @@ export default function AdminDashboardPage() {
       )
 
       if (!result.ok) {
-        throw new Error(result.error || `Failed to ${action} referrer`)
+        throw new Error(result.error || `Failed to ${action} promoter`)
       }
 
       // Update local state
@@ -186,10 +186,10 @@ export default function AdminDashboardPage() {
 
       toast({
         title: 'Success',
-        description: `Referrer ${action}d successfully`,
+        description: `Promoter ${action}d successfully`,
       })
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : `Failed to ${action} referrer`
+      const errorMessage = error instanceof Error ? error.message : `Failed to ${action} promoter`
       toast({
         title: 'Error',
         description: errorMessage,
@@ -311,7 +311,7 @@ export default function AdminDashboardPage() {
       <Tabs defaultValue="businesses">
         <TabsList>
           <TabsTrigger value="businesses">Businesses</TabsTrigger>
-          <TabsTrigger value="referrers">Referrers</TabsTrigger>
+          <TabsTrigger value="referrers">Promoters</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="visits">Recent Visits</TabsTrigger>
         </TabsList>
@@ -429,16 +429,16 @@ export default function AdminDashboardPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <UserCheck className="h-5 w-5" />
-                All Referrers
+                All Promoters
               </CardTitle>
               <CardDescription>
-                Approve or suspend referrer accounts
+                Approve or suspend promoter accounts
               </CardDescription>
             </CardHeader>
             <CardContent>
               {referrers.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
-                  No referrers registered yet
+                  No promoters registered yet
                 </p>
               ) : (
                 <div className="divide-y">
@@ -572,7 +572,7 @@ export default function AdminDashboardPage() {
                             key={role}
                             variant={role === 'admin' ? 'default' : 'secondary'}
                           >
-                            {role}
+                            {role === 'referrer' ? 'promoter' : role}
                           </Badge>
                         ))}
                       </div>
@@ -611,7 +611,7 @@ export default function AdminDashboardPage() {
                             Visit to {business?.name || 'Unknown'}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            {visit.attributionType === 'REFERRER' ? 'Referrer' : 'Platform'} •{' '}
+                            {visit.attributionType === 'REFERRER' ? 'Promoter' : 'Platform'} •{' '}
                             {formatDate(visit.createdAt)}
                           </p>
                         </div>

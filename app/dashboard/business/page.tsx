@@ -220,7 +220,7 @@ export default function BusinessDashboardPage() {
     navigator.clipboard.writeText(url)
     toast({
       title: 'Link Copied',
-      description: 'Referral link copied to clipboard',
+      description: 'Promo link copied to clipboard',
     })
   }
 
@@ -344,10 +344,10 @@ export default function BusinessDashboardPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <QrCode className="h-5 w-5" />
-            Your Referral Link
+            Your Promo Link
           </CardTitle>
           <CardDescription>
-            Share this link to get direct referrals (platform attribution)
+            Share this link to get direct promotions (platform attribution)
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -382,7 +382,7 @@ export default function BusinessDashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle>Current Offer</CardTitle>
-                <CardDescription>Your active referral offer settings</CardDescription>
+                <CardDescription>Your active promo offer settings</CardDescription>
               </div>
               <Link href="/dashboard/business/offer">
                 <Button variant="outline" size="sm">
@@ -398,7 +398,7 @@ export default function BusinessDashboardPage() {
                 <p className="text-lg font-semibold">{formatCurrency(offer.pricePerNewCustomer)}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Referrer Commission</p>
+                <p className="text-sm text-muted-foreground">Promoter Commission</p>
                 <p className="text-lg font-semibold">{formatCurrency(offer.referrerCommissionAmount)}</p>
               </div>
               <div>
@@ -423,7 +423,7 @@ export default function BusinessDashboardPage() {
           <CardHeader>
             <CardTitle>No Offer Configured</CardTitle>
             <CardDescription>
-              Create an offer to start accepting referrals and paying commissions
+              Create an offer to start accepting promotions and paying commissions
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -545,7 +545,7 @@ function VisitsList({
               </p>
               <p className="text-sm text-muted-foreground">
                 {formatDate(visit.createdAt)} •{' '}
-                {visit.attributionType === 'REFERRER' ? 'Referrer' : 'Platform'}
+                {visit.attributionType === 'REFERRER' ? 'Promoter' : 'Platform'}
               </p>
             </div>
           </div>

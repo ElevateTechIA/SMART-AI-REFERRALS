@@ -119,9 +119,9 @@ function ReferralsContent() {
   return (
     <div className="space-y-6 max-w-full overflow-hidden">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Referral Dashboard</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Promotions Dashboard</h1>
         <p className="text-sm text-muted-foreground">
-          Share referral links and earn commissions when friends visit
+          Share promo links and earn commissions when friends visit
         </p>
       </div>
 
@@ -133,7 +133,7 @@ function ReferralsContent() {
             <div>
               <h3 className="font-semibold text-yellow-800">Pending Approval</h3>
               <p className="text-sm text-yellow-700">
-                Your referrer account is pending admin approval. You will be able to share referral links once approved.
+                Your promoter account is pending admin approval. You will be able to share promo links once approved.
               </p>
             </div>
           </CardContent>
@@ -148,7 +148,7 @@ function ReferralsContent() {
             <div>
               <h3 className="font-semibold text-red-800">Account Suspended</h3>
               <p className="text-sm text-red-700">
-                Your referrer account has been suspended. Please contact support for more information.
+                Your promoter account has been suspended. Please contact support for more information.
               </p>
             </div>
           </CardContent>
@@ -159,12 +159,12 @@ function ReferralsContent() {
       <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4">
         <Card className="min-w-0">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
-            <CardTitle className="text-xs sm:text-sm font-medium">Total Referrals</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Total Promotions</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground hidden sm:block" />
           </CardHeader>
           <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
             <div className="text-xl sm:text-2xl font-bold">{stats.totalReferrals}</div>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">People you&apos;ve referred</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">People you&apos;ve promoted to</p>
           </CardContent>
         </Card>
         <Card className="min-w-0">
@@ -177,7 +177,7 @@ function ReferralsContent() {
             <p className="text-[10px] sm:text-xs text-muted-foreground">
               {stats.totalReferrals > 0
                 ? `${Math.round((stats.conversions / stats.totalReferrals) * 100)}% conversion rate`
-                : 'Start referring!'}
+                : 'Start promoting!'}
             </p>
           </CardContent>
         </Card>
@@ -209,7 +209,7 @@ function ReferralsContent() {
           <div className="mb-3">
             <h2 className="text-lg font-semibold flex items-center gap-2">
               <QrCode className="h-5 w-5" />
-              Your Referral Cards
+              Your Promo Cards
             </h2>
             <p className="text-xs text-muted-foreground">
               Swipe to browse businesses. Share your unique link or QR code.
@@ -223,10 +223,10 @@ function ReferralsContent() {
         <Card className="min-w-0 overflow-hidden">
           <CardContent className="py-8 text-center text-muted-foreground text-sm">
             {isReferrerSuspended
-              ? 'Your referrer account is suspended. You cannot share referral links.'
+              ? 'Your promoter account is suspended. You cannot share promo links.'
               : isReferrerPending
-              ? 'Your account is pending approval. Once approved, your referral cards will appear here.'
-              : 'Referral cards will appear here once businesses are available.'}
+              ? 'Your account is pending approval. Once approved, your promo cards will appear here.'
+              : 'Promo cards will appear here once businesses are available.'}
           </CardContent>
         </Card>
       )}
@@ -234,7 +234,7 @@ function ReferralsContent() {
       {isReferrerApproved && businesses.length === 0 && (
         <Card className="min-w-0 overflow-hidden">
           <CardContent className="py-8 text-center text-muted-foreground text-sm">
-            No businesses available for referral yet.
+            No businesses available for promotion yet.
           </CardContent>
         </Card>
       )}
@@ -242,8 +242,8 @@ function ReferralsContent() {
       {/* Referral History */}
       <Card className="min-w-0 overflow-hidden">
         <CardHeader className="p-4 sm:p-6">
-          <CardTitle className="text-base sm:text-lg">Referral History</CardTitle>
-          <CardDescription className="text-xs sm:text-sm">Your recent referrals and their status</CardDescription>
+          <CardTitle className="text-base sm:text-lg">Promotion History</CardTitle>
+          <CardDescription className="text-xs sm:text-sm">Your recent promotions and their status</CardDescription>
         </CardHeader>
         <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
           <Tabs defaultValue="all">
@@ -283,7 +283,7 @@ function ReferralsContent() {
         <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
           {earnings.length === 0 ? (
             <p className="text-center text-muted-foreground py-8 text-sm">
-              No earnings yet. Start referring to earn commissions!
+              No earnings yet. Start promoting to earn commissions!
             </p>
           ) : (
             <div className="divide-y">
@@ -338,7 +338,7 @@ function ReferralList({
   if (referrals.length === 0) {
     return (
       <p className="text-center text-muted-foreground py-8">
-        No referrals found
+        No promotions found
       </p>
     )
   }

@@ -11,7 +11,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Smart AI Referrals',
-  description: 'Earn money by referring customers to local businesses',
+  description: 'Earn money by promoting local businesses',
 }
 
 export default function RootLayout({

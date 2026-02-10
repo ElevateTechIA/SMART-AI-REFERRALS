@@ -150,7 +150,7 @@ export function DashboardNav() {
                           key={role}
                           className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full capitalize"
                         >
-                          {role}
+                          {role === 'referrer' ? 'promoter' : role}
                         </span>
                       ))}
                     </div>

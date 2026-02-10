@@ -51,7 +51,7 @@ function ReferralPageContent() {
         if (!businessDoc.exists()) {
           toast({
             title: 'Business not found',
-            description: 'This referral link is invalid.',
+            description: 'This promo link is invalid.',
             variant: 'destructive',
           })
           return
@@ -179,7 +179,7 @@ function ReferralPageContent() {
           <CardHeader className="text-center">
             <CardTitle>Business Not Found</CardTitle>
             <CardDescription>
-              This referral link appears to be invalid or the business is no longer available.
+              This promo link appears to be invalid or the business is no longer available.
             </CardDescription>
           </CardHeader>
           <CardContent>

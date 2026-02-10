@@ -119,7 +119,7 @@ export default function EarningsPage() {
             <span>Back to Dashboard</span>
           </Link>
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Your Earnings</h1>
-          <p className="text-white/90">Track your referral income and payouts</p>
+          <p className="text-white/90">Track your promotion income and payouts</p>
         </div>
       </div>
 
@@ -257,7 +257,7 @@ export default function EarningsPage() {
               <DollarSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-600">No transactions yet</p>
               <p className="text-sm text-gray-500 mt-2">
-                Start referring customers to earn rewards
+                Start promoting businesses to earn rewards
               </p>
             </div>
           )}

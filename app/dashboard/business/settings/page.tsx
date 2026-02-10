@@ -234,7 +234,7 @@ export default function BusinessSettingsPage() {
             Cover Image
           </CardTitle>
           <CardDescription>
-            This image appears on your referral cards. Recommended: 800x400px or wider.
+            This image appears on your promo cards. Recommended: 800x400px or wider.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -416,9 +416,9 @@ export default function BusinessSettingsPage() {
       {/* Offer Settings Link */}
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>Referral Offer</CardTitle>
+          <CardTitle>Promo Offer</CardTitle>
           <CardDescription>
-            Configure how much you pay for referrals and what rewards consumers get
+            Configure how much you pay for promotions and what rewards consumers get
           </CardDescription>
         </CardHeader>
         <CardContent>

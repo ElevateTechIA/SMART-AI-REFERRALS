@@ -109,7 +109,7 @@ export default function OfferConfigPage() {
 
       toast({
         title: 'Offer Saved',
-        description: 'Your referral offer has been updated.',
+        description: 'Your promo offer has been updated.',
       })
 
       router.push('/dashboard/business')
@@ -187,10 +187,10 @@ export default function OfferConfigPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Referrer Commission
+              Promoter Commission
             </CardTitle>
             <CardDescription>
-              How much the referrer earns for bringing you a customer
+              How much the promoter earns for bringing you a customer
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -209,7 +209,7 @@ export default function OfferConfigPage() {
                 required
               />
               <p className="text-xs text-muted-foreground">
-                Fixed amount paid to the referrer per conversion
+                Fixed amount paid to the promoter per conversion
               </p>
             </div>
           </CardContent>
@@ -283,7 +283,7 @@ export default function OfferConfigPage() {
                 <span className="font-medium">{formatCurrency(formData.pricePerNewCustomer)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Referrer Commission</span>
+                <span className="text-muted-foreground">Promoter Commission</span>
                 <span className="font-medium text-orange-600">
                   -{formatCurrency(formData.referrerCommissionAmount)}
                 </span>

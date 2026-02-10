@@ -147,7 +147,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching referrals data:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch referrals data' },
+      { error: 'Failed to fetch promotions data' },
       { status: 500 }
     )
   }
