@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -32,6 +33,7 @@ interface ReferralsApiResponse {
 function ReferralsContent() {
   useSearchParams() // keep Suspense boundary working
 
+  const { t } = useTranslation()
   const { user } = useAuth()
   const { toast } = useToast()
   const [businesses, setBusinesses] = useState<(Business & { offer?: Offer; images?: string[] })[]>([])
@@ -48,7 +50,7 @@ function ReferralsContent() {
         const result = await apiGet<ReferralsApiResponse>('/api/referrals')
 
         if (!result.ok) {
-          throw new Error(result.error || 'Failed to load referral data')
+          throw new Error(result.error || t('promotions.failedToLoad'))
         }
 
         const data = result.data!
@@ -78,8 +80,8 @@ function ReferralsContent() {
       } catch (error) {
         console.error('Error fetching data:', error)
         toast({
-          title: 'Error',
-          description: 'Failed to load referral data',
+          title: t('common.error'),
+          description: t('promotions.failedToLoad'),
           variant: 'destructive',
         })
       } finally {
@@ -88,7 +90,7 @@ function ReferralsContent() {
     }
 
     fetchData()
-  }, [user, toast])
+  }, [user, toast, t])
 
   if (loading) {
     return (
@@ -119,9 +121,9 @@ function ReferralsContent() {
   return (
     <div className="space-y-6 max-w-full overflow-hidden">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Promotions Dashboard</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t('promotions.title')}</h1>
         <p className="text-sm text-muted-foreground">
-          Share promo links and earn commissions when friends visit
+          {t('promotions.subtitle')}
         </p>
       </div>
 
@@ -131,9 +133,9 @@ function ReferralsContent() {
           <CardContent className="flex items-center gap-4 py-4">
             <Clock className="h-8 w-8 text-yellow-600 flex-shrink-0" />
             <div>
-              <h3 className="font-semibold text-yellow-800">Pending Approval</h3>
+              <h3 className="font-semibold text-yellow-800">{t('promotions.pendingApproval')}</h3>
               <p className="text-sm text-yellow-700">
-                Your promoter account is pending admin approval. You will be able to share promo links once approved.
+                {t('promotions.pendingApprovalDesc')}
               </p>
             </div>
           </CardContent>
@@ -146,9 +148,9 @@ function ReferralsContent() {
           <CardContent className="flex items-center gap-4 py-4">
             <ShieldAlert className="h-8 w-8 text-red-600 flex-shrink-0" />
             <div>
-              <h3 className="font-semibold text-red-800">Account Suspended</h3>
+              <h3 className="font-semibold text-red-800">{t('promotions.accountSuspended')}</h3>
               <p className="text-sm text-red-700">
-                Your promoter account has been suspended. Please contact support for more information.
+                {t('promotions.accountSuspendedDesc')}
               </p>
             </div>
           </CardContent>
@@ -159,46 +161,46 @@ function ReferralsContent() {
       <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4">
         <Card className="min-w-0">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
-            <CardTitle className="text-xs sm:text-sm font-medium">Total Promotions</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">{t('promotions.totalPromotions')}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground hidden sm:block" />
           </CardHeader>
           <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
             <div className="text-xl sm:text-2xl font-bold">{stats.totalReferrals}</div>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">People you&apos;ve promoted to</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">{t('promotions.promotedTo')}</p>
           </CardContent>
         </Card>
         <Card className="min-w-0">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
-            <CardTitle className="text-xs sm:text-sm font-medium">Conversions</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">{t('promotions.conversions')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground hidden sm:block" />
           </CardHeader>
           <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
             <div className="text-xl sm:text-2xl font-bold">{stats.conversions}</div>
             <p className="text-[10px] sm:text-xs text-muted-foreground">
               {stats.totalReferrals > 0
-                ? `${Math.round((stats.conversions / stats.totalReferrals) * 100)}% conversion rate`
-                : 'Start promoting!'}
+                ? t('promotions.conversionRate', { rate: Math.round((stats.conversions / stats.totalReferrals) * 100) })
+                : t('promotions.startPromoting')}
             </p>
           </CardContent>
         </Card>
         <Card className="min-w-0">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
-            <CardTitle className="text-xs sm:text-sm font-medium">Pending Earnings</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">{t('promotions.pendingEarnings')}</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground hidden sm:block" />
           </CardHeader>
           <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
             <div className="text-xl sm:text-2xl font-bold">{formatCurrency(stats.pendingEarnings)}</div>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">Awaiting approval</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">{t('promotions.awaitingApproval')}</p>
           </CardContent>
         </Card>
         <Card className="min-w-0">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
-            <CardTitle className="text-xs sm:text-sm font-medium">Total Earned</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">{t('promotions.totalEarned')}</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground hidden sm:block" />
           </CardHeader>
           <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
             <div className="text-xl sm:text-2xl font-bold">{formatCurrency(stats.totalEarnings)}</div>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">All time earnings</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">{t('promotions.allTimeEarnings')}</p>
           </CardContent>
         </Card>
       </div>
@@ -209,10 +211,10 @@ function ReferralsContent() {
           <div className="mb-3">
             <h2 className="text-lg font-semibold flex items-center gap-2">
               <QrCode className="h-5 w-5" />
-              Your Promo Cards
+              {t('promotions.yourPromoCards')}
             </h2>
             <p className="text-xs text-muted-foreground">
-              Swipe to browse businesses. Share your unique link or QR code.
+              {t('promotions.swipeToBrowse')}
             </p>
           </div>
           <ReferralCardCarousel businesses={businesses} userId={user!.id} />
@@ -223,10 +225,10 @@ function ReferralsContent() {
         <Card className="min-w-0 overflow-hidden">
           <CardContent className="py-8 text-center text-muted-foreground text-sm">
             {isReferrerSuspended
-              ? 'Your promoter account is suspended. You cannot share promo links.'
+              ? t('promotions.suspendedMessage')
               : isReferrerPending
-              ? 'Your account is pending approval. Once approved, your promo cards will appear here.'
-              : 'Promo cards will appear here once businesses are available.'}
+              ? t('promotions.pendingMessage')
+              : t('promotions.defaultMessage')}
           </CardContent>
         </Card>
       )}
@@ -234,7 +236,7 @@ function ReferralsContent() {
       {isReferrerApproved && businesses.length === 0 && (
         <Card className="min-w-0 overflow-hidden">
           <CardContent className="py-8 text-center text-muted-foreground text-sm">
-            No businesses available for promotion yet.
+            {t('promotions.noBusinesses')}
           </CardContent>
         </Card>
       )}
@@ -242,15 +244,15 @@ function ReferralsContent() {
       {/* Referral History */}
       <Card className="min-w-0 overflow-hidden">
         <CardHeader className="p-4 sm:p-6">
-          <CardTitle className="text-base sm:text-lg">Promotion History</CardTitle>
-          <CardDescription className="text-xs sm:text-sm">Your recent promotions and their status</CardDescription>
+          <CardTitle className="text-base sm:text-lg">{t('promotions.promotionHistory')}</CardTitle>
+          <CardDescription className="text-xs sm:text-sm">{t('promotions.promotionHistoryDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
           <Tabs defaultValue="all">
             <TabsList className="mb-4 w-full justify-start">
-              <TabsTrigger value="all" className="text-xs sm:text-sm">All</TabsTrigger>
-              <TabsTrigger value="pending" className="text-xs sm:text-sm">Pending</TabsTrigger>
-              <TabsTrigger value="converted" className="text-xs sm:text-sm">Converted</TabsTrigger>
+              <TabsTrigger value="all" className="text-xs sm:text-sm">{t('common.all')}</TabsTrigger>
+              <TabsTrigger value="pending" className="text-xs sm:text-sm">{t('common.pending')}</TabsTrigger>
+              <TabsTrigger value="converted" className="text-xs sm:text-sm">{t('promotions.converted')}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="all">
@@ -277,13 +279,13 @@ function ReferralsContent() {
       {/* Earnings Ledger */}
       <Card className="min-w-0 overflow-hidden">
         <CardHeader className="p-4 sm:p-6">
-          <CardTitle className="text-base sm:text-lg">Earnings Ledger</CardTitle>
-          <CardDescription className="text-xs sm:text-sm">Track your commission earnings and payout status</CardDescription>
+          <CardTitle className="text-base sm:text-lg">{t('promotions.earningsLedger')}</CardTitle>
+          <CardDescription className="text-xs sm:text-sm">{t('promotions.earningsLedgerDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
           {earnings.length === 0 ? (
             <p className="text-center text-muted-foreground py-8 text-sm">
-              No earnings yet. Start promoting to earn commissions!
+              {t('promotions.noEarnings')}
             </p>
           ) : (
             <div className="divide-y">
@@ -297,7 +299,7 @@ function ReferralsContent() {
                       <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                     </div>
                     <div className="min-w-0">
-                      <p className="font-medium text-sm sm:text-base truncate">Commission Earned</p>
+                      <p className="font-medium text-sm sm:text-base truncate">{t('promotions.commissionEarned')}</p>
                       <p className="text-xs sm:text-sm text-muted-foreground">
                         {formatDate(earning.createdAt)}
                       </p>
@@ -335,10 +337,12 @@ function ReferralList({
   referrals: Visit[]
   businesses: (Business & { offer?: Offer })[]
 }) {
+  const { t } = useTranslation()
+
   if (referrals.length === 0) {
     return (
       <p className="text-center text-muted-foreground py-8">
-        No promotions found
+        {t('promotions.noPromotions')}
       </p>
     )
   }

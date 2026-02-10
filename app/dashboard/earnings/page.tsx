@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils'
@@ -48,6 +49,7 @@ interface EarningsResponse {
 export default function EarningsPage() {
   const { user } = useAuth()
   const { toast } = useToast()
+  const { t } = useTranslation()
   const [selectedPeriod, setSelectedPeriod] = useState('all')
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<EarningsStats>({
@@ -76,8 +78,8 @@ export default function EarningsPage() {
       } catch (error) {
         console.error('Error fetching earnings:', error)
         toast({
-          title: 'Error',
-          description: 'Failed to load earnings data',
+          title: t('common.error'),
+          description: t('earnings.failedToLoad'),
           variant: 'destructive',
         })
       } finally {
@@ -86,13 +88,13 @@ export default function EarningsPage() {
     }
 
     fetchEarnings()
-  }, [user, selectedPeriod, toast])
+  }, [user, selectedPeriod, toast, t])
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      completed: { label: 'Completed', className: 'bg-green-500 text-white' },
-      pending: { label: 'Pending', className: 'bg-yellow-500 text-white' },
-      processing: { label: 'Processing', className: 'bg-blue-500 text-white' },
+      completed: { label: t('earnings.statusCompleted'), className: 'bg-green-500 text-white' },
+      pending: { label: t('earnings.statusPending'), className: 'bg-yellow-500 text-white' },
+      processing: { label: t('earnings.statusProcessing'), className: 'bg-blue-500 text-white' },
     }
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending
     return <Badge className={config.className}>{config.label}</Badge>
@@ -116,10 +118,10 @@ export default function EarningsPage() {
             className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-4 transition-colors"
           >
             <ChevronLeft className="h-5 w-5" />
-            <span>Back to Dashboard</span>
+            <span>{t('common.backToDashboard')}</span>
           </Link>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Your Earnings</h1>
-          <p className="text-white/90">Track your promotion income and payouts</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">{t('earnings.title')}</h1>
+          <p className="text-white/90">{t('earnings.subtitle')}</p>
         </div>
       </div>
 
@@ -132,7 +134,7 @@ export default function EarningsPage() {
               <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                 <DollarSign className="h-6 w-6 text-blue-600" />
               </div>
-              <span className="text-sm text-gray-600">Total Earnings</span>
+              <span className="text-sm text-gray-600">{t('earnings.totalEarnings')}</span>
             </div>
             <p className="text-3xl font-bold text-gray-900">
               {formatCurrency(stats.totalEarnings)}
@@ -144,7 +146,7 @@ export default function EarningsPage() {
               <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
                 <TrendingUp className="h-6 w-6 text-green-600" />
               </div>
-              <span className="text-sm text-gray-600">Completed</span>
+              <span className="text-sm text-gray-600">{t('earnings.completed')}</span>
             </div>
             <p className="text-3xl font-bold text-gray-900">
               {formatCurrency(stats.completedEarnings)}
@@ -156,7 +158,7 @@ export default function EarningsPage() {
               <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
                 <Clock className="h-6 w-6 text-yellow-600" />
               </div>
-              <span className="text-sm text-gray-600">Pending</span>
+              <span className="text-sm text-gray-600">{t('earnings.pending')}</span>
             </div>
             <p className="text-3xl font-bold text-gray-900">
               {formatCurrency(stats.pendingEarnings)}
@@ -168,7 +170,7 @@ export default function EarningsPage() {
               <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                 <Calendar className="h-6 w-6 text-blue-600" />
               </div>
-              <span className="text-sm text-gray-600">This Month</span>
+              <span className="text-sm text-gray-600">{t('earnings.thisMonth')}</span>
             </div>
             <p className="text-3xl font-bold text-gray-900">
               {formatCurrency(stats.thisMonth)}
@@ -181,7 +183,7 @@ export default function EarningsPage() {
           <div className="p-6 border-b border-gray-200">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <h2 className="text-xl font-bold text-gray-900">
-                Transaction History
+                {t('earnings.transactionHistory')}
               </h2>
               <div className="flex gap-3">
                 <select
@@ -189,13 +191,13 @@ export default function EarningsPage() {
                   onChange={(e) => setSelectedPeriod(e.target.value)}
                   className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="all">All Time</option>
-                  <option value="month">This Month</option>
-                  <option value="year">This Year</option>
+                  <option value="all">{t('earnings.allTime')}</option>
+                  <option value="month">{t('earnings.thisMonthOption')}</option>
+                  <option value="year">{t('earnings.thisYear')}</option>
                 </select>
                 <Button className="bg-blue-600 hover:bg-blue-700 rounded-lg">
                   <Download className="h-4 w-4 mr-2" />
-                  Export
+                  {t('common.export')}
                 </Button>
               </div>
             </div>
@@ -206,22 +208,22 @@ export default function EarningsPage() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
+                    {t('earnings.dateColumn')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Business
+                    {t('earnings.businessColumn')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Customer
+                    {t('earnings.customerColumn')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Type
+                    {t('earnings.typeColumn')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Amount
+                    {t('earnings.amountColumn')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
+                    {t('earnings.statusColumn')}
                   </th>
                 </tr>
               </thead>
@@ -255,9 +257,9 @@ export default function EarningsPage() {
           {transactions.length === 0 && (
             <div className="text-center py-12">
               <DollarSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">No transactions yet</p>
+              <p className="text-gray-600">{t('earnings.noTransactions')}</p>
               <p className="text-sm text-gray-500 mt-2">
-                Start promoting businesses to earn rewards
+                {t('earnings.startPromoting')}
               </p>
             </div>
           )}

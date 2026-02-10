@@ -12,6 +12,7 @@ import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { apiPost } from '@/lib/api-client'
 import { Building2, Loader2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 const CATEGORIES = [
   'Restaurant',
@@ -30,6 +31,7 @@ export default function BusinessSetupPage() {
   const { user, refreshUser } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
+  const { t } = useTranslation()
 
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
@@ -60,15 +62,15 @@ export default function BusinessSetupPage() {
       await refreshUser()
 
       toast({
-        title: 'Business Created',
-        description: 'Your business is pending approval. You can now create an offer.',
+        title: t('businessSetup.businessCreated'),
+        description: t('businessSetup.businessCreatedDesc'),
       })
 
       router.push('/dashboard/business/offer')
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to create business'
       toast({
-        title: 'Error',
+        title: t('common.error'),
         description: errorMessage,
         variant: 'destructive',
       })
@@ -80,9 +82,9 @@ export default function BusinessSetupPage() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Register Your Business</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t('businessSetup.title')}</h1>
         <p className="text-muted-foreground">
-          Fill out the form below to get started with promotion marketing
+          {t('businessSetup.subtitle')}
         </p>
       </div>
 
@@ -90,34 +92,34 @@ export default function BusinessSetupPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />
-            Business Information
+            {t('businessSetup.businessInfo')}
           </CardTitle>
           <CardDescription>
-            This information will be shown to potential customers
+            {t('businessSetup.businessInfoDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="name">Business Name *</Label>
+              <Label htmlFor="name">{t('businessSettings.businessName') + ' *'}</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Enter your business name"
+                placeholder={t('businessSettings.businessNamePlaceholder')}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="category">Category *</Label>
+              <Label htmlFor="category">{t('businessSettings.category') + ' *'}</Label>
               <Select
                 value={formData.category}
                 onValueChange={(value) => setFormData({ ...formData, category: value })}
                 required
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a category" />
+                  <SelectValue placeholder={t('businessSettings.selectCategory')} />
                 </SelectTrigger>
                 <SelectContent>
                   {CATEGORIES.map((category) => (
@@ -130,18 +132,18 @@ export default function BusinessSetupPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{t('businessSettings.description')}</Label>
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Tell customers about your business"
+                placeholder={t('businessSettings.descriptionPlaceholder')}
                 rows={4}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="address">Address *</Label>
+              <Label htmlFor="address">{t('businessSettings.address') + ' *'}</Label>
               <Input
                 id="address"
                 value={formData.address}
@@ -153,7 +155,7 @@ export default function BusinessSetupPage() {
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone *</Label>
+                <Label htmlFor="phone">{t('businessSettings.phone') + ' *'}</Label>
                 <Input
                   id="phone"
                   type="tel"
@@ -164,7 +166,7 @@ export default function BusinessSetupPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="website">Website</Label>
+                <Label htmlFor="website">{t('businessSettings.website')}</Label>
                 <Input
                   id="website"
                   type="url"
@@ -179,10 +181,10 @@ export default function BusinessSetupPage() {
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating Business...
+                  {t('businessSetup.creatingBusiness')}
                 </>
               ) : (
-                'Create Business'
+                t('businessSetup.createBusiness')
               )}
             </Button>
           </form>

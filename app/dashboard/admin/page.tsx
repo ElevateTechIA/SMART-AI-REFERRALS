@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -46,6 +47,7 @@ export default function AdminDashboardPage() {
   const { user, refreshUser } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
+  const { t } = useTranslation()
 
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [businesses, setBusinesses] = useState<Business[]>([])
@@ -107,8 +109,8 @@ export default function AdminDashboardPage() {
       } catch (error) {
         console.error('Error fetching admin data:', error)
         toast({
-          title: 'Error',
-          description: 'Failed to load admin data',
+          title: t('common.error'),
+          description: t('admin.failedToLoad'),
           variant: 'destructive',
         })
       } finally {
@@ -117,7 +119,7 @@ export default function AdminDashboardPage() {
     }
 
     fetchAdminData()
-  }, [user, router, toast])
+  }, [user, router, toast, t])
 
   const handleBusinessAction = async (businessId: string, action: 'approve' | 'suspend') => {
     if (!user) return
@@ -130,7 +132,7 @@ export default function AdminDashboardPage() {
       )
 
       if (!result.ok) {
-        throw new Error(result.error || `Failed to ${action} business`)
+        throw new Error(result.error || t('admin.businessActionFailed', { action }))
       }
 
       // Update local state
@@ -143,13 +145,13 @@ export default function AdminDashboardPage() {
       )
 
       toast({
-        title: 'Success',
-        description: `Business ${action}d successfully`,
+        title: t('common.success'),
+        description: t('admin.businessActionSuccess', { action }),
       })
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : `Failed to ${action} business`
+      const errorMessage = error instanceof Error ? error.message : t('admin.businessActionFailed', { action })
       toast({
-        title: 'Error',
+        title: t('common.error'),
         description: errorMessage,
         variant: 'destructive',
       })
@@ -169,7 +171,7 @@ export default function AdminDashboardPage() {
       )
 
       if (!result.ok) {
-        throw new Error(result.error || `Failed to ${action} promoter`)
+        throw new Error(result.error || t('admin.promoterActionFailed', { action }))
       }
 
       // Update local state
@@ -185,13 +187,13 @@ export default function AdminDashboardPage() {
       await refreshUser()
 
       toast({
-        title: 'Success',
-        description: `Promoter ${action}d successfully`,
+        title: t('common.success'),
+        description: t('admin.promoterActionSuccess', { action }),
       })
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : `Failed to ${action} promoter`
+      const errorMessage = error instanceof Error ? error.message : t('admin.promoterActionFailed', { action })
       toast({
-        title: 'Error',
+        title: t('common.error'),
         description: errorMessage,
         variant: 'destructive',
       })
@@ -219,9 +221,9 @@ export default function AdminDashboardPage() {
       <div className="flex items-center gap-2">
         <Shield className="h-8 w-8 text-primary" />
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t('admin.title')}</h1>
           <p className="text-muted-foreground">
-            Manage businesses, users, and monitor platform activity
+            {t('admin.subtitle')}
           </p>
         </div>
       </div>
@@ -231,7 +233,7 @@ export default function AdminDashboardPage() {
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('admin.totalUsers')}</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -240,31 +242,31 @@ export default function AdminDashboardPage() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Businesses</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('admin.businesses')}</CardTitle>
               <Building2 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalBusinesses}</div>
               <p className="text-xs text-muted-foreground">
-                {stats.pendingBusinesses} pending approval
+                {t('admin.pendingApproval', { count: stats.pendingBusinesses })}
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Conversions</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('admin.conversions')}</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalConversions}</div>
               <p className="text-xs text-muted-foreground">
-                of {stats.totalVisits} visits
+                {t('admin.ofVisits', { count: stats.totalVisits })}
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('admin.totalRevenue')}</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -280,10 +282,10 @@ export default function AdminDashboardPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
               <AlertTriangle className="h-5 w-5" />
-              Fraud Alerts ({fraudFlags.length})
+              {t('admin.fraudAlerts', { count: fraudFlags.length })}
             </CardTitle>
             <CardDescription>
-              Unresolved potential fraud flags require attention
+              {t('admin.fraudAlertsDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -299,7 +301,7 @@ export default function AdminDashboardPage() {
                       Visit #{flag.visitId.slice(-6)} • {formatDate(flag.createdAt)}
                     </p>
                   </div>
-                  <Badge variant="destructive">Unresolved</Badge>
+                  <Badge variant="destructive">{t('admin.unresolved')}</Badge>
                 </div>
               ))}
             </div>
@@ -310,24 +312,24 @@ export default function AdminDashboardPage() {
       {/* Main Content Tabs */}
       <Tabs defaultValue="businesses">
         <TabsList>
-          <TabsTrigger value="businesses">Businesses</TabsTrigger>
-          <TabsTrigger value="referrers">Promoters</TabsTrigger>
-          <TabsTrigger value="users">Users</TabsTrigger>
-          <TabsTrigger value="visits">Recent Visits</TabsTrigger>
+          <TabsTrigger value="businesses">{t('admin.tabBusinesses')}</TabsTrigger>
+          <TabsTrigger value="referrers">{t('admin.tabPromoters')}</TabsTrigger>
+          <TabsTrigger value="users">{t('admin.tabUsers')}</TabsTrigger>
+          <TabsTrigger value="visits">{t('admin.tabRecentVisits')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="businesses" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle>All Businesses</CardTitle>
+              <CardTitle>{t('admin.allBusinesses')}</CardTitle>
               <CardDescription>
-                Manage business registrations and approvals
+                {t('admin.manageBusinesses')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               {businesses.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
-                  No businesses registered yet
+                  {t('admin.noBusinesses')}
                 </p>
               ) : (
                 <div className="divide-y">
@@ -346,7 +348,7 @@ export default function AdminDashboardPage() {
                             {business.category} • {business.address}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            Created {formatDate(business.createdAt)}
+                            {t('admin.created', { date: formatDate(business.createdAt) })}
                           </p>
                         </div>
                       </div>
@@ -375,7 +377,7 @@ export default function AdminDashboardPage() {
                             ) : (
                               <>
                                 <CheckCircle className="h-4 w-4 mr-1" />
-                                Approve
+                                {t('common.approve')}
                               </>
                             )}
                           </Button>
@@ -393,7 +395,7 @@ export default function AdminDashboardPage() {
                             ) : (
                               <>
                                 <XCircle className="h-4 w-4 mr-1" />
-                                Suspend
+                                {t('common.suspend')}
                               </>
                             )}
                           </Button>
@@ -410,7 +412,7 @@ export default function AdminDashboardPage() {
                             ) : (
                               <>
                                 <CheckCircle className="h-4 w-4 mr-1" />
-                                Reactivate
+                                {t('common.reactivate')}
                               </>
                             )}
                           </Button>
@@ -429,16 +431,16 @@ export default function AdminDashboardPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <UserCheck className="h-5 w-5" />
-                All Promoters
+                {t('admin.allPromoters')}
               </CardTitle>
               <CardDescription>
-                Approve or suspend promoter accounts
+                {t('admin.managePromoters')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               {referrers.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
-                  No promoters registered yet
+                  {t('admin.noPromoters')}
                 </p>
               ) : (
                 <div className="divide-y">
@@ -457,7 +459,7 @@ export default function AdminDashboardPage() {
                           <h4 className="font-semibold">{referrer.name}</h4>
                           <p className="text-sm text-muted-foreground">{referrer.email}</p>
                           <p className="text-xs text-muted-foreground">
-                            Registered {formatDate(referrer.createdAt)}
+                            {t('admin.registered', { date: formatDate(referrer.createdAt) })}
                           </p>
                         </div>
                       </div>
@@ -488,7 +490,7 @@ export default function AdminDashboardPage() {
                             ) : (
                               <>
                                 <CheckCircle className="h-4 w-4 mr-1" />
-                                Approve
+                                {t('common.approve')}
                               </>
                             )}
                           </Button>
@@ -506,7 +508,7 @@ export default function AdminDashboardPage() {
                             ) : (
                               <>
                                 <XCircle className="h-4 w-4 mr-1" />
-                                Suspend
+                                {t('common.suspend')}
                               </>
                             )}
                           </Button>
@@ -523,7 +525,7 @@ export default function AdminDashboardPage() {
                             ) : (
                               <>
                                 <CheckCircle className="h-4 w-4 mr-1" />
-                                Reactivate
+                                {t('common.reactivate')}
                               </>
                             )}
                           </Button>
@@ -540,13 +542,13 @@ export default function AdminDashboardPage() {
         <TabsContent value="users" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle>All Users</CardTitle>
-              <CardDescription>View and manage platform users</CardDescription>
+              <CardTitle>{t('admin.allUsers')}</CardTitle>
+              <CardDescription>{t('admin.manageUsers')}</CardDescription>
             </CardHeader>
             <CardContent>
               {users.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
-                  No users registered yet
+                  {t('admin.noUsers')}
                 </p>
               ) : (
                 <div className="divide-y">
@@ -572,7 +574,7 @@ export default function AdminDashboardPage() {
                             key={role}
                             variant={role === 'admin' ? 'default' : 'secondary'}
                           >
-                            {role === 'referrer' ? 'promoter' : role}
+                            {t('roles.' + (role === 'referrer' ? 'promoter' : role))}
                           </Badge>
                         ))}
                       </div>
@@ -587,15 +589,15 @@ export default function AdminDashboardPage() {
         <TabsContent value="visits" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Recent Visits</CardTitle>
+              <CardTitle>{t('admin.recentVisits')}</CardTitle>
               <CardDescription>
-                All visits and conversions across the platform
+                {t('admin.allVisits')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               {visits.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
-                  No visits yet
+                  {t('admin.noVisits')}
                 </p>
               ) : (
                 <div className="divide-y">
@@ -608,16 +610,16 @@ export default function AdminDashboardPage() {
                       >
                         <div>
                           <p className="font-medium">
-                            Visit to {business?.name || 'Unknown'}
+                            {t('admin.visitTo', { name: business?.name || t('common.unknown') })}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            {visit.attributionType === 'REFERRER' ? 'Promoter' : 'Platform'} •{' '}
+                            {visit.attributionType === 'REFERRER' ? t('admin.promoter') : t('admin.platform')} •{' '}
                             {formatDate(visit.createdAt)}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
                           {!visit.isNewCustomer && (
-                            <Badge variant="destructive">Repeat</Badge>
+                            <Badge variant="destructive">{t('common.repeat')}</Badge>
                           )}
                           <Badge
                             variant={

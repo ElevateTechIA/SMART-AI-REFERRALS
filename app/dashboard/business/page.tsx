@@ -29,10 +29,12 @@ import {
   Camera,
 } from 'lucide-react'
 import { QRScanner } from '@/components/business/qr-scanner'
+import { useTranslation } from 'react-i18next'
 
 export default function BusinessDashboardPage() {
   const { user } = useAuth()
   const { toast } = useToast()
+  const { t } = useTranslation()
   const [business, setBusiness] = useState<Business | null>(null)
   const [offer, setOffer] = useState<Offer | null>(null)
   const [visits, setVisits] = useState<Visit[]>([])
@@ -121,8 +123,8 @@ export default function BusinessDashboardPage() {
       } catch (error) {
         console.error('Error fetching business data:', error)
         toast({
-          title: 'Error',
-          description: 'Failed to load business data',
+          title: t('common.error'),
+          description: t('businessDashboard.failedToLoad'),
           variant: 'destructive',
         })
       } finally {
@@ -131,7 +133,7 @@ export default function BusinessDashboardPage() {
     }
 
     fetchBusinessData()
-  }, [user, toast])
+  }, [user, toast, t])
 
   const handleCheckIn = async (scanResult: { visitId: string; token: string }) => {
     try {
@@ -167,8 +169,8 @@ export default function BusinessDashboardPage() {
       }
 
       toast({
-        title: 'Check-In Exitoso',
-        description: 'Cliente verificado exitosamente.',
+        title: t('businessDashboard.checkInSuccess'),
+        description: t('businessDashboard.checkInSuccessDesc'),
       })
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Check-in failed'
@@ -199,13 +201,13 @@ export default function BusinessDashboardPage() {
       )
 
       toast({
-        title: 'Conversion Confirmed',
-        description: 'The customer has been converted and charges applied.',
+        title: t('businessDashboard.conversionConfirmed'),
+        description: t('businessDashboard.conversionConfirmedDesc'),
       })
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to confirm conversion'
       toast({
-        title: 'Error',
+        title: t('common.error'),
         description: errorMessage,
         variant: 'destructive',
       })
@@ -219,8 +221,8 @@ export default function BusinessDashboardPage() {
     const url = generateReferralUrl(business.id)
     navigator.clipboard.writeText(url)
     toast({
-      title: 'Link Copied',
-      description: 'Promo link copied to clipboard',
+      title: t('businessDashboard.linkCopied'),
+      description: t('businessDashboard.linkCopiedDesc'),
     })
   }
 
@@ -236,14 +238,14 @@ export default function BusinessDashboardPage() {
     return (
       <div className="max-w-2xl mx-auto text-center py-20">
         <Building2 className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-        <h1 className="text-2xl font-bold mb-2">No Business Found</h1>
+        <h1 className="text-2xl font-bold mb-2">{t('businessDashboard.noBusinessFound')}</h1>
         <p className="text-muted-foreground mb-6">
-          You haven&apos;t registered a business yet. Get started by creating your business profile.
+          {t('businessDashboard.noBusinessDesc')}
         </p>
         <Link href="/dashboard/business/setup">
           <Button className="gap-2">
             <Plus className="h-4 w-4" />
-            Register Your Business
+            {t('businessDashboard.registerBusiness')}
           </Button>
         </Link>
       </div>
@@ -265,7 +267,7 @@ export default function BusinessDashboardPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{business.name}</h1>
           <p className="text-muted-foreground">
-            Business Dashboard - {business.category}
+            {t('businessDashboard.businessDashboard')} - {business.category}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -283,7 +285,7 @@ export default function BusinessDashboardPage() {
           <Link href="/dashboard/business/settings">
             <Button variant="outline" size="sm" className="gap-2">
               <Settings className="h-4 w-4" />
-              Settings
+              {t('businessDashboard.settings')}
             </Button>
           </Link>
         </div>
@@ -293,48 +295,48 @@ export default function BusinessDashboardPage() {
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Visits</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('businessDashboard.totalVisits')}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalVisits}</div>
             <p className="text-xs text-muted-foreground">
-              {stats.pending} pending check-in
+              {t('businessDashboard.pendingCheckIn', { count: stats.pending })}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Conversions</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('businessDashboard.conversions')}</CardTitle>
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.conversions}</div>
             <p className="text-xs text-muted-foreground">
               {stats.totalVisits > 0
-                ? `${Math.round((stats.conversions / stats.totalVisits) * 100)}% conversion rate`
-                : 'No visits yet'}
+                ? t('businessDashboard.conversionRate', { rate: Math.round((stats.conversions / stats.totalVisits) * 100) })
+                : t('businessDashboard.noVisitsYet')}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Amount Owed</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('businessDashboard.amountOwed')}</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(stats.totalOwed)}</div>
-            <p className="text-xs text-muted-foreground">To platform</p>
+            <p className="text-xs text-muted-foreground">{t('businessDashboard.toPlatform')}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Paid</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('businessDashboard.totalPaid')}</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(stats.totalPaid)}</div>
-            <p className="text-xs text-muted-foreground">All time</p>
+            <p className="text-xs text-muted-foreground">{t('businessDashboard.allTime')}</p>
           </CardContent>
         </Card>
       </div>
@@ -344,10 +346,10 @@ export default function BusinessDashboardPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <QrCode className="h-5 w-5" />
-            Your Promo Link
+            {t('businessDashboard.yourPromoLink')}
           </CardTitle>
           <CardDescription>
-            Share this link to get direct promotions (platform attribution)
+            {t('businessDashboard.promoLinkDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -358,7 +360,7 @@ export default function BusinessDashboardPage() {
             <div className="flex flex-col sm:flex-row gap-2">
               <Button variant="outline" className="flex-1 gap-2" onClick={copyReferralLink}>
                 <Copy className="h-4 w-4" />
-                Copy Link
+                {t('common.copyLink')}
               </Button>
               <Button variant="outline" className="flex-1 gap-2" asChild>
                 <a
@@ -367,7 +369,7 @@ export default function BusinessDashboardPage() {
                   rel="noopener noreferrer"
                 >
                   <ExternalLink className="h-4 w-4" />
-                  Open Link
+                  {t('common.openLink')}
                 </a>
               </Button>
             </div>
@@ -381,12 +383,12 @@ export default function BusinessDashboardPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Current Offer</CardTitle>
-                <CardDescription>Your active promo offer settings</CardDescription>
+                <CardTitle>{t('businessDashboard.currentOffer')}</CardTitle>
+                <CardDescription>{t('businessDashboard.currentOfferDesc')}</CardDescription>
               </div>
               <Link href="/dashboard/business/offer">
                 <Button variant="outline" size="sm">
-                  Edit Offer
+                  {t('businessDashboard.editOffer')}
                 </Button>
               </Link>
             </div>
@@ -394,25 +396,25 @@ export default function BusinessDashboardPage() {
           <CardContent>
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
               <div>
-                <p className="text-sm text-muted-foreground">Price per Customer</p>
+                <p className="text-sm text-muted-foreground">{t('businessDashboard.pricePerCustomer')}</p>
                 <p className="text-lg font-semibold">{formatCurrency(offer.pricePerNewCustomer)}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Promoter Commission</p>
+                <p className="text-sm text-muted-foreground">{t('businessDashboard.promoterCommission')}</p>
                 <p className="text-lg font-semibold">{formatCurrency(offer.referrerCommissionAmount)}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Consumer Reward</p>
+                <p className="text-sm text-muted-foreground">{t('businessDashboard.consumerReward')}</p>
                 <p className="text-lg font-semibold">
                   {offer.consumerRewardType === 'none'
-                    ? 'None'
+                    ? t('businessDashboard.none')
                     : `${formatCurrency(offer.consumerRewardValue)} ${offer.consumerRewardType}`}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Status</p>
+                <p className="text-sm text-muted-foreground">{t('businessDashboard.status')}</p>
                 <Badge variant={offer.active ? 'success' : 'secondary'}>
-                  {offer.active ? 'Active' : 'Inactive'}
+                  {offer.active ? t('common.active') : t('common.inactive')}
                 </Badge>
               </div>
             </div>
@@ -421,16 +423,16 @@ export default function BusinessDashboardPage() {
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle>No Offer Configured</CardTitle>
+            <CardTitle>{t('businessDashboard.noOfferConfigured')}</CardTitle>
             <CardDescription>
-              Create an offer to start accepting promotions and paying commissions
+              {t('businessDashboard.noOfferDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Link href="/dashboard/business/offer">
               <Button className="gap-2">
                 <Plus className="h-4 w-4" />
-                Create Offer
+                {t('businessDashboard.createOffer')}
               </Button>
             </Link>
           </CardContent>
@@ -440,9 +442,9 @@ export default function BusinessDashboardPage() {
       {/* Visits & Conversions */}
       <Card>
         <CardHeader>
-          <CardTitle>Visits & Conversions</CardTitle>
+          <CardTitle>{t('businessDashboard.visitsConversions')}</CardTitle>
           <CardDescription>
-            View all visits and confirm customer conversions
+            {t('businessDashboard.visitsConversionsDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -450,18 +452,18 @@ export default function BusinessDashboardPage() {
             <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="scanner">
                 <Camera className="h-4 w-4 mr-2" />
-                Scanner
+                {t('businessDashboard.scanner')}
               </TabsTrigger>
               <TabsTrigger value="pending">
-                Pendientes ({stats.pending})
+                {t('businessDashboard.tabPending', { count: stats.pending })}
               </TabsTrigger>
               <TabsTrigger value="checkedin">
-                Check-In ({stats.checkedIn})
+                {t('businessDashboard.tabCheckIn', { count: stats.checkedIn })}
               </TabsTrigger>
               <TabsTrigger value="converted">
-                Convertidos ({stats.conversions})
+                {t('businessDashboard.tabConverted', { count: stats.conversions })}
               </TabsTrigger>
-              <TabsTrigger value="all">Todos</TabsTrigger>
+              <TabsTrigger value="all">{t('businessDashboard.tabAll')}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="scanner" className="mt-4">
@@ -520,10 +522,12 @@ function VisitsList({
   converting: string | null
   showActions?: boolean
 }) {
+  const { t } = useTranslation()
+
   if (visits.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        No visits found
+        {t('businessDashboard.noVisitsFound')}
       </div>
     )
   }
@@ -541,11 +545,11 @@ function VisitsList({
             </div>
             <div className="min-w-0">
               <p className="font-medium truncate">
-                Visit #{visit.id.slice(-6)}
+                {t('businessDashboard.visitNumber', { id: visit.id.slice(-6) })}
               </p>
               <p className="text-sm text-muted-foreground">
                 {formatDate(visit.createdAt)} •{' '}
-                {visit.attributionType === 'REFERRER' ? 'Promoter' : 'Platform'}
+                {visit.attributionType === 'REFERRER' ? t('admin.promoter') : t('admin.platform')}
               </p>
             </div>
           </div>
@@ -564,7 +568,7 @@ function VisitsList({
                 {visit.status}
               </Badge>
               {!visit.isNewCustomer && (
-                <span className="text-xs text-destructive mt-1">Repeat customer</span>
+                <span className="text-xs text-destructive mt-1">{t('businessDashboard.repeatCustomer')}</span>
               )}
             </div>
 
@@ -582,7 +586,7 @@ function VisitsList({
                   ) : (
                     <>
                       <CheckCircle className="h-4 w-4 mr-1" />
-                      Confirm
+                      {t('common.confirm')}
                     </>
                   )}
                 </Button>

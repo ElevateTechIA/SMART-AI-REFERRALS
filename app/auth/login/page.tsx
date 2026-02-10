@@ -30,9 +30,9 @@ export default function LoginPage() {
       await signInWithGoogle()
       router.push('/dashboard')
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to sign in with Google'
+      const errorMessage = error instanceof Error ? error.message : t('auth.failedSignInGoogle')
       toast({
-        title: 'Error',
+        title: t('common.error'),
         description: errorMessage,
         variant: 'destructive',
       })
@@ -83,7 +83,7 @@ export default function LoginPage() {
             <CardHeader className="text-center pb-2">
               <CardTitle className="text-2xl">{t('dashboard.welcomeBack', { name: '' }).replace(', !', '!')}</CardTitle>
               <CardDescription className="text-base">
-                {t('auth.signIn')} to your account to continue
+                {t('auth.signInToAccount')}
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-4 pb-6 px-8">

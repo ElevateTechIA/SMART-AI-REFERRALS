@@ -7,6 +7,7 @@ import { formatCurrency, generateReferralUrl } from '@/lib/utils'
 import QRCode from 'qrcode'
 import { Copy, Download, Share2, Building2, Gift } from 'lucide-react'
 import type { Business, Offer } from '@/lib/types'
+import { useTranslation } from 'react-i18next'
 
 const GRADIENTS = [
   'from-blue-600 via-blue-500 to-cyan-400',
@@ -32,6 +33,7 @@ interface ReferralCardProps {
 
 export function ReferralCard({ business, userId }: ReferralCardProps) {
   const { toast } = useToast()
+  const { t } = useTranslation()
   const [qrCode, setQrCode] = useState<string | null>(null)
   const referralUrl = generateReferralUrl(business.id, userId)
   const coverImage = business.images?.[0] || null
@@ -49,7 +51,7 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
 
   const copyLink = () => {
     navigator.clipboard.writeText(referralUrl)
-    toast({ title: 'Link Copied', description: 'Promo link copied to clipboard' })
+    toast({ title: t('cards.linkCopied'), description: t('cards.linkCopiedDesc') })
   }
 
   const downloadQR = () => {
@@ -64,8 +66,8 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Check out ${business.name}!`,
-          text: `I recommend ${business.name}. Use my link to get rewards!`,
+          title: t('cards.checkOut', { name: business.name }),
+          text: t('cards.recommend', { name: business.name }),
           url: referralUrl,
         })
       } catch {
@@ -108,7 +110,7 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
               <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1 shadow-lg">
                 <Gift className="h-3 w-3 text-green-600" />
                 <span className="text-xs font-bold text-green-700 dark:text-green-400">
-                  Earn {formatCurrency(business.offer.referrerCommissionAmount)}
+                  {t('cards.earn', { amount: formatCurrency(business.offer.referrerCommissionAmount) })}
                 </span>
               </div>
             </div>
@@ -137,7 +139,7 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
         <div className="px-4 pb-4 pt-1 grid grid-cols-3 gap-2">
           <Button onClick={copyLink} size="sm" className="gap-1.5 text-xs rounded-xl">
             <Copy className="h-3.5 w-3.5" />
-            Copy
+            {t('cards.copy')}
           </Button>
           <Button
             onClick={downloadQR}
@@ -146,7 +148,7 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
             className="gap-1.5 text-xs rounded-xl"
           >
             <Download className="h-3.5 w-3.5" />
-            QR
+            {t('cards.qr')}
           </Button>
           <Button
             onClick={shareLink}
@@ -155,7 +157,7 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
             className="gap-1.5 text-xs rounded-xl"
           >
             <Share2 className="h-3.5 w-3.5" />
-            Share
+            {t('cards.share')}
           </Button>
         </div>
       </div>

@@ -15,11 +15,13 @@ import { apiPost } from '@/lib/api-client'
 import type { Business, ConsumerRewardType } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
 import { Gift, Loader2, DollarSign, Users, Building2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 export default function OfferConfigPage() {
   const { user } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
+  const { t } = useTranslation()
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -76,7 +78,7 @@ export default function OfferConfigPage() {
       } catch (error) {
         console.error('Error fetching data:', error)
         toast({
-          title: 'Error',
+          title: t('common.error'),
           description: 'Failed to load data',
           variant: 'destructive',
         })
@@ -86,7 +88,7 @@ export default function OfferConfigPage() {
     }
 
     fetchData()
-  }, [user, router, toast])
+  }, [user, router, toast, t])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -108,15 +110,15 @@ export default function OfferConfigPage() {
       }
 
       toast({
-        title: 'Offer Saved',
-        description: 'Your promo offer has been updated.',
+        title: t('businessOffer.offerSaved'),
+        description: t('businessOffer.offerSavedDesc'),
       })
 
       router.push('/dashboard/business')
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to save offer'
       toast({
-        title: 'Error',
+        title: t('common.error'),
         description: errorMessage,
         variant: 'destructive',
       })
@@ -145,9 +147,9 @@ export default function OfferConfigPage() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Configure Offer</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t('businessOffer.title')}</h1>
         <p className="text-muted-foreground">
-          Set up how much you pay per new customer and commission splits
+          {t('businessOffer.subtitle')}
         </p>
       </div>
 
@@ -156,15 +158,15 @@ export default function OfferConfigPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <DollarSign className="h-5 w-5" />
-              Pricing
+              {t('businessOffer.pricing')}
             </CardTitle>
             <CardDescription>
-              How much you&apos;re willing to pay for a new customer
+              {t('businessOffer.pricingDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="pricePerNewCustomer">Price per New Customer ($)</Label>
+              <Label htmlFor="pricePerNewCustomer">{t('businessOffer.pricePerCustomer')}</Label>
               <Input
                 id="pricePerNewCustomer"
                 type="number"
@@ -177,7 +179,7 @@ export default function OfferConfigPage() {
                 required
               />
               <p className="text-xs text-muted-foreground">
-                Total amount you pay when a new customer converts
+                {t('businessOffer.pricePerCustomerDesc')}
               </p>
             </div>
           </CardContent>
@@ -187,15 +189,15 @@ export default function OfferConfigPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Promoter Commission
+              {t('businessOffer.promoterCommission')}
             </CardTitle>
             <CardDescription>
-              How much the promoter earns for bringing you a customer
+              {t('businessOffer.promoterCommissionDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="referrerCommissionAmount">Commission Amount ($)</Label>
+              <Label htmlFor="referrerCommissionAmount">{t('businessOffer.commissionAmount')}</Label>
               <Input
                 id="referrerCommissionAmount"
                 type="number"
@@ -209,7 +211,7 @@ export default function OfferConfigPage() {
                 required
               />
               <p className="text-xs text-muted-foreground">
-                Fixed amount paid to the promoter per conversion
+                {t('businessOffer.commissionAmountDesc')}
               </p>
             </div>
           </CardContent>
@@ -219,15 +221,15 @@ export default function OfferConfigPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Gift className="h-5 w-5" />
-              Consumer Reward
+              {t('businessOffer.consumerReward')}
             </CardTitle>
             <CardDescription>
-              Optional incentive for the customer being referred
+              {t('businessOffer.consumerRewardDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="consumerRewardType">Reward Type</Label>
+              <Label htmlFor="consumerRewardType">{t('businessOffer.rewardType')}</Label>
               <Select
                 value={formData.consumerRewardType}
                 onValueChange={(value: ConsumerRewardType) =>
@@ -235,13 +237,13 @@ export default function OfferConfigPage() {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select reward type" />
+                  <SelectValue placeholder={t('businessOffer.selectRewardType')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">No Reward</SelectItem>
-                  <SelectItem value="cash">Cash Back</SelectItem>
-                  <SelectItem value="points">Reward Points</SelectItem>
-                  <SelectItem value="discount">Discount (%)</SelectItem>
+                  <SelectItem value="none">{t('businessOffer.noReward')}</SelectItem>
+                  <SelectItem value="cash">{t('businessOffer.cashBack')}</SelectItem>
+                  <SelectItem value="points">{t('businessOffer.rewardPoints')}</SelectItem>
+                  <SelectItem value="discount">{t('businessOffer.discount')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -249,7 +251,7 @@ export default function OfferConfigPage() {
             {formData.consumerRewardType !== 'none' && (
               <div className="space-y-2">
                 <Label htmlFor="consumerRewardValue">
-                  Reward Value
+                  {t('businessOffer.rewardValue')}
                   {formData.consumerRewardType === 'discount' ? ' (%)' : ' ($)'}
                 </Label>
                 <Input
@@ -273,31 +275,31 @@ export default function OfferConfigPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Building2 className="h-5 w-5" />
-              Payment Summary
+              {t('businessOffer.paymentSummary')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Price per Customer</span>
+                <span className="text-muted-foreground">{t('businessOffer.pricePerCustomerSummary')}</span>
                 <span className="font-medium">{formatCurrency(formData.pricePerNewCustomer)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Promoter Commission</span>
+                <span className="text-muted-foreground">{t('businessOffer.promoterCommissionSummary')}</span>
                 <span className="font-medium text-orange-600">
                   -{formatCurrency(formData.referrerCommissionAmount)}
                 </span>
               </div>
               {formData.consumerRewardType === 'cash' && formData.consumerRewardValue > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Consumer Cash Back</span>
+                  <span className="text-muted-foreground">{t('businessOffer.consumerCashBack')}</span>
                   <span className="font-medium text-orange-600">
                     -{formatCurrency(formData.consumerRewardValue)}
                   </span>
                 </div>
               )}
               <div className="border-t pt-3 flex justify-between">
-                <span className="font-medium">Platform Fee</span>
+                <span className="font-medium">{t('businessOffer.platformFee')}</span>
                 <span className="font-bold text-primary">{formatCurrency(platformCut)}</span>
               </div>
             </div>
@@ -311,16 +313,16 @@ export default function OfferConfigPage() {
             onClick={() => router.back()}
             className="flex-1"
           >
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button type="submit" className="flex-1" disabled={saving}>
             {saving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
+                {t('common.saving')}
               </>
             ) : (
-              'Save Offer'
+              t('businessOffer.saveOffer')
             )}
           </Button>
         </div>

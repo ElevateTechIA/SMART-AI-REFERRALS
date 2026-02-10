@@ -18,6 +18,7 @@ import { collection, query, where, getDocs } from 'firebase/firestore'
 import { apiPut, apiUpload } from '@/lib/api-client'
 import type { Business } from '@/lib/types'
 import { Building2, Loader2, ArrowLeft, ImagePlus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 const CATEGORIES = [
   'Restaurant',
@@ -36,6 +37,7 @@ export default function BusinessSettingsPage() {
   const { user } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
+  const { t } = useTranslation()
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -88,8 +90,8 @@ export default function BusinessSettingsPage() {
       } catch (error) {
         console.error('Error fetching business:', error)
         toast({
-          title: 'Error',
-          description: 'Failed to load business data',
+          title: t('common.error'),
+          description: t('businessDashboard.failedToLoad'),
           variant: 'destructive',
         })
       } finally {
@@ -98,7 +100,7 @@ export default function BusinessSettingsPage() {
     }
 
     fetchBusiness()
-  }, [user, router, toast])
+  }, [user, router, toast, t])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -120,15 +122,15 @@ export default function BusinessSettingsPage() {
       }
 
       toast({
-        title: 'Success',
-        description: 'Business information updated',
+        title: t('common.success'),
+        description: t('businessSettings.businessUpdated'),
       })
 
       router.push('/dashboard/business')
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to update business'
       toast({
-        title: 'Error',
+        title: t('common.error'),
         description: errorMessage,
         variant: 'destructive',
       })
@@ -166,13 +168,13 @@ export default function BusinessSettingsPage() {
       })
 
       toast({
-        title: 'Success',
-        description: 'Cover image uploaded',
+        title: t('common.success'),
+        description: t('businessSettings.coverImageUploaded'),
       })
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to upload image'
       toast({
-        title: 'Error',
+        title: t('common.error'),
         description: errorMessage,
         variant: 'destructive',
       })
@@ -203,13 +205,13 @@ export default function BusinessSettingsPage() {
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
         >
           <ArrowLeft className="h-4 w-4 mr-1" />
-          Back to Dashboard
+          {t('common.backToDashboard')}
         </Link>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Business Settings</h1>
+            <h1 className="text-3xl font-bold tracking-tight">{t('businessSettings.title')}</h1>
             <p className="text-muted-foreground">
-              Update your business information
+              {t('businessSettings.subtitle')}
             </p>
           </div>
           <Badge
@@ -231,10 +233,10 @@ export default function BusinessSettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ImagePlus className="h-5 w-5" />
-            Cover Image
+            {t('businessSettings.coverImage')}
           </CardTitle>
           <CardDescription>
-            This image appears on your promo cards. Recommended: 800x400px or wider.
+            {t('businessSettings.coverImageDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -268,10 +270,10 @@ export default function BusinessSettingsPage() {
                   {uploading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Uploading...
+                      {t('common.uploading')}
                     </>
                   ) : (
-                    'Change Image'
+                    t('businessSettings.changeImage')
                   )}
                 </Button>
               </div>
@@ -286,13 +288,13 @@ export default function BusinessSettingsPage() {
               {uploading ? (
                 <>
                   <Loader2 className="h-8 w-8 animate-spin" />
-                  <span className="text-sm">Uploading...</span>
+                  <span className="text-sm">{t('common.uploading')}</span>
                 </>
               ) : (
                 <>
                   <ImagePlus className="h-8 w-8" />
-                  <span className="text-sm font-medium">Upload Cover Image</span>
-                  <span className="text-xs">JPEG, PNG, WebP, or GIF (max 5MB)</span>
+                  <span className="text-sm font-medium">{t('businessSettings.uploadCoverImage')}</span>
+                  <span className="text-xs">{t('businessSettings.uploadFormats')}</span>
                 </>
               )}
             </button>
@@ -304,34 +306,34 @@ export default function BusinessSettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />
-            Business Information
+            {t('businessSettings.businessInfo')}
           </CardTitle>
           <CardDescription>
-            This information will be shown to potential customers
+            {t('businessSettings.businessInfoDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="name">Business Name *</Label>
+              <Label htmlFor="name">{t('businessSettings.businessName') + ' *'}</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Enter your business name"
+                placeholder={t('businessSettings.businessNamePlaceholder')}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="category">Category *</Label>
+              <Label htmlFor="category">{t('businessSettings.category') + ' *'}</Label>
               <Select
                 value={formData.category}
                 onValueChange={(value) => setFormData({ ...formData, category: value })}
                 required
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a category" />
+                  <SelectValue placeholder={t('businessSettings.selectCategory')} />
                 </SelectTrigger>
                 <SelectContent>
                   {CATEGORIES.map((category) => (
@@ -344,18 +346,18 @@ export default function BusinessSettingsPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{t('businessSettings.description')}</Label>
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Tell customers about your business"
+                placeholder={t('businessSettings.descriptionPlaceholder')}
                 rows={4}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="address">Address *</Label>
+              <Label htmlFor="address">{t('businessSettings.address') + ' *'}</Label>
               <Input
                 id="address"
                 value={formData.address}
@@ -367,7 +369,7 @@ export default function BusinessSettingsPage() {
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone *</Label>
+                <Label htmlFor="phone">{t('businessSettings.phone') + ' *'}</Label>
                 <Input
                   id="phone"
                   type="tel"
@@ -378,7 +380,7 @@ export default function BusinessSettingsPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="website">Website</Label>
+                <Label htmlFor="website">{t('businessSettings.website')}</Label>
                 <Input
                   id="website"
                   type="url"
@@ -396,16 +398,16 @@ export default function BusinessSettingsPage() {
                 onClick={() => router.back()}
                 className="flex-1"
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button type="submit" className="flex-1" disabled={saving}>
                 {saving ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
+                    {t('common.saving')}
                   </>
                 ) : (
-                  'Save Changes'
+                  t('businessSettings.saveChanges')
                 )}
               </Button>
             </div>
@@ -416,15 +418,15 @@ export default function BusinessSettingsPage() {
       {/* Offer Settings Link */}
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>Promo Offer</CardTitle>
+          <CardTitle>{t('businessSettings.promoOffer')}</CardTitle>
           <CardDescription>
-            Configure how much you pay for promotions and what rewards consumers get
+            {t('businessSettings.promoOfferDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Link href="/dashboard/business/offer">
             <Button variant="outline" className="w-full">
-              Configure Offer Settings
+              {t('businessSettings.configureOffer')}
             </Button>
           </Link>
         </CardContent>

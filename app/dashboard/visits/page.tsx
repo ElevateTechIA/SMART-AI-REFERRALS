@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -32,6 +33,7 @@ interface VisitsApiResponse {
 export default function VisitsPage() {
   const { user } = useAuth()
   const { toast } = useToast()
+  const { t } = useTranslation()
   const [visits, setVisits] = useState<(Visit & { business?: Business })[]>([])
   const [rewards, setRewards] = useState<Earning[]>([])
   const [loading, setLoading] = useState(true)
@@ -45,7 +47,7 @@ export default function VisitsPage() {
         const result = await apiGet<VisitsApiResponse>('/api/visits/consumer')
 
         if (!result.ok) {
-          throw new Error(result.error || 'Failed to load visit data')
+          throw new Error(result.error || t('visits.failedToLoad'))
         }
 
         const data = result.data!
@@ -68,8 +70,8 @@ export default function VisitsPage() {
       } catch (error) {
         console.error('Error fetching data:', error)
         toast({
-          title: 'Error',
-          description: 'Failed to load visit data',
+          title: t('common.error'),
+          description: t('visits.failedToLoad'),
           variant: 'destructive',
         })
       } finally {
@@ -78,7 +80,7 @@ export default function VisitsPage() {
     }
 
     fetchData()
-  }, [user, toast])
+  }, [user, toast, t])
 
   // Generate QR codes for CREATED visits with check-in tokens
   useEffect(() => {
@@ -134,15 +136,15 @@ export default function VisitsPage() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">My Visits</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t('visits.title')}</h1>
           <p className="text-muted-foreground">
-            Track your visits and rewards from promotions
+            {t('visits.subtitle')}
           </p>
         </div>
         <Link href="/dashboard/referrals">
           <Button className="gap-2">
             <Share2 className="h-4 w-4" />
-            Start Promoting
+            {t('visits.startPromoting')}
           </Button>
         </Link>
       </div>
@@ -151,42 +153,42 @@ export default function VisitsPage() {
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Visits</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('visits.totalVisits')}</CardTitle>
             <MapPin className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalVisits}</div>
-            <p className="text-xs text-muted-foreground">Places you&apos;ve visited</p>
+            <p className="text-xs text-muted-foreground">{t('visits.placesVisited')}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Confirmed</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('visits.confirmed')}</CardTitle>
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.converted}</div>
-            <p className="text-xs text-muted-foreground">{stats.pending} pending</p>
+            <p className="text-xs text-muted-foreground">{t('visits.pendingCount', { count: stats.pending })}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Rewards</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('visits.totalRewards')}</CardTitle>
             <Gift className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(stats.totalRewards)}</div>
-            <p className="text-xs text-muted-foreground">Earned from visits</p>
+            <p className="text-xs text-muted-foreground">{t('visits.earnedFromVisits')}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Rewards</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('visits.pendingRewards')}</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(stats.pendingRewards)}</div>
-            <p className="text-xs text-muted-foreground">Awaiting confirmation</p>
+            <p className="text-xs text-muted-foreground">{t('visits.awaitingConfirmation')}</p>
           </CardContent>
         </Card>
       </div>
@@ -196,13 +198,13 @@ export default function VisitsPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold tracking-tight">Visitas Pendientes</h2>
+              <h2 className="text-2xl font-bold tracking-tight">{t('visits.pendingVisits')}</h2>
               <p className="text-muted-foreground">
-                Muestra estos códigos QR en el negocio para hacer check-in
+                {t('visits.pendingVisitsDesc')}
               </p>
             </div>
             <Badge variant="secondary" className="text-sm">
-              {stats.pending} pendientes
+              {t('visits.pendingBadge', { count: stats.pending })}
             </Badge>
           </div>
 
@@ -224,20 +226,20 @@ export default function VisitsPage() {
                         </div>
                         <div>
                           <CardTitle className="text-xl">
-                            {visit.business?.name || 'Unknown Business'}
+                            {visit.business?.name || t('common.unknown')}
                           </CardTitle>
                           <CardDescription className="mt-1">
                             {visit.business?.category}
                           </CardDescription>
                           <p className="text-xs text-muted-foreground mt-1">
-                            Creada el {formatDate(visit.createdAt)}
+                            {t('visits.createdOn', { date: formatDate(visit.createdAt) })}
                           </p>
                         </div>
                       </div>
                       <Badge
                         variant={visit.status === 'CHECKED_IN' ? 'default' : 'secondary'}
                       >
-                        {visit.status === 'CHECKED_IN' ? 'Check-In Hecho' : 'Pendiente'}
+                        {visit.status === 'CHECKED_IN' ? t('visits.checkInDone') : t('visits.pendingStatus')}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -247,10 +249,10 @@ export default function VisitsPage() {
                       <div className="flex flex-col items-center gap-4">
                         <div className="text-center">
                           <p className="text-sm font-semibold mb-2">
-                            Código QR de Check-In
+                            {t('visits.checkInQR')}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            Muestra este código al personal del negocio
+                            {t('visits.showQRToStaff')}
                           </p>
                         </div>
 
@@ -265,20 +267,19 @@ export default function VisitsPage() {
                         <Alert className="w-full">
                           <Clock className="h-4 w-4" />
                           <AlertDescription>
-                            El QR expira en {daysRemaining}{' '}
-                            {daysRemaining === 1 ? 'día' : 'días'}
+                            {t('visits.qrExpires', { days: daysRemaining, dayWord: daysRemaining === 1 ? t('visits.day') : t('visits.days') })}
                           </AlertDescription>
                         </Alert>
 
                         <div className="bg-blue-50 rounded-lg p-4 w-full">
                           <p className="text-sm font-semibold mb-2 text-blue-900">
-                            Instrucciones:
+                            {t('visits.instructions')}
                           </p>
                           <div className="text-xs text-blue-900 space-y-1">
-                            <p>1. Muestra este QR al personal del negocio</p>
-                            <p>2. Ellos lo escanearán para confirmar tu llegada</p>
-                            <p>3. Después de tu compra, marcarán la conversión</p>
-                            <p>4. ¡Tus recompensas serán procesadas!</p>
+                            <p>{t('visits.instruction1')}</p>
+                            <p>{t('visits.instruction2')}</p>
+                            <p>{t('visits.instruction3')}</p>
+                            <p>{t('visits.instruction4')}</p>
                           </div>
                         </div>
                       </div>
@@ -290,8 +291,7 @@ export default function VisitsPage() {
                       <Alert className="border-green-500 bg-green-50">
                         <CheckCircle className="h-4 w-4 text-green-600" />
                         <AlertDescription className="text-green-900">
-                          ¡Check-in completado! El negocio confirmará tu compra para
-                          procesar las recompensas.
+                          {t('visits.checkInComplete')}
                         </AlertDescription>
                       </Alert>
                     </CardContent>
@@ -307,16 +307,16 @@ export default function VisitsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Share2 className="h-5 w-5 text-primary" />
-            Share & Earn More
+            {t('visits.shareEarnMore')}
           </CardTitle>
           <CardDescription>
-            Loved a business? Share it with friends and earn commissions when they visit!
+            {t('visits.shareEarnMoreDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Link href="/dashboard/referrals">
             <Button className="gap-2">
-              Get Promo Links <ArrowRight className="h-4 w-4" />
+              {t('visits.getPromoLinks')} <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
         </CardContent>
@@ -325,16 +325,16 @@ export default function VisitsPage() {
       {/* Visit History */}
       <Card>
         <CardHeader>
-          <CardTitle>Visit History</CardTitle>
-          <CardDescription>All your visits and their status</CardDescription>
+          <CardTitle>{t('visits.visitHistory')}</CardTitle>
+          <CardDescription>{t('visits.visitHistoryDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
           {visits.length === 0 ? (
             <div className="text-center py-12">
               <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="font-semibold mb-2">No Visits Yet</h3>
+              <h3 className="font-semibold mb-2">{t('visits.noVisitsYet')}</h3>
               <p className="text-muted-foreground mb-4">
-                Scan a promo QR code or use a promo link to get started!
+                {t('visits.noVisitsDesc')}
               </p>
             </div>
           ) : (
@@ -348,13 +348,13 @@ export default function VisitsPage() {
                       </div>
                       <div className="min-w-0">
                         <h4 className="font-semibold break-words">
-                          {visit.business?.name || 'Unknown Business'}
+                          {visit.business?.name || t('common.unknown')}
                         </h4>
                         <p className="text-sm text-muted-foreground break-words">
                           {visit.business?.category}
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Visited {formatDate(visit.createdAt)}
+                          {t('visits.visited', { date: formatDate(visit.createdAt) })}
                         </p>
                       </div>
                     </div>
@@ -373,16 +373,16 @@ export default function VisitsPage() {
                           }
                         >
                           {visit.status === 'CONVERTED'
-                            ? 'Confirmed'
+                            ? t('visits.statusConfirmed')
                             : visit.status === 'CHECKED_IN'
-                            ? 'Checked In'
+                            ? t('visits.statusCheckedIn')
                             : visit.status === 'REJECTED'
-                            ? 'Rejected'
-                            : 'Pending'}
+                            ? t('visits.statusRejected')
+                            : t('visits.statusPending')}
                         </Badge>
                         {visit.attributionType === 'REFERRER' && (
                           <p className="text-xs text-muted-foreground mt-1">
-                            Via promotion
+                            {t('visits.viaPromotion')}
                           </p>
                         )}
                       </div>
@@ -399,8 +399,8 @@ export default function VisitsPage() {
       {rewards.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Rewards History</CardTitle>
-            <CardDescription>Rewards earned from your visits</CardDescription>
+            <CardTitle>{t('visits.rewardsHistory')}</CardTitle>
+            <CardDescription>{t('visits.rewardsHistoryDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="divide-y">
@@ -416,7 +416,7 @@ export default function VisitsPage() {
                         <Gift className="h-5 w-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="font-medium">Reward from Visit</p>
+                        <p className="font-medium">{t('visits.rewardFromVisit')}</p>
                         <p className="text-sm text-muted-foreground">
                           {visit?.business?.name} • {formatDate(reward.createdAt)}
                         </p>

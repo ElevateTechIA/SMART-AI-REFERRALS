@@ -6,18 +6,20 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { formatDate } from '@/lib/utils'
 import { User, Mail, Calendar, Shield } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 export default function SettingsPage() {
   const { user } = useAuth()
+  const { t } = useTranslation()
 
   if (!user) return null
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Account Settings</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t('accountSettings.title')}</h1>
         <p className="text-muted-foreground">
-          View and manage your account information
+          {t('accountSettings.subtitle')}
         </p>
       </div>
 
@@ -25,10 +27,10 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
-            Profile Information
+            {t('accountSettings.profileInfo')}
           </CardTitle>
           <CardDescription>
-            Your personal account details
+            {t('accountSettings.profileInfoDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -50,7 +52,7 @@ export default function SettingsPage() {
             <div className="flex items-center gap-3">
               <Mail className="h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="text-sm text-muted-foreground">Email</p>
+                <p className="text-sm text-muted-foreground">{t('accountSettings.email')}</p>
                 <p className="font-medium">{user.email}</p>
               </div>
             </div>
@@ -58,7 +60,7 @@ export default function SettingsPage() {
             <div className="flex items-center gap-3">
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="text-sm text-muted-foreground">Member Since</p>
+                <p className="text-sm text-muted-foreground">{t('accountSettings.memberSince')}</p>
                 <p className="font-medium">{formatDate(user.createdAt)}</p>
               </div>
             </div>
@@ -66,14 +68,14 @@ export default function SettingsPage() {
             <div className="flex items-center gap-3">
               <Shield className="h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="text-sm text-muted-foreground">Roles</p>
+                <p className="text-sm text-muted-foreground">{t('accountSettings.roles')}</p>
                 <div className="flex flex-wrap gap-1 mt-1">
                   {user.roles.map((role) => (
                     <Badge
                       key={role}
                       variant={role === 'admin' ? 'default' : 'secondary'}
                     >
-                      {role}
+                      {t('roles.' + role)}
                     </Badge>
                   ))}
                 </div>
@@ -85,14 +87,14 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Account Actions</CardTitle>
+          <CardTitle>{t('accountSettings.accountActions')}</CardTitle>
           <CardDescription>
-            Manage your account settings
+            {t('accountSettings.accountActionsDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            To update your profile information or change your password, please contact support.
+            {t('accountSettings.contactSupport')}
           </p>
         </CardContent>
       </Card>

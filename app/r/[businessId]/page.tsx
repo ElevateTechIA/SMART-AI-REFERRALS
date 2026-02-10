@@ -14,6 +14,7 @@ import { doc, getDoc } from 'firebase/firestore'
 import { apiPost } from '@/lib/api-client'
 import type { Business, Offer } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
+import { useTranslation } from 'react-i18next'
 import {
   MapPin,
   Phone,
@@ -31,6 +32,7 @@ function ReferralPageContent() {
   const router = useRouter()
   const { user, loading: authLoading, signInWithGoogle } = useAuth()
   const { toast } = useToast()
+  const { t } = useTranslation()
 
   const businessId = params.businessId as string
   const referrerId = searchParams.get('ref')
@@ -50,8 +52,8 @@ function ReferralPageContent() {
         const businessDoc = await getDoc(doc(db, 'businesses', businessId))
         if (!businessDoc.exists()) {
           toast({
-            title: 'Business not found',
-            description: 'This promo link is invalid.',
+            title: t('referralPage.businessNotFound'),
+            description: t('referralPage.invalidLink'),
             variant: 'destructive',
           })
           return
@@ -81,8 +83,8 @@ function ReferralPageContent() {
       } catch (error) {
         console.error('Error fetching business:', error)
         toast({
-          title: 'Error',
-          description: 'Failed to load business information.',
+          title: t('common.error'),
+          description: t('referralPage.failedLoadBusiness'),
           variant: 'destructive',
         })
       } finally {
@@ -91,7 +93,7 @@ function ReferralPageContent() {
     }
 
     fetchBusinessAndOffer()
-  }, [businessId, toast])
+  }, [businessId, toast, t])
 
   // Auto-create visit if user is already logged in when landing on referral page
   useEffect(() => {
@@ -127,13 +129,13 @@ function ReferralPageContent() {
 
       setVisitCreated(true)
       toast({
-        title: 'Success!',
-        description: 'Your visit has been recorded. Enjoy your experience!',
+        title: t('referralPage.visitSuccess'),
+        description: t('referralPage.visitSuccessDesc'),
       })
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to record visit'
       toast({
-        title: 'Error',
+        title: t('common.error'),
         description: errorMessage,
         variant: 'destructive',
       })
@@ -148,15 +150,15 @@ function ReferralPageContent() {
       // Users registering via referral link are consumers
       await signInWithGoogle('consumer')
       toast({
-        title: 'Signed in!',
-        description: 'Now let\'s record your visit.',
+        title: t('referralPage.signedIn'),
+        description: t('referralPage.signedInDesc'),
       })
       // After signup, create visit automatically
       setTimeout(() => handleCreateVisit(), 500)
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to sign in with Google'
       toast({
-        title: 'Error',
+        title: t('common.error'),
         description: errorMessage,
         variant: 'destructive',
       })
@@ -177,14 +179,14 @@ function ReferralPageContent() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <Card className="max-w-md w-full">
           <CardHeader className="text-center">
-            <CardTitle>Business Not Found</CardTitle>
+            <CardTitle>{t('referralPage.businessNotFound')}</CardTitle>
             <CardDescription>
-              This promo link appears to be invalid or the business is no longer available.
+              {t('referralPage.businessNotFoundDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Link href="/">
-              <Button className="w-full">Go to Homepage</Button>
+              <Button className="w-full">{t('referralPage.goHome')}</Button>
             </Link>
           </CardContent>
         </Card>
@@ -200,28 +202,28 @@ function ReferralPageContent() {
             <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
               <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
-            <CardTitle>Visit Recorded!</CardTitle>
+            <CardTitle>{t('referralPage.visitRecorded')}</CardTitle>
             <CardDescription>
-              Your visit to {business.name} has been recorded. Enjoy your experience!
+              {t('referralPage.visitRecordedDesc', { name: business.name })}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {offer && offer.consumerRewardType !== 'none' && (
               <div className="bg-primary/5 p-4 rounded-lg text-center">
-                <p className="text-sm text-muted-foreground mb-1">Your Reward</p>
+                <p className="text-sm text-muted-foreground mb-1">{t('referralPage.yourReward')}</p>
                 <p className="text-lg font-semibold text-primary">
                   {offer.consumerRewardType === 'cash' && formatCurrency(offer.consumerRewardValue)}
-                  {offer.consumerRewardType === 'points' && `${offer.consumerRewardValue} Points`}
-                  {offer.consumerRewardType === 'discount' && `${offer.consumerRewardValue}% Off`}
+                  {offer.consumerRewardType === 'points' && t('referralPage.points', { value: offer.consumerRewardValue })}
+                  {offer.consumerRewardType === 'discount' && t('referralPage.percentOff', { value: offer.consumerRewardValue })}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Applied after your purchase is confirmed
+                  {t('referralPage.rewardApplied')}
                 </p>
               </div>
             )}
             <Link href="/dashboard">
               <Button className="w-full gap-2">
-                Go to Dashboard <ArrowRight className="h-4 w-4" />
+                {t('referralPage.goToDashboard')} <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
           </CardContent>
@@ -250,7 +252,7 @@ function ReferralPageContent() {
           <div className="mb-4 text-center">
             <Badge variant="secondary" className="gap-1">
               <Gift className="h-3 w-3" />
-              You were referred by a friend
+              {t('referralPage.referredByFriend')}
             </Badge>
           </div>
         )}
@@ -305,20 +307,20 @@ function ReferralPageContent() {
             <CardHeader className="bg-primary/5">
               <CardTitle className="flex items-center gap-2">
                 <Gift className="h-5 w-5 text-primary" />
-                Special Offer for You
+                {t('referralPage.specialOffer')}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-4">
               <div className="text-center">
                 <p className="text-3xl font-bold text-primary">
                   {offer.consumerRewardType === 'cash' && formatCurrency(offer.consumerRewardValue)}
-                  {offer.consumerRewardType === 'points' && `${offer.consumerRewardValue} Points`}
-                  {offer.consumerRewardType === 'discount' && `${offer.consumerRewardValue}% Off`}
+                  {offer.consumerRewardType === 'points' && t('referralPage.points', { value: offer.consumerRewardValue })}
+                  {offer.consumerRewardType === 'discount' && t('referralPage.percentOff', { value: offer.consumerRewardValue })}
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {offer.consumerRewardType === 'cash' && 'Cash back on your first visit'}
-                  {offer.consumerRewardType === 'points' && 'Reward points for your account'}
-                  {offer.consumerRewardType === 'discount' && 'Discount on your purchase'}
+                  {offer.consumerRewardType === 'cash' && t('referralPage.cashBackFirstVisit')}
+                  {offer.consumerRewardType === 'points' && t('referralPage.rewardPoints')}
+                  {offer.consumerRewardType === 'discount' && t('referralPage.discountOnPurchase')}
                 </p>
               </div>
             </CardContent>
@@ -329,12 +331,12 @@ function ReferralPageContent() {
         <Card>
           <CardHeader>
             <CardTitle>
-              {user ? 'Confirm Your Visit' : 'Sign Up to Claim Your Offer'}
+              {user ? t('referralPage.confirmVisit') : t('referralPage.signUpClaim')}
             </CardTitle>
             <CardDescription>
               {user
-                ? 'Click below to record your visit and claim any available rewards.'
-                : 'Create a free account to track your rewards and start earning.'}
+                ? t('referralPage.confirmVisitDesc')
+                : t('referralPage.signUpDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -348,12 +350,12 @@ function ReferralPageContent() {
                 {registering ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Recording Visit...
+                    {t('referralPage.recordingVisit')}
                   </>
                 ) : (
                   <>
                     <CheckCircle className="mr-2 h-4 w-4" />
-                    I&apos;m Visiting Today
+                    {t('referralPage.visitingToday')}
                   </>
                 )}
               </Button>
@@ -361,9 +363,9 @@ function ReferralPageContent() {
               <div className="space-y-4">
                 <GoogleAuthButton onClick={handleGoogleSignUp} loading={registering} />
                 <p className="text-xs text-center text-muted-foreground">
-                  Already have an account?{' '}
+                  {t('referralPage.alreadyHaveAccount')}{' '}
                   <Link href="/auth/login" className="text-primary hover:underline">
-                    Sign in
+                    {t('common.signIn')}
                   </Link>
                 </p>
               </div>
@@ -374,12 +376,12 @@ function ReferralPageContent() {
                   className="w-full"
                   size="lg"
                 >
-                  Get Started
+                  {t('common.getStarted')}
                 </Button>
                 <p className="text-xs text-center text-muted-foreground">
-                  Already have an account?{' '}
+                  {t('referralPage.alreadyHaveAccount')}{' '}
                   <Link href="/auth/login" className="text-primary hover:underline">
-                    Sign in
+                    {t('common.signIn')}
                   </Link>
                 </p>
               </div>
@@ -389,25 +391,25 @@ function ReferralPageContent() {
 
         {/* How it works */}
         <div className="mt-8 text-center">
-          <h3 className="font-semibold mb-4">How It Works</h3>
+          <h3 className="font-semibold mb-4">{t('referralPage.howItWorks')}</h3>
           <div className="grid grid-cols-3 gap-4 text-sm">
             <div>
               <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
                 <span className="font-semibold text-primary">1</span>
               </div>
-              <p className="text-muted-foreground">Sign up</p>
+              <p className="text-muted-foreground">{t('referralPage.step1')}</p>
             </div>
             <div>
               <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
                 <span className="font-semibold text-primary">2</span>
               </div>
-              <p className="text-muted-foreground">Visit & buy</p>
+              <p className="text-muted-foreground">{t('referralPage.step2')}</p>
             </div>
             <div>
               <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
                 <span className="font-semibold text-primary">3</span>
               </div>
-              <p className="text-muted-foreground">Get rewarded</p>
+              <p className="text-muted-foreground">{t('referralPage.step3')}</p>
             </div>
           </div>
         </div>
