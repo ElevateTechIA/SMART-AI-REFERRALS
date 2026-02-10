@@ -411,6 +411,10 @@
     "signUpClaim": "Sign Up to Claim Your Offer",
     "confirmVisitDesc": "Click below to record your visit and claim any available rewards.",
     "signUpDesc": "Create a free account to track your rewards and start earning.",
+    "previewMode": "Link Preview",
+    "previewModeDesc": "This is how your promo link looks to customers.",
+    "ownerPreviewNote": "You are the owner of this business. Share this link with potential customers!",
+    "selfReferralNote": "This is your own promo link. Share it with friends so they can visit and you earn a commission!",
     "visitingToday": "I'm Visiting Today",
     "recordingVisit": "Recording Visit...",
     "alreadyHaveAccount": "Already have an account?",
@@ -434,7 +438,8 @@
     "earn": "Earn {{amount}}",
     "copy": "Copy",
     "qr": "QR",
-    "share": "Share"
+    "share": "Share",
+    "scanToRefer": "Scan to Refer & Earn"
   },
   "landing": {
     "heroTitle": "Turn Your Network Into",

@@ -5,17 +5,17 @@ import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/use-toast'
 import { formatCurrency, generateReferralUrl } from '@/lib/utils'
 import QRCode from 'qrcode'
-import { Copy, Download, Share2, Building2, Gift } from 'lucide-react'
+import { Copy, Download, Share2, Building2, Gift, Link2 } from 'lucide-react'
 import type { Business, Offer } from '@/lib/types'
 import { useTranslation } from 'react-i18next'
 
 const GRADIENTS = [
-  'from-blue-600 via-blue-500 to-cyan-400',
-  'from-purple-600 via-purple-500 to-pink-400',
-  'from-emerald-600 via-emerald-500 to-teal-400',
-  'from-orange-600 via-orange-500 to-amber-400',
-  'from-rose-600 via-rose-500 to-pink-400',
-  'from-indigo-600 via-indigo-500 to-blue-400',
+  'from-rose-500 via-pink-500 to-teal-500',
+  'from-purple-600 via-violet-500 to-cyan-400',
+  'from-emerald-600 via-teal-500 to-blue-400',
+  'from-orange-500 via-amber-500 to-yellow-400',
+  'from-blue-600 via-indigo-500 to-purple-400',
+  'from-pink-500 via-rose-400 to-orange-400',
 ]
 
 function getGradientForBusiness(name: string): string {
@@ -41,7 +41,7 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
 
   useEffect(() => {
     QRCode.toDataURL(referralUrl, {
-      width: 200,
+      width: 240,
       margin: 2,
       color: { dark: '#1e293b', light: '#ffffff' },
     })
@@ -80,9 +80,9 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
 
   return (
     <div className="w-full">
-      <div className="rounded-2xl overflow-hidden shadow-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+      <div className="rounded-3xl overflow-hidden shadow-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         {/* Banner */}
-        <div className="relative h-36 sm:h-44">
+        <div className="relative h-40 sm:h-48">
           {coverImage ? (
             <img
               src={coverImage}
@@ -91,25 +91,31 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
             />
           ) : (
             <div
-              className={`w-full h-full bg-gradient-to-br ${gradient} flex items-center justify-center`}
+              className={`w-full h-full bg-gradient-to-br ${gradient}`}
             >
-              <Building2 className="h-16 w-16 text-white/30" />
+              <div className="absolute inset-0 flex items-center justify-center opacity-20">
+                <Building2 className="h-24 w-24 text-white" />
+              </div>
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-          <div className="absolute bottom-3 left-4 right-4">
-            <h3 className="text-white font-bold text-lg sm:text-xl drop-shadow-lg truncate">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+
+          {/* Business name & category */}
+          <div className="absolute bottom-4 left-5 right-5">
+            <h3 className="text-white font-extrabold text-xl sm:text-2xl drop-shadow-lg truncate tracking-wide uppercase">
               {business.name}
             </h3>
-            <p className="text-white/80 text-xs sm:text-sm drop-shadow">
+            <p className="text-white/80 text-sm drop-shadow font-medium">
               {business.category}
             </p>
           </div>
+
+          {/* Earn badge */}
           {business.offer && (
-            <div className="absolute top-3 right-3">
-              <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1 shadow-lg">
-                <Gift className="h-3 w-3 text-green-600" />
-                <span className="text-xs font-bold text-green-700 dark:text-green-400">
+            <div className="absolute top-4 right-4">
+              <div className="bg-green-50 dark:bg-green-900/80 border border-green-200 dark:border-green-700 rounded-xl px-3.5 py-1.5 flex items-center gap-1.5 shadow-lg">
+                <Gift className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                <span className="text-sm font-bold text-green-700 dark:text-green-300">
                   {t('cards.earn', { amount: formatCurrency(business.offer.referrerCommissionAmount) })}
                 </span>
               </div>
@@ -117,26 +123,36 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
           )}
         </div>
 
-        {/* QR Code overlapping banner */}
-        <div className="flex justify-center -mt-10 relative z-10">
-          <div className="bg-white rounded-xl p-2 shadow-lg border border-gray-100">
+        {/* Scan to Refer & Earn label */}
+        <div className="pt-5 pb-2 text-center">
+          <h4 className="text-lg font-bold text-gray-800 dark:text-gray-100">
+            {t('cards.scanToRefer')}
+          </h4>
+        </div>
+
+        {/* QR Code */}
+        <div className="flex justify-center px-4 pb-3">
+          <div className="bg-white rounded-2xl p-3 shadow-md border border-gray-100">
             {qrCode ? (
-              <img src={qrCode} alt="QR Code" className="w-28 h-28 sm:w-32 sm:h-32" />
+              <img src={qrCode} alt="QR Code" className="w-36 h-36 sm:w-40 sm:h-40" />
             ) : (
-              <div className="w-28 h-28 sm:w-32 sm:h-32 bg-gray-100 animate-pulse rounded-lg" />
+              <div className="w-36 h-36 sm:w-40 sm:h-40 bg-gray-100 animate-pulse rounded-xl" />
             )}
           </div>
         </div>
 
         {/* Referral URL */}
-        <div className="px-4 pt-3 pb-2">
-          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg px-3 py-2 text-xs font-mono text-center truncate text-gray-600 dark:text-gray-300">
-            {referralUrl}
+        <div className="px-5 pb-3">
+          <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-700/50 rounded-xl px-4 py-2.5">
+            <Link2 className="h-4 w-4 text-gray-400 flex-shrink-0" />
+            <span className="text-sm text-gray-600 dark:text-gray-300 truncate">
+              {referralUrl}
+            </span>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="px-4 pb-4 pt-1 grid grid-cols-3 gap-2">
+        <div className="px-5 pb-5 pt-1 grid grid-cols-3 gap-2">
           <Button onClick={copyLink} size="sm" className="gap-1.5 text-xs rounded-xl">
             <Copy className="h-3.5 w-3.5" />
             {t('cards.copy')}

@@ -55,11 +55,11 @@ export function ReferralCardCarousel({ businesses, userId }: ReferralCardCarouse
     <div className="relative">
       {/* Carousel viewport */}
       <div className="overflow-hidden" ref={emblaRef}>
-        <div className="flex">
+        <div className="flex pl-4">
           {businesses.map((business) => (
             <div
               key={business.id}
-              className="flex-[0_0_85%] sm:flex-[0_0_70%] md:flex-[0_0_50%] min-w-0 pl-3 first:pl-0"
+              className="flex-[0_0_85%] sm:flex-[0_0_70%] md:flex-[0_0_50%] min-w-0 pl-3"
             >
               <ReferralCard business={business} userId={userId} />
             </div>

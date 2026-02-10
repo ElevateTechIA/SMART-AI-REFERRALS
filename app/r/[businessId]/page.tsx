@@ -95,10 +95,14 @@ function ReferralPageContent() {
     fetchBusinessAndOffer()
   }, [businessId, toast, t])
 
+  // Check if the logged-in user is the referrer (scanning their own link) or the business owner
+  const isSelfReferral = user && referrerId && referrerId === user.id
+  const isBusinessOwner = user && business && business.ownerUserId === user.id
+
   // Auto-create visit if user is already logged in when landing on referral page
   useEffect(() => {
     const autoCreateVisit = async () => {
-      if (business && user && !authLoading && !visitCreated) {
+      if (business && user && !authLoading && !visitCreated && !isSelfReferral && !isBusinessOwner) {
         // Create visit directly in Firestore (no localStorage)
         await handleCreateVisit()
       }
@@ -331,16 +335,33 @@ function ReferralPageContent() {
         <Card>
           <CardHeader>
             <CardTitle>
-              {user ? t('referralPage.confirmVisit') : t('referralPage.signUpClaim')}
+              {(isSelfReferral || isBusinessOwner)
+                ? t('referralPage.previewMode')
+                : user ? t('referralPage.confirmVisit') : t('referralPage.signUpClaim')}
             </CardTitle>
             <CardDescription>
-              {user
+              {(isSelfReferral || isBusinessOwner)
+                ? t('referralPage.previewModeDesc')
+                : user
                 ? t('referralPage.confirmVisitDesc')
                 : t('referralPage.signUpDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {user ? (
+            {(isSelfReferral || isBusinessOwner) ? (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground text-center">
+                  {isBusinessOwner
+                    ? t('referralPage.ownerPreviewNote')
+                    : t('referralPage.selfReferralNote')}
+                </p>
+                <Link href="/dashboard">
+                  <Button variant="outline" className="w-full gap-2">
+                    {t('common.backToDashboard')} <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            ) : user ? (
               <Button
                 onClick={handleCreateVisit}
                 disabled={registering}

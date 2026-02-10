@@ -411,6 +411,10 @@
     "signUpClaim": "Regístrate Para Reclamar Tu Oferta",
     "confirmVisitDesc": "Haz clic abajo para registrar tu visita y reclamar recompensas disponibles.",
     "signUpDesc": "Crea una cuenta gratis para rastrear tus recompensas y comenzar a ganar.",
+    "previewMode": "Vista Previa del Enlace",
+    "previewModeDesc": "Así es como se ve tu enlace de promoción para los clientes.",
+    "ownerPreviewNote": "Eres el dueño de este negocio. ¡Comparte este enlace con clientes potenciales!",
+    "selfReferralNote": "Este es tu propio enlace de promoción. ¡Compártelo con amigos para que visiten y tú ganes una comisión!",
     "visitingToday": "Estoy Visitando Hoy",
     "recordingVisit": "Registrando Visita...",
     "alreadyHaveAccount": "¿Ya tienes una cuenta?",
@@ -434,7 +438,8 @@
     "earn": "Gana {{amount}}",
     "copy": "Copiar",
     "qr": "QR",
-    "share": "Compartir"
+    "share": "Compartir",
+    "scanToRefer": "Escanea para Referir y Ganar"
   },
   "landing": {
     "heroTitle": "Convierte Tu Red En",
