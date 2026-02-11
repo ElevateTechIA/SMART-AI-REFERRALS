@@ -156,7 +156,11 @@
     "noEarnings": "No earnings yet. Start promoting to earn commissions!",
     "commissionEarned": "Commission Earned",
     "noPromotions": "No promotions found",
-    "failedToLoad": "Failed to load referral data"
+    "failedToLoad": "Failed to load referral data",
+    "statusPending": "Pending",
+    "statusCheckedIn": "Checked In",
+    "statusConverted": "Converted",
+    "statusRejected": "Rejected"
   },
   "admin": {
     "title": "Admin Dashboard",
@@ -312,7 +316,11 @@
     "conversionConfirmedDesc": "The customer has been converted and charges applied.",
     "linkCopied": "Link Copied",
     "linkCopiedDesc": "Promo link copied to clipboard",
-    "failedToLoad": "Failed to load business data"
+    "failedToLoad": "Failed to load business data",
+    "statusPending": "Pending",
+    "statusCheckedIn": "Checked In",
+    "statusConverted": "Converted",
+    "statusRejected": "Rejected"
   },
   "businessOffer": {
     "title": "Configure Offer",

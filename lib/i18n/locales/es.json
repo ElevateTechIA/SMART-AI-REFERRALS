@@ -156,7 +156,11 @@
     "noEarnings": "Aún no hay ganancias. ¡Comienza a promocionar para ganar comisiones!",
     "commissionEarned": "Comisión Ganada",
     "noPromotions": "No se encontraron promociones",
-    "failedToLoad": "Error al cargar datos de promociones"
+    "failedToLoad": "Error al cargar datos de promociones",
+    "statusPending": "Pendiente",
+    "statusCheckedIn": "Registrado",
+    "statusConverted": "Convertido",
+    "statusRejected": "Rechazado"
   },
   "admin": {
     "title": "Panel de Administrador",
@@ -312,7 +316,11 @@
     "conversionConfirmedDesc": "El cliente ha sido convertido y los cargos aplicados.",
     "linkCopied": "Enlace Copiado",
     "linkCopiedDesc": "Enlace de promoción copiado al portapapeles",
-    "failedToLoad": "Error al cargar datos del negocio"
+    "failedToLoad": "Error al cargar datos del negocio",
+    "statusPending": "Pendiente",
+    "statusCheckedIn": "Registrado",
+    "statusConverted": "Convertido",
+    "statusRejected": "Rechazado"
   },
   "businessOffer": {
     "title": "Configurar Oferta",

@@ -376,7 +376,13 @@ function ReferralList({
                   : 'secondary'
               }
             >
-              {referral.status}
+              {referral.status === 'CONVERTED'
+                ? t('promotions.statusConverted')
+                : referral.status === 'CHECKED_IN'
+                ? t('promotions.statusCheckedIn')
+                : referral.status === 'REJECTED'
+                ? t('promotions.statusRejected')
+                : t('promotions.statusPending')}
             </Badge>
           </div>
         )

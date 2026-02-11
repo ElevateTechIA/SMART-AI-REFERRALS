@@ -461,21 +461,23 @@ export default function BusinessDashboardPage() {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="scanner">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="scanner">
-                <Camera className="h-4 w-4 mr-2" />
+            <TabsList className="flex w-full overflow-x-auto">
+              <TabsTrigger value="scanner" className="flex-shrink-0 text-xs sm:text-sm">
+                <Camera className="h-4 w-4 mr-1" />
                 {t('businessDashboard.scanner')}
               </TabsTrigger>
-              <TabsTrigger value="pending">
+              <TabsTrigger value="pending" className="flex-shrink-0 text-xs sm:text-sm">
                 {t('businessDashboard.tabPending', { count: stats.pending })}
               </TabsTrigger>
-              <TabsTrigger value="checkedin">
+              <TabsTrigger value="checkedin" className="flex-shrink-0 text-xs sm:text-sm">
                 {t('businessDashboard.tabCheckIn', { count: stats.checkedIn })}
               </TabsTrigger>
-              <TabsTrigger value="converted">
+              <TabsTrigger value="converted" className="flex-shrink-0 text-xs sm:text-sm">
                 {t('businessDashboard.tabConverted', { count: stats.conversions })}
               </TabsTrigger>
-              <TabsTrigger value="all">{t('businessDashboard.tabAll')}</TabsTrigger>
+              <TabsTrigger value="all" className="flex-shrink-0 text-xs sm:text-sm">
+                {t('businessDashboard.tabAll')}
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="scanner" className="mt-4">
@@ -577,7 +579,13 @@ function VisitsList({
                     : 'secondary'
                 }
               >
-                {visit.status}
+                {visit.status === 'CONVERTED'
+                  ? t('businessDashboard.statusConverted')
+                  : visit.status === 'CHECKED_IN'
+                  ? t('businessDashboard.statusCheckedIn')
+                  : visit.status === 'REJECTED'
+                  ? t('businessDashboard.statusRejected')
+                  : t('businessDashboard.statusPending')}
               </Badge>
               {!visit.isNewCustomer && (
                 <span className="text-xs text-destructive mt-1">{t('businessDashboard.repeatCustomer')}</span>
