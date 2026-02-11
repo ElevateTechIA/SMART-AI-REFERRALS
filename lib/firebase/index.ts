@@ -1,1 +1,1 @@
-export { auth, db, storage, googleProvider } from './client'
+export { auth, db, storage } from './client'

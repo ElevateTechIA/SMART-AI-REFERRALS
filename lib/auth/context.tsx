@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import {
   User as FirebaseUser,
+  GoogleAuthProvider,
   onAuthStateChanged,
   signInWithPopup,
   signInWithRedirect,
@@ -10,7 +11,7 @@ import {
   signOut as firebaseSignOut,
 } from 'firebase/auth'
 import { doc, getDoc, getDocFromServer, setDoc, serverTimestamp } from 'firebase/firestore'
-import { auth, db, googleProvider } from '@/lib/firebase/client'
+import { auth, db } from '@/lib/firebase/client'
 import type { User, UserRole } from '@/lib/types'
 
 interface AuthContextType {
@@ -132,8 +133,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const signInWithGoogle = async (role?: UserRole) => {
+    // Create a fresh provider each time to ensure prompt: 'select_account' is always applied
+    const provider = new GoogleAuthProvider()
+    provider.setCustomParameters({ prompt: 'select_account' })
+
     try {
-      const result = await signInWithPopup(auth, googleProvider)
+      const result = await signInWithPopup(auth, provider)
       const existingUser = await fetchUserData(result.user)
       if (!existingUser) {
         await createUserDocument(result.user, undefined, role)
@@ -151,7 +156,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch {
           // sessionStorage may be unavailable
         }
-        await signInWithRedirect(auth, googleProvider)
+        await signInWithRedirect(auth, provider)
       } else {
         throw error
       }
