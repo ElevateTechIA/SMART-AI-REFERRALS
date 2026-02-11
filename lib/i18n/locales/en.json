@@ -49,7 +49,9 @@
     "admin": "Admin",
     "settings": "Settings",
     "signOut": "Sign out",
-    "profile": "Profile"
+    "profile": "Profile",
+    "theme": "Theme",
+    "language": "Language"
   },
   "auth": {
     "login": "Login",
@@ -337,6 +339,11 @@
     "promoterCommissionSummary": "Promoter Commission",
     "consumerCashBack": "Consumer Cash Back",
     "platformFee": "Platform Fee",
+    "offerImage": "Offer Image",
+    "offerImageDesc": "Add an image to showcase your offer. Recommended: 800x400px or wider.",
+    "uploadImage": "Upload Offer Image",
+    "changeImage": "Change Image",
+    "imageUploaded": "Offer image uploaded",
     "saveOffer": "Save Offer",
     "offerSaved": "Offer Saved",
     "offerSavedDesc": "Your promo offer has been updated."

@@ -36,7 +36,7 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
   const { t } = useTranslation()
   const [qrCode, setQrCode] = useState<string | null>(null)
   const referralUrl = generateReferralUrl(business.id, userId)
-  const coverImage = business.images?.[0] || null
+  const coverImage = business.offer?.image || business.images?.[0] || null
   const gradient = getGradientForBusiness(business.name)
 
   useEffect(() => {

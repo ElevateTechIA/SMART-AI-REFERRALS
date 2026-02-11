@@ -46,10 +46,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
+    // Determine upload target: 'business' (default) or 'offer'
+    const target = (formData.get('target') as string) || 'business'
+
     // Upload to Firebase Storage
     const bucket = getAdminStorage().bucket()
     const extension = file.name.split('.').pop() || 'jpg'
-    const fileName = `cover-${Date.now()}.${extension}`
+    const prefix = target === 'offer' ? 'offer' : 'cover'
+    const fileName = `${prefix}-${Date.now()}.${extension}`
     const filePath = `businesses/${businessId}/${fileName}`
 
     const buffer = Buffer.from(await file.arrayBuffer())
@@ -65,11 +69,13 @@ export async function POST(request: NextRequest) {
     await fileRef.makePublic()
     const downloadUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`
 
-    // Append URL to business images array in Firestore
-    await db.collection('businesses').doc(businessId).update({
-      images: FieldValue.arrayUnion(downloadUrl),
-      updatedAt: FieldValue.serverTimestamp(),
-    })
+    // Only update business images array for business cover uploads
+    if (target !== 'offer') {
+      await db.collection('businesses').doc(businessId).update({
+        images: FieldValue.arrayUnion(downloadUrl),
+        updatedAt: FieldValue.serverTimestamp(),
+      })
+    }
 
     return NextResponse.json({ success: true, url: downloadUrl })
   } catch (error) {

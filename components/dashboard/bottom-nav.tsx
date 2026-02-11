@@ -5,12 +5,6 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/lib/auth/context'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard,
@@ -18,27 +12,15 @@ import {
   DollarSign,
   Share2,
   Gift,
-  Languages,
   Shield,
 } from 'lucide-react'
 
 export function BottomNav() {
   const { user } = useAuth()
   const pathname = usePathname()
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const [isVisible, setIsVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
-
-  const languages = [
-    { code: 'en', name: 'English', flag: '🇺🇸' },
-    { code: 'es', name: 'Español', flag: '🇪🇸' },
-  ]
-
-  const currentLanguage = languages.find((lang) => lang.code === i18n.language) || languages[0]
-
-  const changeLanguage = (langCode: string) => {
-    i18n.changeLanguage(langCode)
-  }
 
   useEffect(() => {
     const controlNavbar = () => {
@@ -113,7 +95,7 @@ export function BottomNav() {
         isVisible ? 'translate-y-0' : 'translate-y-full'
       )}
     >
-      <div className="grid h-16 px-1" style={{ gridTemplateColumns: `repeat(${filteredNavItems.length + 1}, minmax(0, 1fr))` }}>
+      <div className="grid h-16 px-1" style={{ gridTemplateColumns: `repeat(${filteredNavItems.length}, minmax(0, 1fr))` }}>
         {filteredNavItems.map((item) => {
           const Icon = item.icon
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
@@ -131,32 +113,6 @@ export function BottomNav() {
             </Link>
           )
         })}
-
-        {/* Language Switcher */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              className={cn(
-                'flex flex-col items-center justify-center gap-1 transition-colors text-white/60 hover:text-white'
-              )}
-            >
-              <Languages className="h-5 w-5" />
-              <span className="text-[9px] font-medium">{currentLanguage.flag}</span>
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="mb-2">
-            {languages.map((language) => (
-              <DropdownMenuItem
-                key={language.code}
-                onClick={() => changeLanguage(language.code)}
-                className={i18n.language === language.code ? 'bg-accent' : ''}
-              >
-                <span className="mr-2">{language.flag}</span>
-                {language.name}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
     </nav>
   )

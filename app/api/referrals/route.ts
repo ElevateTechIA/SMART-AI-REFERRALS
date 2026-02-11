@@ -42,6 +42,7 @@ export async function GET(request: NextRequest) {
       createdAt: Date | null
       offer?: {
         id: string
+        image: string | null
         referrerCommissionAmount: number
         consumerRewardType: string
         consumerRewardValue: number
@@ -70,6 +71,7 @@ export async function GET(request: NextRequest) {
           createdAt: businessData.createdAt?.toDate() || null,
           offer: {
             id: offerDoc.id,
+            image: offerData.image || null,
             referrerCommissionAmount: offerData.referrerCommissionAmount,
             consumerRewardType: offerData.consumerRewardType,
             consumerRewardValue: offerData.consumerRewardValue,

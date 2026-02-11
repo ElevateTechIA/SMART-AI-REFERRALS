@@ -49,7 +49,9 @@
     "admin": "Admin",
     "settings": "Configuración",
     "signOut": "Cerrar sesión",
-    "profile": "Perfil"
+    "profile": "Perfil",
+    "theme": "Tema",
+    "language": "Idioma"
   },
   "auth": {
     "login": "Iniciar sesión",
@@ -337,6 +339,11 @@
     "promoterCommissionSummary": "Comisión del Promotor",
     "consumerCashBack": "Reembolso al Consumidor",
     "platformFee": "Tarifa de Plataforma",
+    "offerImage": "Imagen de la Oferta",
+    "offerImageDesc": "Agrega una imagen para mostrar tu oferta. Recomendado: 800x400px o más ancho.",
+    "uploadImage": "Subir Imagen de Oferta",
+    "changeImage": "Cambiar Imagen",
+    "imageUploaded": "Imagen de oferta subida",
     "saveOffer": "Guardar Oferta",
     "offerSaved": "Oferta Guardada",
     "offerSavedDesc": "Tu oferta de promoción ha sido actualizada."

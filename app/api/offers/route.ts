@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const {
       businessId,
+      image,
       pricePerNewCustomer,
       referrerCommissionAmount,
       referrerCommissionPercentage,
@@ -139,7 +140,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Build offer data
-    const offerData = {
+    const offerData: Record<string, unknown> = {
       businessId,
       pricePerNewCustomer: validatedPrice,
       referrerCommissionAmount: validatedCommissionAmount || 0,
@@ -148,6 +149,7 @@ export async function POST(request: NextRequest) {
       consumerRewardValue: validatedRewardValue || 0,
       allowPlatformAttribution: allowPlatformAttribution !== false,
       active: active !== false,
+      ...(image !== undefined && { image: image || null }),
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
     }

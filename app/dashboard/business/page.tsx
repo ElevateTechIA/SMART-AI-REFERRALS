@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -271,6 +272,12 @@ export default function BusinessDashboardPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Link href="/dashboard/business/settings">
+            <Button variant="outline" size="sm" className="gap-2">
+              <Settings className="h-4 w-4" />
+              {t('businessDashboard.settings')}
+            </Button>
+          </Link>
           <Badge
             variant={
               business.status === 'active'
@@ -282,12 +289,6 @@ export default function BusinessDashboardPage() {
           >
             {business.status}
           </Badge>
-          <Link href="/dashboard/business/settings">
-            <Button variant="outline" size="sm" className="gap-2">
-              <Settings className="h-4 w-4" />
-              {t('businessDashboard.settings')}
-            </Button>
-          </Link>
         </div>
       </div>
 
@@ -394,6 +395,17 @@ export default function BusinessDashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
+            {offer.image && (
+              <div className="relative h-40 w-full rounded-lg overflow-hidden mb-4">
+                <Image
+                  src={offer.image}
+                  alt={t('businessDashboard.currentOffer')}
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
               <div>
                 <p className="text-sm text-muted-foreground">{t('businessDashboard.pricePerCustomer')}</p>

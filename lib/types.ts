@@ -42,6 +42,7 @@ export type ConsumerRewardType = 'cash' | 'points' | 'discount' | 'none'
 export interface Offer {
   id: string
   businessId: string
+  image?: string // Firebase Storage URL for offer image
   pricePerNewCustomer: number // e.g., 100 USD
   referrerCommissionAmount: number // Fixed amount referrer earns
   referrerCommissionPercentage?: number // Alternative: percentage of pricePerNewCustomer
