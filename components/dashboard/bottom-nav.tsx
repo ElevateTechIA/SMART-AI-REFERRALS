@@ -91,9 +91,13 @@ export function BottomNav() {
   return (
     <nav
       className={cn(
-        "fixed bottom-0 left-0 right-0 md:hidden bg-gradient-to-r from-indigo-900 to-purple-800 shadow-lg border-t border-white/10 z-50 transition-transform duration-300",
+        "fixed bottom-0 left-0 right-0 md:hidden shadow-lg border-t z-50 transition-transform duration-300",
         isVisible ? 'translate-y-0' : 'translate-y-full'
       )}
+      style={{
+        background: 'linear-gradient(to right, var(--theme-gradientFrom), var(--theme-gradientTo))',
+        borderColor: 'var(--theme-cardBorder)',
+      }}
     >
       <div className="grid h-16 px-1" style={{ gridTemplateColumns: `repeat(${filteredNavItems.length}, minmax(0, 1fr))` }}>
         {filteredNavItems.map((item) => {
@@ -105,7 +109,7 @@ export function BottomNav() {
               href={item.href}
               className={cn(
                 'flex flex-col items-center justify-center gap-1 transition-colors',
-                isActive ? 'text-white' : 'text-white/60 hover:text-white'
+                isActive ? 'text-white font-semibold' : 'text-white/60 hover:text-white/80'
               )}
             >
               <Icon className="h-5 w-5" />

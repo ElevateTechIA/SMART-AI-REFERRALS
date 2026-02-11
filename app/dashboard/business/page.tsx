@@ -194,12 +194,33 @@ export default function BusinessDashboardPage() {
         throw new Error(result.error || 'Failed to confirm conversion')
       }
 
-      // Update local state
+      // Update local visit state
       setVisits((prev) =>
         prev.map((v) =>
           v.id === visitId ? { ...v, status: 'CONVERTED' as const } : v
         )
       )
+
+      // Refetch charges to reflect the new charge created by the conversion
+      if (business) {
+        const chargesQuery = query(
+          collection(db, 'charges'),
+          where('businessId', '==', business.id)
+        )
+        const chargesSnapshot = await getDocs(chargesQuery)
+        const freshCharges: Charge[] = []
+        chargesSnapshot.forEach((d) => {
+          const data = d.data()
+          freshCharges.push({
+            id: d.id,
+            ...data,
+            createdAt: data.createdAt?.toDate(),
+            updatedAt: data.updatedAt?.toDate(),
+          } as Charge)
+        })
+        freshCharges.sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0))
+        setCharges(freshCharges)
+      }
 
       toast({
         title: t('businessDashboard.conversionConfirmed'),
@@ -342,42 +363,6 @@ export default function BusinessDashboardPage() {
         </Card>
       </div>
 
-      {/* Referral Link */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <QrCode className="h-5 w-5" />
-            {t('businessDashboard.yourPromoLink')}
-          </CardTitle>
-          <CardDescription>
-            {t('businessDashboard.promoLinkDesc')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <div className="bg-muted rounded-md px-4 py-2 text-sm font-mono overflow-x-auto">
-              {generateReferralUrl(business.id)}
-            </div>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Button variant="outline" className="flex-1 gap-2" onClick={copyReferralLink}>
-                <Copy className="h-4 w-4" />
-                {t('common.copyLink')}
-              </Button>
-              <Button variant="outline" className="flex-1 gap-2" asChild>
-                <a
-                  href={generateReferralUrl(business.id)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  {t('common.openLink')}
-                </a>
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Offer Settings */}
       {offer ? (
         <Card>
@@ -451,6 +436,42 @@ export default function BusinessDashboardPage() {
         </Card>
       )}
 
+      {/* Referral Link */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <QrCode className="h-5 w-5" />
+            {t('businessDashboard.yourPromoLink')}
+          </CardTitle>
+          <CardDescription>
+            {t('businessDashboard.promoLinkDesc')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <div className="bg-muted rounded-md px-4 py-2 text-sm font-mono overflow-x-auto">
+              {generateReferralUrl(business.id)}
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button variant="outline" className="flex-1 gap-2" onClick={copyReferralLink}>
+                <Copy className="h-4 w-4" />
+                {t('common.copyLink')}
+              </Button>
+              <Button variant="outline" className="flex-1 gap-2" asChild>
+                <a
+                  href={generateReferralUrl(business.id)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  {t('common.openLink')}
+                </a>
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Visits & Conversions */}
       <Card>
         <CardHeader>
@@ -461,24 +482,26 @@ export default function BusinessDashboardPage() {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="scanner">
-            <TabsList className="flex w-full overflow-x-auto">
-              <TabsTrigger value="scanner" className="flex-shrink-0 text-xs sm:text-sm">
-                <Camera className="h-4 w-4 mr-1" />
-                {t('businessDashboard.scanner')}
-              </TabsTrigger>
-              <TabsTrigger value="pending" className="flex-shrink-0 text-xs sm:text-sm">
-                {t('businessDashboard.tabPending', { count: stats.pending })}
-              </TabsTrigger>
-              <TabsTrigger value="checkedin" className="flex-shrink-0 text-xs sm:text-sm">
-                {t('businessDashboard.tabCheckIn', { count: stats.checkedIn })}
-              </TabsTrigger>
-              <TabsTrigger value="converted" className="flex-shrink-0 text-xs sm:text-sm">
-                {t('businessDashboard.tabConverted', { count: stats.conversions })}
-              </TabsTrigger>
-              <TabsTrigger value="all" className="flex-shrink-0 text-xs sm:text-sm">
-                {t('businessDashboard.tabAll')}
-              </TabsTrigger>
-            </TabsList>
+            <div className="overflow-x-auto -mx-1 px-1">
+              <TabsList className="inline-flex w-auto min-w-full">
+                <TabsTrigger value="scanner" className="text-xs sm:text-sm">
+                  <Camera className="h-4 w-4 sm:mr-1" />
+                  <span className="hidden sm:inline">{t('businessDashboard.scanner')}</span>
+                </TabsTrigger>
+                <TabsTrigger value="pending" className="text-xs sm:text-sm">
+                  {t('businessDashboard.tabPending', { count: stats.pending })}
+                </TabsTrigger>
+                <TabsTrigger value="checkedin" className="text-xs sm:text-sm">
+                  {t('businessDashboard.tabCheckIn', { count: stats.checkedIn })}
+                </TabsTrigger>
+                <TabsTrigger value="converted" className="text-xs sm:text-sm">
+                  {t('businessDashboard.tabConverted', { count: stats.conversions })}
+                </TabsTrigger>
+                <TabsTrigger value="all" className="text-xs sm:text-sm">
+                  {t('businessDashboard.tabAll')}
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
             <TabsContent value="scanner" className="mt-4">
               <QRScanner onScanSuccess={handleCheckIn} />
