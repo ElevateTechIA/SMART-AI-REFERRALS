@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -31,6 +31,7 @@ import {
 } from 'lucide-react'
 import { QRScanner } from '@/components/business/qr-scanner'
 import { useTranslation } from 'react-i18next'
+import QRCode from 'qrcode'
 
 export default function BusinessDashboardPage() {
   const { user } = useAuth()
@@ -42,6 +43,7 @@ export default function BusinessDashboardPage() {
   const [charges, setCharges] = useState<Charge[]>([])
   const [loading, setLoading] = useState(true)
   const [converting, setConverting] = useState<string | null>(null)
+  const [promoQr, setPromoQr] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchBusinessData = async () => {
@@ -135,6 +137,17 @@ export default function BusinessDashboardPage() {
 
     fetchBusinessData()
   }, [user, toast, t])
+
+  useEffect(() => {
+    if (!business) return
+    QRCode.toDataURL(generateReferralUrl(business.id), {
+      width: 240,
+      margin: 2,
+      color: { dark: '#1e293b', light: '#ffffff' },
+    })
+      .then(setPromoQr)
+      .catch(console.error)
+  }, [business])
 
   const handleCheckIn = async (scanResult: { visitId: string; token: string }) => {
     try {
@@ -448,8 +461,19 @@ export default function BusinessDashboardPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            <div className="bg-muted rounded-md px-4 py-2 text-sm font-mono overflow-x-auto">
+          <div className="space-y-4">
+            {/* QR Code */}
+            <div className="flex justify-center">
+              <div className="bg-white rounded-2xl p-3 shadow-md border border-gray-100">
+                {promoQr ? (
+                  <img src={promoQr} alt="QR Code" className="w-40 h-40" />
+                ) : (
+                  <div className="w-40 h-40 bg-gray-100 animate-pulse rounded-xl" />
+                )}
+              </div>
+            </div>
+
+            <div className="bg-muted rounded-md px-4 py-2 text-sm font-mono overflow-x-auto text-center">
               {generateReferralUrl(business.id)}
             </div>
             <div className="flex flex-col sm:flex-row gap-2">
