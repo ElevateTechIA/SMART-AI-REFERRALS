@@ -80,7 +80,7 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
 
   return (
     <div className="w-full">
-      <div className="rounded-3xl overflow-hidden shadow-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+      <div className="rounded-3xl overflow-hidden shadow-xl border border-border bg-card">
         {/* Banner */}
         <div className="relative h-40 sm:h-48">
           {coverImage ? (
@@ -125,7 +125,7 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
 
         {/* Scan to Refer & Earn label */}
         <div className="pt-5 pb-2 text-center">
-          <h4 className="text-lg font-bold text-gray-800 dark:text-gray-100">
+          <h4 className="text-lg font-bold text-foreground">
             {t('cards.scanToRefer')}
           </h4>
         </div>
@@ -143,9 +143,9 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
 
         {/* Referral URL */}
         <div className="px-5 pb-3">
-          <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-700/50 rounded-xl px-4 py-2.5">
-            <Link2 className="h-4 w-4 text-gray-400 flex-shrink-0" />
-            <span className="text-sm text-gray-600 dark:text-gray-300 truncate">
+          <div className="flex items-center gap-2 bg-muted rounded-xl px-4 py-2.5">
+            <Link2 className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <span className="text-sm text-muted-foreground truncate">
               {referralUrl}
             </span>
           </div>

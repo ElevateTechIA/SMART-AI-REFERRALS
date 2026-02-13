@@ -481,7 +481,7 @@ export default function BusinessDashboardPage() {
               </div>
             </div>
 
-            <div className="bg-muted rounded-md px-4 py-2 text-sm font-mono overflow-x-auto text-center">
+            <div className="bg-muted rounded-md px-4 py-2 text-sm font-mono overflow-x-auto text-center text-foreground">
               {generateReferralUrl(business.id)}
             </div>
             <div className="flex flex-col sm:flex-row gap-2">

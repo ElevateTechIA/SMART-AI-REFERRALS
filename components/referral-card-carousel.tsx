@@ -71,7 +71,7 @@ export function ReferralCardCarousel({ businesses, userId }: ReferralCardCarouse
       {canScrollPrev && (
         <button
           onClick={() => emblaApi?.scrollPrev()}
-          className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-10 h-10 rounded-full bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-600 items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors z-10"
+          className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-10 h-10 rounded-full bg-card shadow-lg border border-border items-center justify-center hover:bg-muted transition-colors z-10"
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
@@ -79,7 +79,7 @@ export function ReferralCardCarousel({ businesses, userId }: ReferralCardCarouse
       {canScrollNext && (
         <button
           onClick={() => emblaApi?.scrollNext()}
-          className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-10 h-10 rounded-full bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-600 items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors z-10"
+          className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-10 h-10 rounded-full bg-card shadow-lg border border-border items-center justify-center hover:bg-muted transition-colors z-10"
         >
           <ChevronRight className="h-5 w-5" />
         </button>
@@ -94,7 +94,7 @@ export function ReferralCardCarousel({ businesses, userId }: ReferralCardCarouse
             className={`h-2 rounded-full transition-all duration-300 ${
               index === selectedIndex
                 ? 'w-6 bg-blue-500'
-                : 'w-2 bg-gray-300 dark:bg-gray-600'
+                : 'w-2 bg-muted-foreground/30'
             }`}
           />
         ))}

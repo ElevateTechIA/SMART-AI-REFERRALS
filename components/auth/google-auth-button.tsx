@@ -17,10 +17,10 @@ export function GoogleAuthButton({ onClick, loading, label }: GoogleAuthButtonPr
       type="button"
       onClick={onClick}
       disabled={loading}
-      className="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-white border border-gray-300 rounded-xl shadow-sm hover:shadow-md hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
+      className="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-card border border-border rounded-xl shadow-sm hover:shadow-md hover:bg-muted transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
     >
       {loading ? (
-        <Loader2 className="h-5 w-5 animate-spin text-gray-500" />
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       ) : (
         <svg className="h-5 w-5" viewBox="0 0 24 24">
           <path
@@ -41,7 +41,7 @@ export function GoogleAuthButton({ onClick, loading, label }: GoogleAuthButtonPr
           />
         </svg>
       )}
-      <span className="text-[15px] font-medium text-gray-700">
+      <span className="text-[15px] font-medium text-foreground">
         {loading
           ? t('common.loading')
           : label || t('auth.continueWithGoogle')}

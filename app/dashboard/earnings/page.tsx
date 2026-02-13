@@ -129,67 +129,67 @@ export default function EarningsPage() {
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Stats Cards - matching dashboard style */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white/95 backdrop-blur-sm rounded-xl p-6 shadow-xl">
+          <div className="bg-card backdrop-blur-sm rounded-xl p-6 shadow-xl">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                 <DollarSign className="h-6 w-6 text-blue-600" />
               </div>
-              <span className="text-sm text-gray-600">{t('earnings.totalEarnings')}</span>
+              <span className="text-sm text-muted-foreground">{t('earnings.totalEarnings')}</span>
             </div>
-            <p className="text-3xl font-bold text-gray-900">
+            <p className="text-3xl font-bold text-foreground">
               {formatCurrency(stats.totalEarnings)}
             </p>
           </div>
 
-          <div className="bg-white/95 backdrop-blur-sm rounded-xl p-6 shadow-xl">
+          <div className="bg-card backdrop-blur-sm rounded-xl p-6 shadow-xl">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
                 <TrendingUp className="h-6 w-6 text-green-600" />
               </div>
-              <span className="text-sm text-gray-600">{t('earnings.completed')}</span>
+              <span className="text-sm text-muted-foreground">{t('earnings.completed')}</span>
             </div>
-            <p className="text-3xl font-bold text-gray-900">
+            <p className="text-3xl font-bold text-foreground">
               {formatCurrency(stats.completedEarnings)}
             </p>
           </div>
 
-          <div className="bg-white/95 backdrop-blur-sm rounded-xl p-6 shadow-xl">
+          <div className="bg-card backdrop-blur-sm rounded-xl p-6 shadow-xl">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
                 <Clock className="h-6 w-6 text-yellow-600" />
               </div>
-              <span className="text-sm text-gray-600">{t('earnings.pending')}</span>
+              <span className="text-sm text-muted-foreground">{t('earnings.pending')}</span>
             </div>
-            <p className="text-3xl font-bold text-gray-900">
+            <p className="text-3xl font-bold text-foreground">
               {formatCurrency(stats.pendingEarnings)}
             </p>
           </div>
 
-          <div className="bg-white/95 backdrop-blur-sm rounded-xl p-6 shadow-xl">
+          <div className="bg-card backdrop-blur-sm rounded-xl p-6 shadow-xl">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                 <Calendar className="h-6 w-6 text-blue-600" />
               </div>
-              <span className="text-sm text-gray-600">{t('earnings.thisMonth')}</span>
+              <span className="text-sm text-muted-foreground">{t('earnings.thisMonth')}</span>
             </div>
-            <p className="text-3xl font-bold text-gray-900">
+            <p className="text-3xl font-bold text-foreground">
               {formatCurrency(stats.thisMonth)}
             </p>
           </div>
         </div>
 
         {/* Transactions - matching dashboard card style */}
-        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden">
-          <div className="p-6 border-b border-gray-200">
+        <div className="bg-card backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden">
+          <div className="p-6 border-b border-border">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-bold text-foreground">
                 {t('earnings.transactionHistory')}
               </h2>
               <div className="flex gap-3">
                 <select
                   value={selectedPeriod}
                   onChange={(e) => setSelectedPeriod(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500"
+                  className="px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="all">{t('earnings.allTime')}</option>
                   <option value="month">{t('earnings.thisMonthOption')}</option>
@@ -205,44 +205,44 @@ export default function EarningsPage() {
 
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-muted">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     {t('earnings.dateColumn')}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     {t('earnings.businessColumn')}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     {t('earnings.customerColumn')}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     {t('earnings.typeColumn')}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     {t('earnings.amountColumn')}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     {t('earnings.statusColumn')}
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-card divide-y divide-border">
                 {transactions.map((transaction) => (
-                  <tr key={transaction.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <tr key={transaction.id} className="hover:bg-muted">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                       {new Date(transaction.date).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
                       {transaction.business}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                       {transaction.customer}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 capitalize">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground capitalize">
                       {transaction.type}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-foreground">
                       {formatCurrency(transaction.amount)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -256,9 +256,9 @@ export default function EarningsPage() {
 
           {transactions.length === 0 && (
             <div className="text-center py-12">
-              <DollarSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">{t('earnings.noTransactions')}</p>
-              <p className="text-sm text-gray-500 mt-2">
+              <DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">{t('earnings.noTransactions')}</p>
+              <p className="text-sm text-muted-foreground mt-2">
                 {t('earnings.startPromoting')}
               </p>
             </div>

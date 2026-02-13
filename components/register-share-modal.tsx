@@ -93,15 +93,15 @@ export function RegisterShareModal({ isOpen, onClose, type }: RegisterShareModal
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl relative animate-in fade-in zoom-in duration-200"
+        className="bg-card rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl relative animate-in fade-in zoom-in duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors"
+          className="absolute top-4 right-4 p-2 rounded-full hover:bg-muted transition-colors"
         >
-          <X className="h-5 w-5 text-gray-600" />
+          <X className="h-5 w-5 text-muted-foreground" />
         </button>
 
         {/* Header */}
@@ -113,12 +113,12 @@ export function RegisterShareModal({ isOpen, onClose, type }: RegisterShareModal
               <Users className="h-8 w-8 text-white" />
             )}
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">
+          <h3 className="text-2xl font-bold text-foreground mb-2">
             {type === 'business'
               ? t('landing.listYourBusiness')
               : t('landing.startEarningFree')}
           </h3>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             {type === 'business'
               ? t('auth.createBusinessAccountDesc')
               : t('auth.createReferrerAccountDesc')}
@@ -126,7 +126,7 @@ export function RegisterShareModal({ isOpen, onClose, type }: RegisterShareModal
         </div>
 
         {/* QR Code */}
-        <div className="bg-white rounded-2xl p-4 border-2 border-indigo-100 mb-6">
+        <div className="bg-background rounded-2xl p-4 border-2 border-indigo-100 dark:border-indigo-900 mb-6">
           {qrCode && (
             <img
               src={qrCode}

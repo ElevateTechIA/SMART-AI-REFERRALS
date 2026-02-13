@@ -915,7 +915,7 @@ export default function AdminDashboardPage() {
                                 {receipt.extractedData.totalAmount != null && (
                                   <div>
                                     <p className="text-muted-foreground">{t('receipt.total')}</p>
-                                    <p className="font-medium text-green-600">
+                                    <p className="font-medium text-green-600 dark:text-green-400">
                                       {formatCurrency(receipt.extractedData.totalAmount)}
                                     </p>
                                   </div>
@@ -965,10 +965,10 @@ export default function AdminDashboardPage() {
                             {receipt.extractedData?.items && receipt.extractedData.items.length > 0 && (
                               <div>
                                 <p className="text-sm text-muted-foreground mb-1">{t('receipt.items')} ({receipt.extractedData.items.length})</p>
-                                <div className="bg-background rounded border p-2 max-h-40 overflow-y-auto">
+                                <div className="bg-card rounded border p-2 max-h-40 overflow-y-auto">
                                   {receipt.extractedData.items.map((item, idx) => (
                                     <div key={idx} className="flex justify-between text-xs py-0.5">
-                                      <span>{item.quantity && item.quantity > 1 ? `${item.quantity}x ` : ''}{item.name}</span>
+                                      <span className="text-foreground">{item.quantity && item.quantity > 1 ? `${item.quantity}x ` : ''}{item.name}</span>
                                       {item.price != null && <span className="text-muted-foreground">{formatCurrency(item.price)}</span>}
                                     </div>
                                   ))}

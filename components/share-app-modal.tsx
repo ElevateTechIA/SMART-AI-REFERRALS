@@ -83,15 +83,15 @@ export function ShareAppModal({ isOpen, onClose }: ShareAppModalProps) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl relative animate-in fade-in zoom-in duration-200"
+        className="bg-card rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl relative animate-in fade-in zoom-in duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors"
+          className="absolute top-4 right-4 p-2 rounded-full hover:bg-muted transition-colors"
         >
-          <X className="h-5 w-5 text-gray-600" />
+          <X className="h-5 w-5 text-muted-foreground" />
         </button>
 
         {/* Header */}
@@ -99,16 +99,16 @@ export function ShareAppModal({ isOpen, onClose }: ShareAppModalProps) {
           <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Share2 className="h-8 w-8 text-white" />
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">
+          <h3 className="text-2xl font-bold text-foreground mb-2">
             {t('landing.shareTheApp', 'Share the App')}
           </h3>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             {t('landing.scanQR', 'Scan QR code or share the link')}
           </p>
         </div>
 
         {/* QR Code */}
-        <div className="bg-white rounded-2xl p-4 border-2 border-blue-100 mb-6">
+        <div className="bg-background rounded-2xl p-4 border-2 border-blue-100 dark:border-blue-900 mb-6">
           {qrCode && (
             <img
               src={qrCode}
@@ -119,8 +119,8 @@ export function ShareAppModal({ isOpen, onClose }: ShareAppModalProps) {
         </div>
 
         {/* URL */}
-        <div className="bg-gray-50 rounded-xl p-4 mb-4">
-          <p className="text-xs text-gray-600 mb-1 text-center">
+        <div className="bg-muted rounded-xl p-4 mb-4">
+          <p className="text-xs text-muted-foreground mb-1 text-center">
             {t('landing.orVisit', 'Or visit')}
           </p>
           <p className="text-sm font-semibold text-blue-600 text-center break-all">

@@ -150,9 +150,9 @@ export default function EnhancedDashboardPage() {
       {/* Top Row: Stats Cards */}
       <div className="grid grid-cols-3 gap-6">
         {/* Total Earnings */}
-        <div className="bg-white/95 backdrop-blur-sm rounded-xl p-5 shadow-lg">
-          <p className="text-xs text-gray-600 mb-1">{t('dashboard.totalEarnings')}:</p>
-          <p className="text-3xl font-bold text-gray-900 mb-3">
+        <div className="bg-card backdrop-blur-sm rounded-xl p-5 shadow-lg">
+          <p className="text-xs text-muted-foreground mb-1">{t('dashboard.totalEarnings')}:</p>
+          <p className="text-3xl font-bold text-foreground mb-3">
             {formatCurrency(data?.stats.totalEarnings || 0)}
           </p>
           <Button size="sm" className="w-full bg-blue-500 hover:bg-blue-600 rounded-lg h-10 text-sm">
@@ -161,13 +161,13 @@ export default function EnhancedDashboardPage() {
         </div>
 
         {/* New Customers */}
-        <div className="bg-white/95 backdrop-blur-sm rounded-xl p-5 shadow-lg">
-          <p className="text-xs text-gray-600 mb-1">{t('dashboard.newCustomers')}:</p>
+        <div className="bg-card backdrop-blur-sm rounded-xl p-5 shadow-lg">
+          <p className="text-xs text-muted-foreground mb-1">{t('dashboard.newCustomers')}:</p>
           <div className="flex items-baseline gap-2 mb-2">
-            <p className="text-3xl font-bold text-gray-900">
+            <p className="text-3xl font-bold text-foreground">
               {data?.stats.newCustomersThisMonth || 0}
             </p>
-            <p className="text-xs text-gray-500">{t('dashboard.thisMonth')}</p>
+            <p className="text-xs text-muted-foreground">{t('dashboard.thisMonth')}</p>
           </div>
           {/* Mini chart */}
           <div className="h-16 mt-2">
@@ -186,9 +186,9 @@ export default function EnhancedDashboardPage() {
         </div>
 
         {/* Pending Payouts */}
-        <div className="bg-white/95 backdrop-blur-sm rounded-xl p-5 shadow-lg">
-          <p className="text-xs text-gray-600 mb-1">{t('dashboard.pendingPayouts')}:</p>
-          <p className="text-3xl font-bold text-gray-900 mb-3">$300</p>
+        <div className="bg-card backdrop-blur-sm rounded-xl p-5 shadow-lg">
+          <p className="text-xs text-muted-foreground mb-1">{t('dashboard.pendingPayouts')}:</p>
+          <p className="text-3xl font-bold text-foreground mb-3">$300</p>
           <Button size="sm" className="w-full bg-blue-500 hover:bg-blue-600 rounded-lg h-10 text-sm">
             {t('dashboard.review')} &gt;
           </Button>
@@ -206,11 +206,11 @@ export default function EnhancedDashboardPage() {
               <ChevronRight className="h-4 w-4 text-white/60" />
             </div>
 
-            <div className="bg-white/95 rounded-xl p-4 flex flex-col items-center">
+            <div className="bg-card rounded-xl p-4 flex flex-col items-center">
               {qrCode && (
                 <img src={qrCode} alt="QR Code" className="w-40 h-40 mb-3" />
               )}
-              <p className="text-xs text-gray-600 text-center mb-3 truncate w-full">
+              <p className="text-xs text-muted-foreground text-center mb-3 truncate w-full">
                 smartreferrals.io//boat...
               </p>
               <Button onClick={copyLink} className="w-full mb-2 bg-blue-600 hover:bg-blue-700 rounded-lg h-11 text-sm font-semibold">
@@ -221,17 +221,17 @@ export default function EnhancedDashboardPage() {
           </div>
 
           {/* Your Earnings Chart */}
-          <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-5 shadow-xl">
+          <div className="bg-card backdrop-blur-sm rounded-2xl p-5 shadow-xl">
             <div className="flex items-center justify-between mb-3">
               <div>
-                <h2 className="text-base font-bold text-gray-800 mb-1">{t('dashboard.yourEarnings')}:</h2>
-                <p className="text-3xl font-bold text-gray-900">{formatCurrency(1250)}</p>
+                <h2 className="text-base font-bold text-foreground mb-1">{t('dashboard.yourEarnings')}:</h2>
+                <p className="text-3xl font-bold text-foreground">{formatCurrency(1250)}</p>
               </div>
               <button className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1">
                 {t('dashboard.thisMonth')} &gt;
               </button>
             </div>
-            <p className="text-xs text-gray-600 mb-4">{t('dashboard.thisMonth')}</p>
+            <p className="text-xs text-muted-foreground mb-4">{t('dashboard.thisMonth')}</p>
 
             {/* Chart */}
             <div className="h-40 mb-4">
@@ -256,19 +256,19 @@ export default function EnhancedDashboardPage() {
 
             {/* Commission Breakdown */}
             <div>
-              <h3 className="text-xs font-semibold text-gray-800 mb-2">
+              <h3 className="text-xs font-semibold text-foreground mb-2">
                 {t('dashboard.commissionBreakdown')}
               </h3>
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-full bg-blue-500"></div>
-                  <span className="text-xs font-semibold text-gray-900">$1,100</span>
-                  <span className="text-xs text-gray-600">{t('dashboard.referrals')}</span>
+                  <span className="text-xs font-semibold text-foreground">$1,100</span>
+                  <span className="text-xs text-muted-foreground">{t('dashboard.referrals')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-full bg-blue-400"></div>
-                  <span className="text-xs font-semibold text-gray-900">$150</span>
-                  <span className="text-xs text-gray-600">{t('dashboard.bonuses')}</span>
+                  <span className="text-xs font-semibold text-foreground">$150</span>
+                  <span className="text-xs text-muted-foreground">{t('dashboard.bonuses')}</span>
                 </div>
               </div>
             </div>
@@ -369,7 +369,7 @@ export default function EnhancedDashboardPage() {
               </p>
 
               <textarea
-                className="w-full h-16 px-3 py-2 rounded-lg bg-white/95 text-gray-800 placeholder:text-gray-500 border-0 focus:ring-2 focus:ring-white/50 mb-3 text-xs resize-none"
+                className="w-full h-16 px-3 py-2 rounded-lg bg-card text-foreground placeholder:text-muted-foreground border-0 focus:ring-2 focus:ring-white/50 mb-3 text-xs resize-none"
                 placeholder={t('dashboard.writeReview')}
               ></textarea>
 
@@ -422,9 +422,9 @@ export default function EnhancedDashboardPage() {
       {/* Stats Cards - Single Row on Desktop, Scrollable on Mobile */}
       <div className="flex gap-2 mb-6 overflow-x-visible pb-2">
         {/* Total Earnings */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3 shadow-lg flex-1 min-w-0 md:flex-none md:w-56">
-          <p className="text-[10px] text-gray-600 mb-0.5">{t('dashboard.totalEarnings')}:</p>
-          <p className="text-xl md:text-3xl font-bold text-gray-900 mb-2">
+        <div className="bg-card backdrop-blur-sm rounded-xl p-3 shadow-lg flex-1 min-w-0 md:flex-none md:w-56">
+          <p className="text-[10px] text-muted-foreground mb-0.5">{t('dashboard.totalEarnings')}:</p>
+          <p className="text-xl md:text-3xl font-bold text-foreground mb-2">
             {formatCurrency(data?.stats.totalEarnings || 0)}
           </p>
           <Button size="sm" className="w-full bg-blue-500 hover:bg-blue-600 rounded-lg h-8 md:h-10 text-[10px] md:text-sm">
@@ -433,13 +433,13 @@ export default function EnhancedDashboardPage() {
         </div>
 
         {/* New Customers */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3 shadow-lg flex-1 min-w-0 md:flex-none md:w-56">
-          <p className="text-[10px] text-gray-600 mb-0.5">{t('dashboard.newCustomers')}:</p>
+        <div className="bg-card backdrop-blur-sm rounded-xl p-3 shadow-lg flex-1 min-w-0 md:flex-none md:w-56">
+          <p className="text-[10px] text-muted-foreground mb-0.5">{t('dashboard.newCustomers')}:</p>
           <div className="flex items-baseline gap-1 mb-0.5">
-            <p className="text-xl md:text-3xl font-bold text-gray-900">
+            <p className="text-xl md:text-3xl font-bold text-foreground">
               {data?.stats.newCustomersThisMonth || 0}
             </p>
-            <p className="text-[10px] text-gray-500">This Month</p>
+            <p className="text-[10px] text-muted-foreground">This Month</p>
           </div>
           {/* Mini chart */}
           <div className="h-10 md:h-14 mt-1">
@@ -458,9 +458,9 @@ export default function EnhancedDashboardPage() {
         </div>
 
         {/* Pending Payouts */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3 shadow-lg flex-1 min-w-0 md:flex-none md:w-56">
-          <p className="text-[10px] text-gray-600 mb-0.5">{t('dashboard.pendingPayouts')}:</p>
-          <p className="text-xl md:text-3xl font-bold text-gray-900 mb-2">$300</p>
+        <div className="bg-card backdrop-blur-sm rounded-xl p-3 shadow-lg flex-1 min-w-0 md:flex-none md:w-56">
+          <p className="text-[10px] text-muted-foreground mb-0.5">{t('dashboard.pendingPayouts')}:</p>
+          <p className="text-xl md:text-3xl font-bold text-foreground mb-2">$300</p>
           <Button size="sm" className="w-full bg-blue-500 hover:bg-blue-600 rounded-lg h-8 md:h-10 text-[10px] md:text-sm">
             Review
           </Button>
@@ -485,11 +485,11 @@ export default function EnhancedDashboardPage() {
 
             <div className="grid grid-cols-[0.85fr_1.15fr] gap-1.5">
               {/* My Referral Link - Left Side */}
-              <div className="flex flex-col items-center bg-white/95 rounded-lg p-2">
+              <div className="flex flex-col items-center bg-card rounded-lg p-2">
                 {qrCode && (
                   <img src={qrCode} alt="QR Code" className="w-full h-auto mb-1.5" />
                 )}
-                <p className="text-[9px] text-gray-600 text-center mb-1.5 truncate w-full">
+                <p className="text-[9px] text-muted-foreground text-center mb-1.5 truncate w-full">
                   smartreferrals.i...
                 </p>
                 <Button onClick={copyLink} className="w-full mb-1.5 bg-blue-600 hover:bg-blue-700 rounded-md h-7 text-[10px] font-medium">
@@ -563,11 +563,11 @@ export default function EnhancedDashboardPage() {
           {/* Your Earnings & Write a Review - Two Column Layout */}
           <div className="grid grid-cols-[0.85fr_1.15fr] gap-1.5">
             {/* Your Earnings Chart - Left Side */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-xl p-2.5 shadow-lg">
+            <div className="bg-card backdrop-blur-sm rounded-xl p-2.5 shadow-lg">
               <div className="mb-2">
-                <h2 className="text-sm font-bold text-gray-800 mb-0.5">{t('dashboard.yourEarnings')}:</h2>
-                <p className="text-xl font-bold text-gray-900">{formatCurrency(1250)}</p>
-                <p className="text-[10px] text-gray-600">{t('dashboard.thisMonth')}</p>
+                <h2 className="text-sm font-bold text-foreground mb-0.5">{t('dashboard.yourEarnings')}:</h2>
+                <p className="text-xl font-bold text-foreground">{formatCurrency(1250)}</p>
+                <p className="text-[10px] text-muted-foreground">{t('dashboard.thisMonth')}</p>
               </div>
 
               {/* Chart */}
@@ -593,19 +593,19 @@ export default function EnhancedDashboardPage() {
 
               {/* Commission Breakdown */}
               <div>
-                <h3 className="text-[10px] font-semibold text-gray-800 mb-1.5">
+                <h3 className="text-[10px] font-semibold text-foreground mb-1.5">
                   {t('dashboard.commissionBreakdown')}
                 </h3>
                 <div className="space-y-1">
                   <div className="flex items-center gap-1.5">
                     <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                    <span className="text-[10px] font-medium text-gray-900">$1,100</span>
-                    <span className="text-[10px] text-gray-600">{t('dashboard.referrals')}</span>
+                    <span className="text-[10px] font-medium text-foreground">$1,100</span>
+                    <span className="text-[10px] text-muted-foreground">{t('dashboard.referrals')}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <div className="w-2 h-2 rounded-full bg-blue-400"></div>
-                    <span className="text-[10px] font-medium text-gray-900">$150</span>
-                    <span className="text-[10px] text-gray-600">{t('dashboard.bonuses')}</span>
+                    <span className="text-[10px] font-medium text-foreground">$150</span>
+                    <span className="text-[10px] text-muted-foreground">{t('dashboard.bonuses')}</span>
                   </div>
                 </div>
               </div>
@@ -642,7 +642,7 @@ export default function EnhancedDashboardPage() {
                 </p>
 
                 <textarea
-                  className="w-full h-12 px-2 py-1.5 rounded-md bg-white/95 text-gray-800 placeholder:text-gray-500 border-0 focus:ring-2 focus:ring-white/50 mb-2 text-[10px]"
+                  className="w-full h-12 px-2 py-1.5 rounded-md bg-card text-foreground placeholder:text-muted-foreground border-0 focus:ring-2 focus:ring-white/50 mb-2 text-[10px]"
                   placeholder={t('dashboard.writeReview')}
                 ></textarea>
 
