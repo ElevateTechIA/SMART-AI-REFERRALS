@@ -215,7 +215,10 @@
     "commissionSaveFailed": "Failed to save commission settings",
     "noOffer": "No offer",
     "hasOffer": "Has offer",
-    "pricePerCustomer": "Price/customer"
+    "pricePerCustomer": "Price/customer",
+    "receiptLabel": "Receipt",
+    "receiptDetails": "Receipt Details",
+    "viewReceiptImage": "View receipt image"
   },
   "earnings": {
     "title": "Your Earnings",

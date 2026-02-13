@@ -72,8 +72,33 @@ export async function GET(request: NextRequest) {
           status: data.status,
           attributionType: data.attributionType,
           isNewCustomer: data.isNewCustomer,
+          receiptId: data.receiptId || null,
           createdAt: data.createdAt?.toDate() || null,
           updatedAt: data.updatedAt?.toDate() || null,
+        }
+      })
+      .sort((a, b) => {
+        if (!a.createdAt || !b.createdAt) return 0
+        return b.createdAt.getTime() - a.createdAt.getTime()
+      })
+
+    // Fetch receipts (no composite index needed, sort in JS)
+    const receiptsSnapshot = await db.collection('receipts').get()
+    const receipts = receiptsSnapshot.docs
+      .map((doc) => {
+        const data = doc.data()
+        return {
+          id: doc.id,
+          visitId: data.visitId,
+          businessId: data.businessId,
+          uploadedByUserId: data.uploadedByUserId,
+          uploadedByRole: data.uploadedByRole,
+          imageUrl: data.imageUrl,
+          status: data.status,
+          extractedData: data.extractedData || null,
+          confidence: data.confidence || null,
+          error: data.error || null,
+          createdAt: data.createdAt?.toDate() || null,
         }
       })
       .sort((a, b) => {
@@ -105,6 +130,7 @@ export async function GET(request: NextRequest) {
       users,
       visits,
       fraudFlags,
+      receipts,
     })
   } catch (error) {
     console.error('Error fetching admin data:', error)

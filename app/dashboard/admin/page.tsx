@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { apiGet, apiPost, apiPut } from '@/lib/api-client'
-import type { Business, User, Visit, FraudFlag, Offer, ConsumerRewardType } from '@/lib/types'
+import type { Business, User, Visit, FraudFlag, Offer, ConsumerRewardType, Receipt } from '@/lib/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import {
   Building2,
@@ -30,6 +30,11 @@ import {
   Settings,
   ChevronDown,
   ChevronUp,
+  Receipt as ReceiptIcon,
+  ExternalLink,
+  CreditCard,
+  ShoppingBag,
+  Image,
 } from 'lucide-react'
 
 interface AdminDataResponse {
@@ -37,6 +42,7 @@ interface AdminDataResponse {
   users: User[]
   visits: Visit[]
   fraudFlags: FraudFlag[]
+  receipts: Receipt[]
 }
 
 interface AdminStats {
@@ -61,8 +67,10 @@ export default function AdminDashboardPage() {
   const [users, setUsers] = useState<User[]>([])
   const [visits, setVisits] = useState<Visit[]>([])
   const [fraudFlags, setFraudFlags] = useState<FraudFlag[]>([])
+  const [receipts, setReceipts] = useState<Map<string, Receipt>>(new Map())
   const [offers, setOffers] = useState<Map<string, Offer>>(new Map())
   const [expandedBusiness, setExpandedBusiness] = useState<string | null>(null)
+  const [expandedVisit, setExpandedVisit] = useState<string | null>(null)
   const [commissionForm, setCommissionForm] = useState({
     referrerCommissionAmount: 0,
     consumerRewardType: 'none' as ConsumerRewardType,
@@ -116,10 +124,23 @@ export default function AdminDashboardPage() {
             createdAt: f.createdAt ? new Date(f.createdAt) : undefined,
           })) as FraudFlag[]
 
+          // Build receipts map indexed by visitId
+          const receiptsMap = new Map<string, Receipt>()
+          if (dataResult.data.receipts) {
+            dataResult.data.receipts.forEach((r) => {
+              receiptsMap.set(r.visitId, {
+                ...r,
+                createdAt: r.createdAt ? new Date(r.createdAt) : undefined,
+                updatedAt: r.updatedAt ? new Date(r.updatedAt) : undefined,
+              } as Receipt)
+            })
+          }
+
           setBusinesses(businessesList)
           setUsers(usersList)
           setVisits(visitsList)
           setFraudFlags(fraudList)
+          setReceipts(receiptsMap)
 
           // Fetch offers for all businesses
           const offersResult = await apiGet<{ success: boolean; data: Offer[] }>('/api/offers')
@@ -801,36 +822,175 @@ export default function AdminDashboardPage() {
                 <div className="divide-y">
                   {visits.slice(0, 20).map((visit) => {
                     const business = businesses.find((b) => b.id === visit.businessId)
+                    const receipt = receipts.get(visit.id)
+                    const isVisitExpanded = expandedVisit === visit.id
                     return (
-                      <div
-                        key={visit.id}
-                        className="py-3 flex items-center justify-between"
-                      >
-                        <div>
-                          <p className="font-medium">
-                            {t('admin.visitTo', { name: business?.name || t('common.unknown') })}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {visit.attributionType === 'REFERRER' ? t('admin.promoter') : t('admin.platform')} •{' '}
-                            {formatDate(visit.createdAt)}
-                          </p>
+                      <div key={visit.id} className="py-3">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium">
+                              {t('admin.visitTo', { name: business?.name || t('common.unknown') })}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {visit.attributionType === 'REFERRER' ? t('admin.promoter') : t('admin.platform')} •{' '}
+                              {formatDate(visit.createdAt)}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {!visit.isNewCustomer && (
+                              <Badge variant="destructive">{t('common.repeat')}</Badge>
+                            )}
+                            {receipt && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 px-2 text-xs"
+                                onClick={() => setExpandedVisit(isVisitExpanded ? null : visit.id)}
+                              >
+                                <ReceiptIcon className="h-3 w-3 mr-1" />
+                                {t('admin.receiptLabel')}
+                                {isVisitExpanded ? (
+                                  <ChevronUp className="h-3 w-3 ml-1" />
+                                ) : (
+                                  <ChevronDown className="h-3 w-3 ml-1" />
+                                )}
+                              </Button>
+                            )}
+                            <Badge
+                              variant={
+                                visit.status === 'CONVERTED'
+                                  ? 'success'
+                                  : visit.status === 'REJECTED'
+                                  ? 'destructive'
+                                  : 'secondary'
+                              }
+                            >
+                              {visit.status}
+                            </Badge>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          {!visit.isNewCustomer && (
-                            <Badge variant="destructive">{t('common.repeat')}</Badge>
-                          )}
-                          <Badge
-                            variant={
-                              visit.status === 'CONVERTED'
-                                ? 'success'
-                                : visit.status === 'REJECTED'
-                                ? 'destructive'
-                                : 'secondary'
-                            }
-                          >
-                            {visit.status}
-                          </Badge>
-                        </div>
+
+                        {/* Expandable receipt details */}
+                        {isVisitExpanded && receipt && (
+                          <div className="mt-3 p-4 rounded-lg bg-muted/50 border space-y-3">
+                            <div className="flex items-center justify-between">
+                              <h5 className="font-medium flex items-center gap-2 text-sm">
+                                <ReceiptIcon className="h-4 w-4" />
+                                {t('admin.receiptDetails')}
+                              </h5>
+                              <Badge
+                                variant={
+                                  receipt.status === 'EXTRACTED'
+                                    ? 'success'
+                                    : receipt.status === 'FAILED'
+                                    ? 'destructive'
+                                    : 'secondary'
+                                }
+                              >
+                                {receipt.status}
+                              </Badge>
+                            </div>
+
+                            {receipt.status === 'FAILED' && receipt.error && (
+                              <p className="text-sm text-destructive">{receipt.error}</p>
+                            )}
+
+                            {receipt.extractedData && (
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                                {receipt.extractedData.storeName && (
+                                  <div>
+                                    <p className="text-muted-foreground flex items-center gap-1">
+                                      <ShoppingBag className="h-3 w-3" />
+                                      {t('receipt.storeName')}
+                                    </p>
+                                    <p className="font-medium">{receipt.extractedData.storeName}</p>
+                                  </div>
+                                )}
+                                {receipt.extractedData.date && (
+                                  <div>
+                                    <p className="text-muted-foreground">{t('receipt.date')}</p>
+                                    <p className="font-medium">{receipt.extractedData.date}</p>
+                                  </div>
+                                )}
+                                {receipt.extractedData.totalAmount != null && (
+                                  <div>
+                                    <p className="text-muted-foreground">{t('receipt.total')}</p>
+                                    <p className="font-medium text-green-600">
+                                      {formatCurrency(receipt.extractedData.totalAmount)}
+                                    </p>
+                                  </div>
+                                )}
+                                {receipt.extractedData.subtotal != null && (
+                                  <div>
+                                    <p className="text-muted-foreground">{t('receipt.subtotal')}</p>
+                                    <p className="font-medium">{formatCurrency(receipt.extractedData.subtotal)}</p>
+                                  </div>
+                                )}
+                                {receipt.extractedData.tax != null && (
+                                  <div>
+                                    <p className="text-muted-foreground">{t('receipt.tax')}</p>
+                                    <p className="font-medium">{formatCurrency(receipt.extractedData.tax)}</p>
+                                  </div>
+                                )}
+                                {receipt.extractedData.tip != null && (
+                                  <div>
+                                    <p className="text-muted-foreground">{t('receipt.tip')}</p>
+                                    <p className="font-medium">{formatCurrency(receipt.extractedData.tip)}</p>
+                                  </div>
+                                )}
+                                {receipt.extractedData.paymentMethod && (
+                                  <div>
+                                    <p className="text-muted-foreground flex items-center gap-1">
+                                      <CreditCard className="h-3 w-3" />
+                                      {t('receipt.paymentMethod')}
+                                    </p>
+                                    <p className="font-medium">
+                                      {receipt.extractedData.paymentMethod}
+                                      {receipt.extractedData.lastFourDigits && ` ****${receipt.extractedData.lastFourDigits}`}
+                                    </p>
+                                  </div>
+                                )}
+                                {receipt.confidence != null && (
+                                  <div>
+                                    <p className="text-muted-foreground">{t('receipt.confidence')}</p>
+                                    <Badge variant={receipt.confidence >= 0.8 ? 'success' : receipt.confidence >= 0.5 ? 'warning' : 'destructive'}>
+                                      {Math.round(receipt.confidence * 100)}%
+                                    </Badge>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Items list */}
+                            {receipt.extractedData?.items && receipt.extractedData.items.length > 0 && (
+                              <div>
+                                <p className="text-sm text-muted-foreground mb-1">{t('receipt.items')} ({receipt.extractedData.items.length})</p>
+                                <div className="bg-background rounded border p-2 max-h-40 overflow-y-auto">
+                                  {receipt.extractedData.items.map((item, idx) => (
+                                    <div key={idx} className="flex justify-between text-xs py-0.5">
+                                      <span>{item.quantity && item.quantity > 1 ? `${item.quantity}x ` : ''}{item.name}</span>
+                                      {item.price != null && <span className="text-muted-foreground">{formatCurrency(item.price)}</span>}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Receipt image link */}
+                            {receipt.imageUrl && (
+                              <a
+                                href={receipt.imageUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                              >
+                                <Image className="h-3 w-3" />
+                                {t('admin.viewReceiptImage')}
+                                <ExternalLink className="h-3 w-3" />
+                              </a>
+                            )}
+                          </div>
+                        )}
                       </div>
                     )
                   })}

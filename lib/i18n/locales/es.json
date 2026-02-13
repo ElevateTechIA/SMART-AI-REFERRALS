@@ -215,7 +215,10 @@
     "commissionSaveFailed": "Error al guardar configuración de comisión",
     "noOffer": "Sin oferta",
     "hasOffer": "Tiene oferta",
-    "pricePerCustomer": "Precio/cliente"
+    "pricePerCustomer": "Precio/cliente",
+    "receiptLabel": "Recibo",
+    "receiptDetails": "Detalles del Recibo",
+    "viewReceiptImage": "Ver imagen del recibo"
   },
   "earnings": {
     "title": "Tus Ganancias",
