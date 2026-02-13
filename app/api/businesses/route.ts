@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminDb, verifyAuth } from '@/lib/firebase/admin'
 import { FieldValue } from 'firebase-admin/firestore'
+import { isValidPhoneNumber } from 'libphonenumber-js'
 import type { Business } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
@@ -11,7 +12,8 @@ function validateBusinessName(name: string): boolean {
 }
 
 function validatePhone(phone: string): boolean {
-  return typeof phone === 'string' && phone.length >= 7 && phone.length <= 20
+  if (typeof phone !== 'string' || phone.length < 7 || phone.length > 20) return false
+  return isValidPhoneNumber(phone, 'US')
 }
 
 function validateAddress(address: string): boolean {

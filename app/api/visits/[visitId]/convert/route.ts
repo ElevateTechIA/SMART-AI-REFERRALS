@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminDb, verifyAuth } from '@/lib/firebase/admin'
 import { FieldValue } from 'firebase-admin/firestore'
+import { isTokenExpired } from '@/lib/qr-checkin'
 import type { Offer } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
@@ -20,8 +21,16 @@ export async function POST(
     }
 
     const { visitId } = params
-    // Use authenticated user ID instead of trusting request body
     const businessUserId = authResult.uid
+
+    // Token is optional - required when converting directly from CREATED via QR scan
+    let token: string | undefined
+    try {
+      const body = await request.json()
+      token = body.token
+    } catch {
+      // Empty body is fine for legacy CHECKED_IN conversions
+    }
 
     if (!visitId) {
       return NextResponse.json(
@@ -71,31 +80,54 @@ export async function POST(
       )
     }
 
-    // Check-in requirement for new visits with QR tokens
-    if (visit.checkInToken && visit.status !== 'CHECKED_IN') {
-      return NextResponse.json(
-        {
-          error:
-            visit.status === 'CREATED'
-              ? 'El cliente debe hacer check-in primero. Por favor escanea su código QR.'
-              : 'La visita no puede ser convertida desde el estado actual',
-        },
-        { status: 400 }
-      )
-    }
-
-    // Legacy visits without check-in token can convert from CREATED or CHECKED_IN
-    if (!visit.checkInToken && visit.status !== 'CREATED' && visit.status !== 'CHECKED_IN') {
-      return NextResponse.json(
-        { error: 'Visit has already been converted or rejected' },
-        { status: 400 }
-      )
-    }
-
     // Check if already converted
     if (visit.status === 'CONVERTED') {
       return NextResponse.json(
         { error: 'Visit has already been converted' },
+        { status: 400 }
+      )
+    }
+
+    if (visit.status === 'REJECTED') {
+      return NextResponse.json(
+        { error: 'Visit was rejected' },
+        { status: 400 }
+      )
+    }
+
+    // Direct conversion from CREATED with QR token
+    if (visit.status === 'CREATED' && visit.checkInToken) {
+      if (!token) {
+        return NextResponse.json(
+          { error: 'Token required for direct conversion. Scan the customer QR code.' },
+          { status: 400 }
+        )
+      }
+      if (token !== visit.checkInToken) {
+        return NextResponse.json(
+          { error: 'Invalid token' },
+          { status: 403 }
+        )
+      }
+      const expiryDate = visit.checkInTokenExpiry?.toDate()
+      if (!expiryDate || isTokenExpired(expiryDate)) {
+        return NextResponse.json(
+          { error: 'QR code has expired' },
+          { status: 400 }
+        )
+      }
+      if (visit.checkInTokenUsed) {
+        return NextResponse.json(
+          { error: 'This QR code has already been used' },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Allow conversion from CREATED (with token above) or CHECKED_IN (legacy)
+    if (visit.status !== 'CREATED' && visit.status !== 'CHECKED_IN') {
+      return NextResponse.json(
+        { error: 'Visit cannot be converted from current status' },
         { status: 400 }
       )
     }
@@ -137,11 +169,16 @@ export async function POST(
 
     // Use transaction to update all records atomically
     await getAdminDb().runTransaction(async (transaction) => {
-      // Update visit status
+      // Update visit status (and mark token used if direct conversion from CREATED)
       transaction.update(visitRef, {
         status: 'CONVERTED',
         convertedAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
+        ...(visit.status === 'CREATED' && visit.checkInToken && {
+          checkInTokenUsed: true,
+          checkedInAt: FieldValue.serverTimestamp(),
+          checkInByUserId: businessUserId,
+        }),
       })
 
       if (offer) {

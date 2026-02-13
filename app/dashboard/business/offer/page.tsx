@@ -7,15 +7,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { db } from '@/lib/firebase/client'
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore'
 import { apiPost, apiUpload } from '@/lib/api-client'
-import type { Business, ConsumerRewardType } from '@/lib/types'
+import type { Business, PromotionType } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
-import { Gift, Loader2, DollarSign, Users, Building2, ImagePlus } from 'lucide-react'
+import { Loader2, DollarSign, Building2, ImagePlus, Gift } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 export default function OfferConfigPage() {
@@ -32,9 +33,9 @@ export default function OfferConfigPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [formData, setFormData] = useState({
     pricePerNewCustomer: 100,
-    referrerCommissionAmount: 25,
-    consumerRewardType: 'cash' as ConsumerRewardType,
-    consumerRewardValue: 10,
+    promotionType: 'none' as PromotionType,
+    promotionValue: 0,
+    promotionDescription: '',
     allowPlatformAttribution: true,
     active: true,
   })
@@ -72,9 +73,9 @@ export default function OfferConfigPage() {
           const offerData = offerDoc.data()
           setFormData({
             pricePerNewCustomer: offerData.pricePerNewCustomer || 100,
-            referrerCommissionAmount: offerData.referrerCommissionAmount || 25,
-            consumerRewardType: offerData.consumerRewardType || 'cash',
-            consumerRewardValue: offerData.consumerRewardValue || 10,
+            promotionType: offerData.promotionType || 'none',
+            promotionValue: offerData.promotionValue || 0,
+            promotionDescription: offerData.promotionDescription || '',
             allowPlatformAttribution: offerData.allowPlatformAttribution !== false,
             active: offerData.active !== false,
           })
@@ -185,11 +186,6 @@ export default function OfferConfigPage() {
   if (!business) {
     return null
   }
-
-  const platformCut =
-    formData.pricePerNewCustomer -
-    formData.referrerCommissionAmount -
-    (formData.consumerRewardType === 'cash' ? formData.consumerRewardValue : 0)
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -306,86 +302,71 @@ export default function OfferConfigPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              {t('businessOffer.promoterCommission')}
-            </CardTitle>
-            <CardDescription>
-              {t('businessOffer.promoterCommissionDesc')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="referrerCommissionAmount">{t('businessOffer.commissionAmount')}</Label>
-              <Input
-                id="referrerCommissionAmount"
-                type="number"
-                min="0"
-                max={formData.pricePerNewCustomer}
-                step="1"
-                value={formData.referrerCommissionAmount}
-                onChange={(e) =>
-                  setFormData({ ...formData, referrerCommissionAmount: Number(e.target.value) })
-                }
-                required
-              />
-              <p className="text-xs text-muted-foreground">
-                {t('businessOffer.commissionAmountDesc')}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
+        {/* Customer Promotion */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Gift className="h-5 w-5" />
-              {t('businessOffer.consumerReward')}
+              {t('businessOffer.promotion')}
             </CardTitle>
             <CardDescription>
-              {t('businessOffer.consumerRewardDesc')}
+              {t('businessOffer.promotionDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="consumerRewardType">{t('businessOffer.rewardType')}</Label>
+              <Label>{t('businessOffer.promotionType')}</Label>
               <Select
-                value={formData.consumerRewardType}
-                onValueChange={(value: ConsumerRewardType) =>
-                  setFormData({ ...formData, consumerRewardType: value })
+                value={formData.promotionType}
+                onValueChange={(value: PromotionType) =>
+                  setFormData({ ...formData, promotionType: value, promotionValue: value === 'none' || value === 'free_item' ? 0 : formData.promotionValue })
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={t('businessOffer.selectRewardType')} />
+                  <SelectValue placeholder={t('businessOffer.selectPromotionType')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">{t('businessOffer.noReward')}</SelectItem>
-                  <SelectItem value="cash">{t('businessOffer.cashBack')}</SelectItem>
-                  <SelectItem value="points">{t('businessOffer.rewardPoints')}</SelectItem>
-                  <SelectItem value="discount">{t('businessOffer.discount')}</SelectItem>
+                  <SelectItem value="none">{t('businessOffer.promoNone')}</SelectItem>
+                  <SelectItem value="discount_percent">{t('businessOffer.promoDiscountPercent')}</SelectItem>
+                  <SelectItem value="discount_fixed">{t('businessOffer.promoDiscountFixed')}</SelectItem>
+                  <SelectItem value="free_item">{t('businessOffer.promoFreeItem')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {formData.consumerRewardType !== 'none' && (
+            {(formData.promotionType === 'discount_percent' || formData.promotionType === 'discount_fixed') && (
               <div className="space-y-2">
-                <Label htmlFor="consumerRewardValue">
-                  {t('businessOffer.rewardValue')}
-                  {formData.consumerRewardType === 'discount' ? ' (%)' : ' ($)'}
+                <Label>
+                  {t('businessOffer.promoValue')}
+                  {formData.promotionType === 'discount_percent' ? ' (%)' : ' ($)'}
                 </Label>
                 <Input
-                  id="consumerRewardValue"
                   type="number"
                   min="0"
+                  max={formData.promotionType === 'discount_percent' ? 100 : undefined}
                   step="1"
-                  value={formData.consumerRewardValue}
+                  value={formData.promotionValue}
                   onChange={(e) =>
-                    setFormData({ ...formData, consumerRewardValue: Number(e.target.value) })
+                    setFormData({ ...formData, promotionValue: Number(e.target.value) })
                   }
-                  required
                 />
+              </div>
+            )}
+
+            {formData.promotionType !== 'none' && (
+              <div className="space-y-2">
+                <Label>{t('businessOffer.promoDescription')}</Label>
+                <Textarea
+                  value={formData.promotionDescription}
+                  onChange={(e) =>
+                    setFormData({ ...formData, promotionDescription: e.target.value })
+                  }
+                  placeholder={t('businessOffer.promoDescriptionPlaceholder')}
+                  rows={2}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {t('businessOffer.promoDescriptionHint')}
+                </p>
               </div>
             )}
           </CardContent>
@@ -400,29 +381,9 @@ export default function OfferConfigPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">{t('businessOffer.pricePerCustomerSummary')}</span>
-                <span className="font-medium">{formatCurrency(formData.pricePerNewCustomer)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">{t('businessOffer.promoterCommissionSummary')}</span>
-                <span className="font-medium text-orange-600">
-                  -{formatCurrency(formData.referrerCommissionAmount)}
-                </span>
-              </div>
-              {formData.consumerRewardType === 'cash' && formData.consumerRewardValue > 0 && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t('businessOffer.consumerCashBack')}</span>
-                  <span className="font-medium text-orange-600">
-                    -{formatCurrency(formData.consumerRewardValue)}
-                  </span>
-                </div>
-              )}
-              <div className="border-t pt-3 flex justify-between">
-                <span className="font-medium">{t('businessOffer.platformFee')}</span>
-                <span className="font-bold text-primary">{formatCurrency(platformCut)}</span>
-              </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">{t('businessOffer.pricePerCustomerSummary')}</span>
+              <span className="font-bold text-primary">{formatCurrency(formData.pricePerNewCustomer)}</span>
             </div>
           </CardContent>
         </Card>

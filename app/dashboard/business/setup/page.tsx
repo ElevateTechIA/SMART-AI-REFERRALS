@@ -13,6 +13,9 @@ import { useToast } from '@/components/ui/use-toast'
 import { apiPost } from '@/lib/api-client'
 import { Building2, Loader2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { GoogleMapsProvider } from '@/lib/google-maps/provider'
+import { AddressAutocomplete } from '@/components/business/address-autocomplete'
+import { PhoneInput } from '@/components/business/phone-input'
 
 const CATEGORIES = [
   'Restaurant',
@@ -34,6 +37,7 @@ export default function BusinessSetupPage() {
   const { t } = useTranslation()
 
   const [loading, setLoading] = useState(false)
+  const [phoneValid, setPhoneValid] = useState(true)
   const [formData, setFormData] = useState({
     name: '',
     category: '',
@@ -46,6 +50,10 @@ export default function BusinessSetupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user) return
+    if (!phoneValid) {
+      toast({ title: t('common.error'), description: t('validation.invalidPhone'), variant: 'destructive' })
+      return
+    }
 
     setLoading(true)
     try {
@@ -80,6 +88,7 @@ export default function BusinessSetupPage() {
   }
 
   return (
+    <GoogleMapsProvider>
     <div className="max-w-2xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">{t('businessSetup.title')}</h1>
@@ -144,10 +153,9 @@ export default function BusinessSetupPage() {
 
             <div className="space-y-2">
               <Label htmlFor="address">{t('businessSettings.address') + ' *'}</Label>
-              <Input
-                id="address"
+              <AddressAutocomplete
                 value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                onChange={(value) => setFormData({ ...formData, address: value })}
                 placeholder="123 Main St, City, State 12345"
                 required
               />
@@ -156,13 +164,12 @@ export default function BusinessSetupPage() {
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="phone">{t('businessSettings.phone') + ' *'}</Label>
-                <Input
-                  id="phone"
-                  type="tel"
+                <PhoneInput
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  onChange={(value) => setFormData({ ...formData, phone: value })}
                   placeholder="(555) 123-4567"
                   required
+                  onValidation={setPhoneValid}
                 />
               </div>
               <div className="space-y-2">
@@ -191,5 +198,6 @@ export default function BusinessSetupPage() {
         </CardContent>
       </Card>
     </div>
+    </GoogleMapsProvider>
   )
 }

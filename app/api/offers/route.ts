@@ -39,6 +39,7 @@ function validatePercentage(value: unknown): number | null {
 }
 
 const VALID_REWARD_TYPES = ['none', 'cash', 'discount', 'points'] as const
+const VALID_PROMOTION_TYPES = ['none', 'discount_percent', 'discount_fixed', 'free_item'] as const
 
 export async function POST(request: NextRequest) {
   try {
@@ -62,6 +63,9 @@ export async function POST(request: NextRequest) {
       referrerCommissionPercentage,
       consumerRewardType,
       consumerRewardValue,
+      promotionType,
+      promotionValue,
+      promotionDescription,
       allowPlatformAttribution,
       active,
     } = body
@@ -139,6 +143,42 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validate promotion type
+    const promoType = promotionType || 'none'
+    if (!VALID_PROMOTION_TYPES.includes(promoType)) {
+      return NextResponse.json(
+        { error: 'Invalid promotion type' },
+        { status: 400 }
+      )
+    }
+
+    // Validate promotion value
+    let validatedPromoValue = 0
+    if (promoType === 'discount_percent') {
+      const pct = validatePercentage(promotionValue)
+      if (promotionValue !== undefined && promotionValue !== '' && pct === null) {
+        return NextResponse.json(
+          { error: 'Promotion discount percentage must be between 0 and 100' },
+          { status: 400 }
+        )
+      }
+      validatedPromoValue = pct || 0
+    } else if (promoType === 'discount_fixed') {
+      const val = validateMonetaryValue(promotionValue, 0, MAX_PRICE)
+      if (promotionValue !== undefined && promotionValue !== '' && val === null) {
+        return NextResponse.json(
+          { error: 'Promotion discount amount must be a valid positive number' },
+          { status: 400 }
+        )
+      }
+      validatedPromoValue = val || 0
+    }
+
+    // Sanitize promotion description
+    const promoDescription = typeof promotionDescription === 'string'
+      ? promotionDescription.trim().slice(0, 500)
+      : ''
+
     // Build offer data
     const offerData: Record<string, unknown> = {
       businessId,
@@ -147,6 +187,9 @@ export async function POST(request: NextRequest) {
       referrerCommissionPercentage: validatedCommissionPercentage,
       consumerRewardType: rewardType,
       consumerRewardValue: validatedRewardValue || 0,
+      promotionType: promoType,
+      promotionValue: validatedPromoValue,
+      promotionDescription: promoDescription,
       allowPlatformAttribution: allowPlatformAttribution !== false,
       active: active !== false,
       ...(image !== undefined && { image: image || null }),

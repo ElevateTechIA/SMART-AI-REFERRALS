@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -21,8 +21,6 @@ import {
   QrCode,
   Settings,
   CheckCircle,
-  XCircle,
-  Clock,
   Loader2,
   Plus,
   Copy,
@@ -149,45 +147,51 @@ export default function BusinessDashboardPage() {
       .catch(console.error)
   }, [business])
 
-  const handleCheckIn = async (scanResult: { visitId: string; token: string }) => {
+  const handleScanConvert = async (scanResult: { visitId: string; token: string }) => {
     try {
       const result = await apiPost<{ success: boolean; error?: string }>(
-        `/api/visits/${scanResult.visitId}/check-in`,
+        `/api/visits/${scanResult.visitId}/convert`,
         { token: scanResult.token }
       )
 
       if (!result.ok) {
-        throw new Error(result.error || 'Check-in failed')
+        throw new Error(result.error || 'Conversion failed')
       }
 
-      // Update local state - refetch data to get latest
-      if (user && business) {
-        const visitsQuery = query(
-          collection(db, 'visits'),
+      // Update local visit state
+      setVisits((prev) =>
+        prev.map((v) =>
+          v.id === scanResult.visitId ? { ...v, status: 'CONVERTED' as const } : v
+        )
+      )
+
+      // Refetch charges to reflect the new charge
+      if (business) {
+        const chargesQuery = query(
+          collection(db, 'charges'),
           where('businessId', '==', business.id)
         )
-        const visitsSnapshot = await getDocs(visitsQuery)
-        const fetchedVisits: Visit[] = []
-        visitsSnapshot.forEach((doc) => {
-          const data = doc.data()
-          fetchedVisits.push({
-            id: doc.id,
+        const chargesSnapshot = await getDocs(chargesQuery)
+        const freshCharges: Charge[] = []
+        chargesSnapshot.forEach((d) => {
+          const data = d.data()
+          freshCharges.push({
+            id: d.id,
             ...data,
             createdAt: data.createdAt?.toDate(),
             updatedAt: data.updatedAt?.toDate(),
-            checkedInAt: data.checkedInAt?.toDate(),
-          } as Visit)
+          } as Charge)
         })
-        fetchedVisits.sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0))
-        setVisits(fetchedVisits)
+        freshCharges.sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0))
+        setCharges(freshCharges)
       }
 
       toast({
-        title: t('businessDashboard.checkInSuccess'),
-        description: t('businessDashboard.checkInSuccessDesc'),
+        title: t('businessDashboard.conversionConfirmed'),
+        description: t('businessDashboard.conversionConfirmedDesc'),
       })
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Check-in failed'
+      const errorMessage = error instanceof Error ? error.message : 'Conversion failed'
       throw new Error(errorMessage)
     }
   }
@@ -290,8 +294,7 @@ export default function BusinessDashboardPage() {
   const stats = {
     totalVisits: visits.length,
     conversions: visits.filter((v) => v.status === 'CONVERTED').length,
-    pending: visits.filter((v) => v.status === 'CREATED').length,
-    checkedIn: visits.filter((v) => v.status === 'CHECKED_IN').length,
+    pending: visits.filter((v) => v.status === 'CREATED' || v.status === 'CHECKED_IN').length,
     totalOwed: charges.filter((c) => c.status === 'OWED').reduce((sum, c) => sum + c.amount, 0),
     totalPaid: charges.filter((c) => c.status === 'PAID').reduce((sum, c) => sum + c.amount, 0),
   }
@@ -336,7 +339,7 @@ export default function BusinessDashboardPage() {
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalVisits}</div>
             <p className="text-xs text-muted-foreground">
-              {t('businessDashboard.pendingCheckIn', { count: stats.pending })}
+              {t('businessDashboard.pendingConversion', { count: stats.pending })}
             </p>
           </CardContent>
         </Card>
@@ -404,22 +407,25 @@ export default function BusinessDashboardPage() {
                 />
               </div>
             )}
-            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
               <div>
                 <p className="text-sm text-muted-foreground">{t('businessDashboard.pricePerCustomer')}</p>
                 <p className="text-lg font-semibold">{formatCurrency(offer.pricePerNewCustomer)}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">{t('businessDashboard.promoterCommission')}</p>
-                <p className="text-lg font-semibold">{formatCurrency(offer.referrerCommissionAmount)}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">{t('businessDashboard.consumerReward')}</p>
+                <p className="text-sm text-muted-foreground">{t('businessDashboard.promotion')}</p>
                 <p className="text-lg font-semibold">
-                  {offer.consumerRewardType === 'none'
-                    ? t('businessDashboard.none')
-                    : `${formatCurrency(offer.consumerRewardValue)} ${offer.consumerRewardType}`}
+                  {offer.promotionType === 'discount_percent'
+                    ? t('businessDashboard.promoDiscountPercent', { value: offer.promotionValue })
+                    : offer.promotionType === 'discount_fixed'
+                    ? t('businessDashboard.promoDiscountFixed', { value: formatCurrency(offer.promotionValue) })
+                    : offer.promotionType === 'free_item'
+                    ? t('businessDashboard.promoFreeItem')
+                    : t('businessDashboard.none')}
                 </p>
+                {offer.promotionDescription && (
+                  <p className="text-xs text-muted-foreground mt-1">{offer.promotionDescription}</p>
+                )}
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">{t('businessDashboard.status')}</p>
@@ -515,9 +521,6 @@ export default function BusinessDashboardPage() {
                 <TabsTrigger value="pending" className="text-xs sm:text-sm">
                   {t('businessDashboard.tabPending', { count: stats.pending })}
                 </TabsTrigger>
-                <TabsTrigger value="checkedin" className="text-xs sm:text-sm">
-                  {t('businessDashboard.tabCheckIn', { count: stats.checkedIn })}
-                </TabsTrigger>
                 <TabsTrigger value="converted" className="text-xs sm:text-sm">
                   {t('businessDashboard.tabConverted', { count: stats.conversions })}
                 </TabsTrigger>
@@ -528,24 +531,15 @@ export default function BusinessDashboardPage() {
             </div>
 
             <TabsContent value="scanner" className="mt-4">
-              <QRScanner onScanSuccess={handleCheckIn} />
+              <QRScanner onScanSuccess={handleScanConvert} />
             </TabsContent>
 
             <TabsContent value="pending" className="mt-4">
               <VisitsList
-                visits={visits.filter((v) => v.status === 'CREATED')}
+                visits={visits.filter((v) => v.status === 'CREATED' || v.status === 'CHECKED_IN')}
                 onConfirm={handleConfirmConversion}
                 converting={converting}
                 showActions={false}
-              />
-            </TabsContent>
-
-            <TabsContent value="checkedin" className="mt-4">
-              <VisitsList
-                visits={visits.filter((v) => v.status === 'CHECKED_IN')}
-                onConfirm={handleConfirmConversion}
-                converting={converting}
-                showActions
               />
             </TabsContent>
 

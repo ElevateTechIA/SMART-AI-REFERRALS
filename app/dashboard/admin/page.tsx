@@ -6,11 +6,14 @@ import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
-import { apiGet, apiPost } from '@/lib/api-client'
-import type { Business, User, Visit, FraudFlag } from '@/lib/types'
+import { apiGet, apiPost, apiPut } from '@/lib/api-client'
+import type { Business, User, Visit, FraudFlag, Offer, ConsumerRewardType } from '@/lib/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import {
   Building2,
@@ -23,6 +26,10 @@ import {
   Loader2,
   Shield,
   TrendingUp,
+  Gift,
+  Settings,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react'
 
 interface AdminDataResponse {
@@ -54,8 +61,16 @@ export default function AdminDashboardPage() {
   const [users, setUsers] = useState<User[]>([])
   const [visits, setVisits] = useState<Visit[]>([])
   const [fraudFlags, setFraudFlags] = useState<FraudFlag[]>([])
+  const [offers, setOffers] = useState<Map<string, Offer>>(new Map())
+  const [expandedBusiness, setExpandedBusiness] = useState<string | null>(null)
+  const [commissionForm, setCommissionForm] = useState({
+    referrerCommissionAmount: 0,
+    consumerRewardType: 'none' as ConsumerRewardType,
+    consumerRewardValue: 0,
+  })
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [commissionSaving, setCommissionSaving] = useState(false)
 
   useEffect(() => {
     // Check if user is admin
@@ -105,6 +120,16 @@ export default function AdminDashboardPage() {
           setUsers(usersList)
           setVisits(visitsList)
           setFraudFlags(fraudList)
+
+          // Fetch offers for all businesses
+          const offersResult = await apiGet<{ success: boolean; data: Offer[] }>('/api/offers')
+          if (offersResult.ok && offersResult.data?.data) {
+            const offersMap = new Map<string, Offer>()
+            offersResult.data.data.forEach((offer: Offer) => {
+              offersMap.set(offer.businessId, offer)
+            })
+            setOffers(offersMap)
+          }
         }
       } catch (error) {
         console.error('Error fetching admin data:', error)
@@ -199,6 +224,64 @@ export default function AdminDashboardPage() {
       })
     } finally {
       setActionLoading(null)
+    }
+  }
+
+  const handleExpandBusiness = (businessId: string) => {
+    if (expandedBusiness === businessId) {
+      setExpandedBusiness(null)
+      return
+    }
+    const offer = offers.get(businessId)
+    if (offer) {
+      setCommissionForm({
+        referrerCommissionAmount: offer.referrerCommissionAmount || 0,
+        consumerRewardType: offer.consumerRewardType || 'none',
+        consumerRewardValue: offer.consumerRewardValue || 0,
+      })
+    }
+    setExpandedBusiness(businessId)
+  }
+
+  const handleSaveCommission = async (businessId: string) => {
+    setCommissionSaving(true)
+    try {
+      const result = await apiPut<{ success: boolean; error?: string }>(
+        `/api/admin/offers/${businessId}/commission`,
+        commissionForm
+      )
+
+      if (!result.ok) {
+        throw new Error(result.error || t('admin.commissionSaveFailed'))
+      }
+
+      // Update local offers state
+      setOffers((prev) => {
+        const newMap = new Map(prev)
+        const existing = newMap.get(businessId)
+        if (existing) {
+          newMap.set(businessId, {
+            ...existing,
+            ...commissionForm,
+          })
+        }
+        return newMap
+      })
+
+      toast({
+        title: t('common.success'),
+        description: t('admin.commissionSaved'),
+      })
+      setExpandedBusiness(null)
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : t('admin.commissionSaveFailed')
+      toast({
+        title: t('common.error'),
+        description: errorMessage,
+        variant: 'destructive',
+      })
+    } finally {
+      setCommissionSaving(false)
     }
   }
 
@@ -333,93 +416,208 @@ export default function AdminDashboardPage() {
                 </p>
               ) : (
                 <div className="divide-y">
-                  {businesses.map((business) => (
-                    <div
-                      key={business.id}
-                      className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
-                          <Building2 className="h-6 w-6 text-muted-foreground" />
+                  {businesses.map((business) => {
+                    const offer = offers.get(business.id)
+                    const isExpanded = expandedBusiness === business.id
+                    return (
+                      <div key={business.id} className="py-4">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                          <div className="flex items-center gap-4">
+                            <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
+                              <Building2 className="h-6 w-6 text-muted-foreground" />
+                            </div>
+                            <div className="min-w-0">
+                              <h4 className="font-semibold break-words">{business.name}</h4>
+                              <p className="text-sm text-muted-foreground break-words">
+                                {business.category} • {business.address}
+                              </p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <p className="text-xs text-muted-foreground">
+                                  {t('admin.created', { date: formatDate(business.createdAt) })}
+                                </p>
+                                {offer ? (
+                                  <Badge variant="outline" className="text-xs">
+                                    <Gift className="h-3 w-3 mr-1" />
+                                    {t('admin.hasOffer')} • {t('admin.pricePerCustomer')}: {formatCurrency(offer.pricePerNewCustomer)}
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="secondary" className="text-xs">
+                                    {t('admin.noOffer')}
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <Badge
+                              variant={
+                                business.status === 'active'
+                                  ? 'success'
+                                  : business.status === 'pending'
+                                  ? 'warning'
+                                  : 'destructive'
+                              }
+                            >
+                              {business.status}
+                            </Badge>
+
+                            {business.status === 'pending' && (
+                              <Button
+                                size="sm"
+                                onClick={() => handleBusinessAction(business.id, 'approve')}
+                                disabled={actionLoading === business.id}
+                              >
+                                {actionLoading === business.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <>
+                                    <CheckCircle className="h-4 w-4 mr-1" />
+                                    {t('common.approve')}
+                                  </>
+                                )}
+                              </Button>
+                            )}
+
+                            {business.status === 'active' && (
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleBusinessAction(business.id, 'suspend')}
+                                disabled={actionLoading === business.id}
+                              >
+                                {actionLoading === business.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <>
+                                    <XCircle className="h-4 w-4 mr-1" />
+                                    {t('common.suspend')}
+                                  </>
+                                )}
+                              </Button>
+                            )}
+
+                            {business.status === 'suspended' && (
+                              <Button
+                                size="sm"
+                                onClick={() => handleBusinessAction(business.id, 'approve')}
+                                disabled={actionLoading === business.id}
+                              >
+                                {actionLoading === business.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <>
+                                    <CheckCircle className="h-4 w-4 mr-1" />
+                                    {t('common.reactivate')}
+                                  </>
+                                )}
+                              </Button>
+                            )}
+
+                            {offer && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleExpandBusiness(business.id)}
+                              >
+                                <Settings className="h-4 w-4 mr-1" />
+                                {t('admin.configureOffer')}
+                                {isExpanded ? (
+                                  <ChevronUp className="h-4 w-4 ml-1" />
+                                ) : (
+                                  <ChevronDown className="h-4 w-4 ml-1" />
+                                )}
+                              </Button>
+                            )}
+                          </div>
                         </div>
-                        <div className="min-w-0">
-                          <h4 className="font-semibold break-words">{business.name}</h4>
-                          <p className="text-sm text-muted-foreground break-words">
-                            {business.category} • {business.address}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {t('admin.created', { date: formatDate(business.createdAt) })}
-                          </p>
-                        </div>
+
+                        {/* Expandable commission config */}
+                        {isExpanded && offer && (
+                          <div className="mt-4 ml-16 p-4 rounded-lg bg-muted/50 border space-y-4">
+                            <div>
+                              <h5 className="font-medium flex items-center gap-2">
+                                <Gift className="h-4 w-4" />
+                                {t('admin.offerCommission')}
+                              </h5>
+                              <p className="text-xs text-muted-foreground">
+                                {t('admin.offerCommissionDesc')}
+                              </p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div className="space-y-2">
+                                <Label>{t('admin.commissionAmount')}</Label>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  max={offer.pricePerNewCustomer}
+                                  step="1"
+                                  value={commissionForm.referrerCommissionAmount}
+                                  onChange={(e) =>
+                                    setCommissionForm({ ...commissionForm, referrerCommissionAmount: Number(e.target.value) })
+                                  }
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label>{t('admin.rewardType')}</Label>
+                                <Select
+                                  value={commissionForm.consumerRewardType}
+                                  onValueChange={(value: ConsumerRewardType) =>
+                                    setCommissionForm({ ...commissionForm, consumerRewardType: value })
+                                  }
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="none">{t('admin.noReward')}</SelectItem>
+                                    <SelectItem value="cash">{t('admin.cashBack')}</SelectItem>
+                                    <SelectItem value="points">{t('admin.rewardPoints')}</SelectItem>
+                                    <SelectItem value="discount">{t('admin.discount')}</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              {commissionForm.consumerRewardType !== 'none' && (
+                                <div className="space-y-2">
+                                  <Label>
+                                    {t('admin.rewardValue')}
+                                    {commissionForm.consumerRewardType === 'discount' ? ' (%)' : ' ($)'}
+                                  </Label>
+                                  <Input
+                                    type="number"
+                                    min="0"
+                                    step="1"
+                                    value={commissionForm.consumerRewardValue}
+                                    onChange={(e) =>
+                                      setCommissionForm({ ...commissionForm, consumerRewardValue: Number(e.target.value) })
+                                    }
+                                  />
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="flex justify-end">
+                              <Button
+                                size="sm"
+                                onClick={() => handleSaveCommission(business.id)}
+                                disabled={commissionSaving}
+                              >
+                                {commissionSaving ? (
+                                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                                ) : (
+                                  <CheckCircle className="h-4 w-4 mr-1" />
+                                )}
+                                {t('admin.saveCommission')}
+                              </Button>
+                            </div>
+                          </div>
+                        )}
                       </div>
-
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          variant={
-                            business.status === 'active'
-                              ? 'success'
-                              : business.status === 'pending'
-                              ? 'warning'
-                              : 'destructive'
-                          }
-                        >
-                          {business.status}
-                        </Badge>
-
-                        {business.status === 'pending' && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleBusinessAction(business.id, 'approve')}
-                            disabled={actionLoading === business.id}
-                          >
-                            {actionLoading === business.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <>
-                                <CheckCircle className="h-4 w-4 mr-1" />
-                                {t('common.approve')}
-                              </>
-                            )}
-                          </Button>
-                        )}
-
-                        {business.status === 'active' && (
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => handleBusinessAction(business.id, 'suspend')}
-                            disabled={actionLoading === business.id}
-                          >
-                            {actionLoading === business.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <>
-                                <XCircle className="h-4 w-4 mr-1" />
-                                {t('common.suspend')}
-                              </>
-                            )}
-                          </Button>
-                        )}
-
-                        {business.status === 'suspended' && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleBusinessAction(business.id, 'approve')}
-                            disabled={actionLoading === business.id}
-                          >
-                            {actionLoading === business.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <>
-                                <CheckCircle className="h-4 w-4 mr-1" />
-                                {t('common.reactivate')}
-                              </>
-                            )}
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </CardContent>

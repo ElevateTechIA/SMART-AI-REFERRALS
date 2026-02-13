@@ -35,8 +35,11 @@ export interface Business {
   updatedAt: Date
 }
 
-// Consumer Reward Type
+// Consumer Reward Type (admin-controlled platform payout)
 export type ConsumerRewardType = 'cash' | 'points' | 'discount' | 'none'
+
+// Business Promotion Type (business-controlled incentive for consumer)
+export type PromotionType = 'discount_percent' | 'discount_fixed' | 'free_item' | 'none'
 
 // Offer / Campaign
 export interface Offer {
@@ -44,10 +47,13 @@ export interface Offer {
   businessId: string
   image?: string // Firebase Storage URL for offer image
   pricePerNewCustomer: number // e.g., 100 USD
-  referrerCommissionAmount: number // Fixed amount referrer earns
+  referrerCommissionAmount: number // Fixed amount referrer earns (admin-set)
   referrerCommissionPercentage?: number // Alternative: percentage of pricePerNewCustomer
-  consumerRewardType: ConsumerRewardType
+  consumerRewardType: ConsumerRewardType // Admin-set platform payout
   consumerRewardValue: number // Amount/points/discount percentage
+  promotionType: PromotionType // Business-set incentive for consumer
+  promotionValue: number // Discount % or $ amount
+  promotionDescription?: string // Free text, e.g. "Free appetizer on first visit"
   allowPlatformAttribution: boolean // If true, platform can get commission when no referrer
   active: boolean
   startDate?: Date
