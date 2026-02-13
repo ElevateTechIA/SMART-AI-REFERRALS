@@ -126,5 +126,23 @@ service cloud.firestore {
       // Managed by server only
       allow create, update, delete: if false;
     }
+
+    // Receipts collection
+    match /receipts/{receiptId} {
+      // Uploader can read their own receipts
+      allow read: if isAuthenticated() &&
+        resource.data.uploadedByUserId == request.auth.uid;
+
+      // Business owners can read receipts for their business
+      allow read: if isAuthenticated() &&
+        exists(/databases/$(database)/documents/businesses/$(resource.data.businessId)) &&
+        get(/databases/$(database)/documents/businesses/$(resource.data.businessId)).data.ownerUserId == request.auth.uid;
+
+      // Admins can read all receipts
+      allow read: if isAdmin();
+
+      // Managed by server only
+      allow create, update, delete: if false;
+    }
   }
 }

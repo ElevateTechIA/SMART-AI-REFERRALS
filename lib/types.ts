@@ -90,6 +90,50 @@ export interface Visit {
   checkInTokenUsed?: boolean // Prevents token reuse (single-use)
   checkedInAt?: Date // Timestamp when business scanned QR
   checkInByUserId?: string // Business user who performed check-in (audit trail)
+  // Receipt fields
+  receiptId?: string // Links to the receipt document if one was uploaded
+}
+
+// Receipt Status
+export type ReceiptStatus = 'PROCESSING' | 'EXTRACTED' | 'VERIFIED' | 'FAILED'
+
+// Receipt Line Item
+export interface ReceiptItem {
+  name: string
+  quantity?: number
+  price?: number
+}
+
+// Extracted Receipt Data
+export interface ReceiptData {
+  storeName?: string
+  storeAddress?: string
+  date?: string // ISO YYYY-MM-DD
+  totalAmount?: number
+  subtotal?: number
+  tax?: number
+  tip?: number
+  paymentMethod?: string // "Visa", "Cash", "Mastercard", etc.
+  lastFourDigits?: string
+  items?: ReceiptItem[]
+  currency?: string // default "USD"
+  receiptNumber?: string
+}
+
+// Receipt Record
+export interface Receipt {
+  id: string
+  visitId: string
+  businessId: string
+  uploadedByUserId: string
+  uploadedByRole: 'consumer' | 'business'
+  imageUrl: string
+  status: ReceiptStatus
+  extractedData?: ReceiptData
+  confidence?: number // 0-1 confidence score from Gemini
+  error?: string
+  createdAt: Date
+  updatedAt: Date
 }
 
 // Earning Type

@@ -31,9 +31,9 @@ function checkRateLimit(ip: string): boolean {
 
 // Initialize Gemini
 function getGeminiClient() {
-  const apiKey = process.env.GOOGLE_GEMINI_API_KEY
+  const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) {
-    throw new Error('GOOGLE_GEMINI_API_KEY not configured')
+    throw new Error('GEMINI_API_KEY not configured')
   }
   return new GoogleGenerativeAI(apiKey)
 }
@@ -50,7 +50,7 @@ async function processWithGemini(
   shouldAdvance?: boolean
 }> {
   const genAI = getGeminiClient()
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
 
   // Build conversation for Gemini
   const history = conversationHistory.map(msg => ({

@@ -21,6 +21,15 @@ service firebase.storage {
       allow write: if isAuthenticated() && isValidImage();
     }
 
+    // Receipt images
+    match /receipts/{visitId}/{imageId} {
+      // Anyone authenticated can read receipt images
+      allow read: if isAuthenticated();
+
+      // Authenticated users can upload receipt images
+      allow write: if isAuthenticated() && isValidImage();
+    }
+
     // User profile images
     match /users/{userId}/{imageId} {
       // Anyone can read profile images

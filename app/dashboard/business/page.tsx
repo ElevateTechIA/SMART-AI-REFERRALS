@@ -11,8 +11,8 @@ import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { db } from '@/lib/firebase/client'
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore'
-import { apiPost } from '@/lib/api-client'
-import type { Business, Offer, Visit, Charge } from '@/lib/types'
+import { apiPost, apiGet } from '@/lib/api-client'
+import type { Business, Offer, Visit, Charge, Receipt } from '@/lib/types'
 import { formatCurrency, formatDate, generateReferralUrl } from '@/lib/utils'
 import {
   Building2,
@@ -26,8 +26,10 @@ import {
   Copy,
   ExternalLink,
   Camera,
+  ReceiptText,
 } from 'lucide-react'
 import { QRScanner } from '@/components/business/qr-scanner'
+import { ReceiptDialog } from '@/components/receipt/receipt-dialog'
 import { useTranslation } from 'react-i18next'
 import QRCode from 'qrcode'
 
@@ -540,6 +542,7 @@ export default function BusinessDashboardPage() {
                 onConfirm={handleConfirmConversion}
                 converting={converting}
                 showActions={false}
+                businessId={business.id}
               />
             </TabsContent>
 
@@ -548,6 +551,7 @@ export default function BusinessDashboardPage() {
                 visits={visits.filter((v) => v.status === 'CONVERTED')}
                 onConfirm={handleConfirmConversion}
                 converting={converting}
+                businessId={business.id}
               />
             </TabsContent>
 
@@ -557,6 +561,7 @@ export default function BusinessDashboardPage() {
                 onConfirm={handleConfirmConversion}
                 converting={converting}
                 showActions
+                businessId={business.id}
               />
             </TabsContent>
           </Tabs>
@@ -571,13 +576,42 @@ function VisitsList({
   onConfirm,
   converting,
   showActions = false,
+  businessId,
 }: {
   visits: Visit[]
   onConfirm: (id: string) => void
   converting: string | null
   showActions?: boolean
+  businessId: string
 }) {
   const { t } = useTranslation()
+  const { toast } = useToast()
+  const [receiptDialogVisitId, setReceiptDialogVisitId] = useState<string | null>(null)
+  const [visitReceipts, setVisitReceipts] = useState<Record<string, boolean>>({})
+
+  // Check which visits already have receipts
+  useEffect(() => {
+    const checkReceipts = async () => {
+      const receiptsMap: Record<string, boolean> = {}
+      for (const visit of visits) {
+        if (visit.receiptId) {
+          receiptsMap[visit.id] = true
+        }
+      }
+      setVisitReceipts(receiptsMap)
+    }
+    checkReceipts()
+  }, [visits])
+
+  const handleReceiptSuccess = (receipt: Receipt) => {
+    if (receiptDialogVisitId) {
+      setVisitReceipts((prev) => ({ ...prev, [receiptDialogVisitId]: true }))
+    }
+    toast({
+      title: t('receipt.receiptSaved'),
+      description: t('receipt.receiptSavedDesc'),
+    })
+  }
 
   if (visits.length === 0) {
     return (
@@ -588,73 +622,102 @@ function VisitsList({
   }
 
   return (
-    <div className="divide-y">
-      {visits.map((visit) => (
-        <div
-          key={visit.id}
-          className="flex items-center justify-between py-4 gap-4"
-        >
-          <div className="flex items-center gap-4 flex-1 min-w-0">
-            <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-              <Users className="h-5 w-5 text-muted-foreground" />
+    <>
+      <div className="divide-y">
+        {visits.map((visit) => (
+          <div
+            key={visit.id}
+            className="flex items-center justify-between py-4 gap-4"
+          >
+            <div className="flex items-center gap-4 flex-1 min-w-0">
+              <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                <Users className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-medium truncate">
+                  {t('businessDashboard.visitNumber', { id: visit.id.slice(-6) })}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {formatDate(visit.createdAt)} •{' '}
+                  {visit.attributionType === 'REFERRER' ? t('admin.promoter') : t('admin.platform')}
+                </p>
+                {visitReceipts[visit.id] && (
+                  <span className="text-xs text-green-600 flex items-center gap-1 mt-0.5">
+                    <ReceiptText className="h-3 w-3" />
+                    {t('receipt.receiptAttached')}
+                  </span>
+                )}
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="font-medium truncate">
-                {t('businessDashboard.visitNumber', { id: visit.id.slice(-6) })}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {formatDate(visit.createdAt)} •{' '}
-                {visit.attributionType === 'REFERRER' ? t('admin.promoter') : t('admin.platform')}
-              </p>
-            </div>
-          </div>
 
-          <div className="flex items-center gap-4">
-            <div className="flex flex-col items-end">
-              <Badge
-                variant={
-                  visit.status === 'CONVERTED'
-                    ? 'success'
+            <div className="flex items-center gap-2">
+              <div className="flex flex-col items-end">
+                <Badge
+                  variant={
+                    visit.status === 'CONVERTED'
+                      ? 'success'
+                      : visit.status === 'REJECTED'
+                      ? 'destructive'
+                      : 'secondary'
+                  }
+                >
+                  {visit.status === 'CONVERTED'
+                    ? t('businessDashboard.statusConverted')
+                    : visit.status === 'CHECKED_IN'
+                    ? t('businessDashboard.statusCheckedIn')
                     : visit.status === 'REJECTED'
-                    ? 'destructive'
-                    : 'secondary'
-                }
-              >
-                {visit.status === 'CONVERTED'
-                  ? t('businessDashboard.statusConverted')
-                  : visit.status === 'CHECKED_IN'
-                  ? t('businessDashboard.statusCheckedIn')
-                  : visit.status === 'REJECTED'
-                  ? t('businessDashboard.statusRejected')
-                  : t('businessDashboard.statusPending')}
-              </Badge>
-              {!visit.isNewCustomer && (
-                <span className="text-xs text-destructive mt-1">{t('businessDashboard.repeatCustomer')}</span>
-              )}
-            </div>
+                    ? t('businessDashboard.statusRejected')
+                    : t('businessDashboard.statusPending')}
+                </Badge>
+                {!visit.isNewCustomer && (
+                  <span className="text-xs text-destructive mt-1">{t('businessDashboard.repeatCustomer')}</span>
+                )}
+              </div>
 
-            {showActions &&
-              visit.isNewCustomer &&
-              visit.status !== 'CONVERTED' &&
-              visit.status !== 'REJECTED' && (
+              {/* Receipt scan button */}
+              {!visitReceipts[visit.id] && visit.status !== 'REJECTED' && (
                 <Button
                   size="sm"
-                  onClick={() => onConfirm(visit.id)}
-                  disabled={converting === visit.id}
+                  variant="outline"
+                  onClick={() => setReceiptDialogVisitId(visit.id)}
+                  title={t('receipt.scanReceipt')}
                 >
-                  {converting === visit.id ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <>
-                      <CheckCircle className="h-4 w-4 mr-1" />
-                      {t('common.confirm')}
-                    </>
-                  )}
+                  <ReceiptText className="h-4 w-4" />
                 </Button>
               )}
+
+              {showActions &&
+                visit.isNewCustomer &&
+                visit.status !== 'CONVERTED' &&
+                visit.status !== 'REJECTED' && (
+                  <Button
+                    size="sm"
+                    onClick={() => onConfirm(visit.id)}
+                    disabled={converting === visit.id}
+                  >
+                    {converting === visit.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <CheckCircle className="h-4 w-4 mr-1" />
+                        {t('common.confirm')}
+                      </>
+                    )}
+                  </Button>
+                )}
+            </div>
           </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+
+      {/* Receipt Dialog */}
+      <ReceiptDialog
+        open={!!receiptDialogVisitId}
+        onOpenChange={(open) => !open && setReceiptDialogVisitId(null)}
+        visitId={receiptDialogVisitId || ''}
+        businessId={businessId}
+        onSuccess={handleReceiptSuccess}
+      />
+    </>
   )
 }

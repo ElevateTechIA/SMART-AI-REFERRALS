@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { apiGet } from '@/lib/api-client'
-import type { Business, Visit, Earning } from '@/lib/types'
+import type { Business, Visit, Earning, Receipt } from '@/lib/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import {
   Gift,
@@ -21,8 +21,10 @@ import {
   ArrowRight,
   Building2,
   QrCode,
+  ReceiptText,
 } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { ReceiptDialog } from '@/components/receipt/receipt-dialog'
 import { generateCheckInQRImage, getDaysRemaining } from '@/lib/qr-checkin'
 
 interface VisitsApiResponse {
@@ -38,6 +40,8 @@ export default function VisitsPage() {
   const [rewards, setRewards] = useState<Earning[]>([])
   const [loading, setLoading] = useState(true)
   const [qrCodes, setQrCodes] = useState<Map<string, string>>(new Map())
+  const [receiptDialogVisitId, setReceiptDialogVisitId] = useState<string | null>(null)
+  const [visitReceipts, setVisitReceipts] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     const fetchData = async () => {
@@ -67,6 +71,15 @@ export default function VisitsPage() {
 
         setVisits(visitsList)
         setRewards(rewardsList)
+
+        // Track which visits have receipts
+        const receiptsMap: Record<string, boolean> = {}
+        for (const v of visitsList) {
+          if (v.receiptId) {
+            receiptsMap[v.id] = true
+          }
+        }
+        setVisitReceipts(receiptsMap)
       } catch (error) {
         console.error('Error fetching data:', error)
         toast({
@@ -119,6 +132,20 @@ export default function VisitsPage() {
       </div>
     )
   }
+
+  const handleReceiptSuccess = (receipt: Receipt) => {
+    if (receiptDialogVisitId) {
+      setVisitReceipts((prev) => ({ ...prev, [receiptDialogVisitId]: true }))
+    }
+    toast({
+      title: t('receipt.receiptSaved'),
+      description: t('receipt.receiptSavedDesc'),
+    })
+  }
+
+  const receiptDialogVisit = receiptDialogVisitId
+    ? visits.find((v) => v.id === receiptDialogVisitId)
+    : null
 
   const stats = {
     totalVisits: visits.length,
@@ -296,6 +323,26 @@ export default function VisitsPage() {
                       </Alert>
                     </CardContent>
                   )}
+
+                  {/* Receipt upload button */}
+                  <CardContent className="pt-0">
+                    {visitReceipts[visit.id] ? (
+                      <div className="flex items-center gap-2 text-green-600 text-sm">
+                        <ReceiptText className="h-4 w-4" />
+                        <span>{t('receipt.receiptAttached')}</span>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                        onClick={() => setReceiptDialogVisitId(visit.id)}
+                      >
+                        <ReceiptText className="h-4 w-4" />
+                        {t('receipt.uploadReceipt')}
+                      </Button>
+                    )}
+                  </CardContent>
                 </Card>
               )
             })}
@@ -356,10 +403,27 @@ export default function VisitsPage() {
                         <p className="text-xs text-muted-foreground mt-1">
                           {t('visits.visited', { date: formatDate(visit.createdAt) })}
                         </p>
+                        {visitReceipts[visit.id] && (
+                          <span className="text-xs text-green-600 flex items-center gap-1 mt-0.5">
+                            <ReceiptText className="h-3 w-3" />
+                            {t('receipt.receiptAttached')}
+                          </span>
+                        )}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      {/* Receipt button for visits without receipt */}
+                      {!visitReceipts[visit.id] && visit.status !== 'REJECTED' && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setReceiptDialogVisitId(visit.id)}
+                          title={t('receipt.uploadReceipt')}
+                        >
+                          <ReceiptText className="h-4 w-4" />
+                        </Button>
+                      )}
                       <div className="text-right">
                         <Badge
                           variant={
@@ -444,6 +508,17 @@ export default function VisitsPage() {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Receipt Dialog */}
+      {receiptDialogVisit && (
+        <ReceiptDialog
+          open={!!receiptDialogVisitId}
+          onOpenChange={(open) => !open && setReceiptDialogVisitId(null)}
+          visitId={receiptDialogVisitId!}
+          businessId={receiptDialogVisit.businessId}
+          onSuccess={handleReceiptSuccess}
+        />
       )}
     </div>
   )
