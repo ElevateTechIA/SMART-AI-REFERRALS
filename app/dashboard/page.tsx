@@ -6,95 +6,166 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/lib/auth/context'
-import { formatCurrency } from '@/lib/utils'
+import { useToast } from '@/components/ui/use-toast'
+import { formatCurrency, generateReferralUrl } from '@/lib/utils'
+import { apiGet } from '@/lib/api-client'
 import {
   DollarSign,
   Users,
   Copy,
   Share2,
-  MessageCircle,
   ChevronRight,
-  Star,
   QrCode as QrCodeIcon,
   Building2,
+  Loader2,
 } from 'lucide-react'
 import { BarChart, Bar, XAxis, ResponsiveContainer } from 'recharts'
 import QRCode from 'qrcode'
 import { ShareAppModal } from '@/components/share-app-modal'
 
-interface DashboardData {
+interface BusinessWithOffer {
+  id: string
+  name: string
+  category: string
+  description?: string
+  address: string
+  phone: string
+  website?: string
+  images: string[]
+  status: string
+  offer?: {
+    id: string
+    image: string | null
+    referrerCommissionAmount: number
+    consumerRewardType: string
+    consumerRewardValue: number
+    active: boolean
+  }
+}
+
+interface Referral {
+  id: string
+  businessId: string
+  consumerUserId: string
+  referrerUserId: string
+  status: string
+  createdAt: string | null
+}
+
+interface Earning {
+  id: string
+  userId: string
+  businessId: string
+  visitId: string
+  type: string
+  amount: number
+  status: string
+  createdAt: string | null
+}
+
+interface ReferralsResponse {
+  businesses: BusinessWithOffer[]
+  referrals: Referral[]
+  earnings: Earning[]
+  referrerStatus: string | null
+}
+
+interface EarningsResponse {
+  success: boolean
   stats: {
     totalEarnings: number
     pendingEarnings: number
-    totalReferrals: number
-    totalVisits: number
-    newCustomersThisMonth: number
+    completedEarnings: number
+    thisMonth: number
   }
-  businesses: any[]
-  recentVisits: any[]
-  earningsHistory: Array<{ date: string; amount: number }>
+  transactions: Array<{
+    id: string
+    date: string
+    business: string
+    customer: string
+    amount: number
+    status: string
+    type: string
+  }>
 }
 
 export default function EnhancedDashboardPage() {
   const { user } = useAuth()
   const { t } = useTranslation()
-  const [data, setData] = useState<DashboardData | null>(null)
+  const { toast } = useToast()
+  const [businesses, setBusinesses] = useState<BusinessWithOffer[]>([])
+  const [referrals, setReferrals] = useState<Referral[]>([])
+  const [earningsStats, setEarningsStats] = useState({
+    totalEarnings: 0,
+    pendingEarnings: 0,
+    completedEarnings: 0,
+    thisMonth: 0,
+  })
+  const [recentTransactions, setRecentTransactions] = useState<EarningsResponse['transactions']>([])
   const [qrCode, setQrCode] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [showHeader, setShowHeader] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
   const [showShareModal, setShowShareModal] = useState(false)
 
-  // Mock chart data for earnings
-  const chartData = [
-    { date: '3/01', amount: 100 },
-    { date: '3/10', amount: 250 },
-    { date: '3/17', amount: 450 },
-    { date: '3/11', amount: 650 },
-  ]
+  // Build chart data from real transactions
+  const chartData = recentTransactions.slice(0, 4).map((tx) => ({
+    date: new Date(tx.date).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' }),
+    amount: tx.amount,
+  }))
+
+  // First business for QR code link (or app URL fallback)
+  const firstBusiness = businesses[0]
+  const referralUrl = firstBusiness && user
+    ? generateReferralUrl(firstBusiness.id, user.id)
+    : typeof window !== 'undefined' ? window.location.origin : ''
 
   useEffect(() => {
-    fetchDashboardData()
-    generateQRCode()
+    if (user) {
+      fetchDashboardData()
+    }
   }, [user])
+
+  useEffect(() => {
+    if (referralUrl) {
+      generateQRCode()
+    }
+  }, [referralUrl])
 
   useEffect(() => {
     const controlHeaderVisibility = () => {
       const currentScrollY = window.scrollY
-
       if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        // Scrolling down
         setShowHeader(false)
       } else {
-        // Scrolling up
         setShowHeader(true)
       }
-
       setLastScrollY(currentScrollY)
     }
 
     window.addEventListener('scroll', controlHeaderVisibility)
-
-    return () => {
-      window.removeEventListener('scroll', controlHeaderVisibility)
-    }
+    return () => window.removeEventListener('scroll', controlHeaderVisibility)
   }, [lastScrollY])
 
   const fetchDashboardData = async () => {
     try {
-      // This would be replaced with actual API call
-      setData({
-        stats: {
-          totalEarnings: 1250,
-          pendingEarnings: 300,
-          totalReferrals: 12,
-          totalVisits: 34,
-          newCustomersThisMonth: 34,
-        },
-        businesses: [],
-        recentVisits: [],
-        earningsHistory: chartData,
-      })
+      setLoading(true)
+
+      // Fetch referrals data (businesses, referrals, earnings)
+      const [referralsResult, earningsResult] = await Promise.all([
+        apiGet<ReferralsResponse>('/api/referrals'),
+        apiGet<EarningsResponse>('/api/earnings'),
+      ])
+
+      if (referralsResult.ok && referralsResult.data) {
+        setBusinesses(referralsResult.data.businesses || [])
+        setReferrals(referralsResult.data.referrals || [])
+      }
+
+      if (earningsResult.ok && earningsResult.data) {
+        setEarningsStats(earningsResult.data.stats)
+        setRecentTransactions(earningsResult.data.transactions || [])
+      }
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
     } finally {
@@ -103,15 +174,12 @@ export default function EnhancedDashboardPage() {
   }
 
   const generateQRCode = async () => {
+    if (!referralUrl) return
     try {
-      const url = `${window.location.origin}/r/your-business-id`
-      const qr = await QRCode.toDataURL(url, {
+      const qr = await QRCode.toDataURL(referralUrl, {
         width: 200,
         margin: 2,
-        color: {
-          dark: '#1D4ED8',
-          light: '#ffffff',
-        },
+        color: { dark: '#1D4ED8', light: '#ffffff' },
       })
       setQrCode(qr)
     } catch (error) {
@@ -120,16 +188,14 @@ export default function EnhancedDashboardPage() {
   }
 
   const copyLink = () => {
-    navigator.clipboard.writeText('smartreferrals.io///boat...')
-    // Show toast notification
+    if (!referralUrl) return
+    navigator.clipboard.writeText(referralUrl)
+    toast({ title: t('cards.linkCopied'), description: t('cards.linkCopiedDesc') })
   }
 
   const share = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: 'My Promo Link',
-        url: 'smartreferrals.io///boat...',
-      })
+    if (navigator.share && referralUrl) {
+      navigator.share({ title: 'Smart AI Referrals', url: referralUrl })
     }
   }
 
@@ -137,61 +203,114 @@ export default function EnhancedDashboardPage() {
     setShowShareModal(true)
   }
 
-  // Mock recent conversions data
-  const recentConversions = [
-    { id: 1, name: 'Alex M.', type: 'Boat Rental', verified: true },
-    { id: 2, name: 'Sarah T.', type: 'Spa Visit', verified: true },
-    { id: 3, name: 'Sarah T.', type: 'Care Promo', verified: true },
-    { id: 4, name: 'David S.', type: 'Cafe Promo', verified: true },
-  ]
+  // Computed values
+  const totalReferrals = referrals.length
+  const convertedReferrals = referrals.filter((r) => r.status === 'CONVERTED')
+  const thisMonthReferrals = referrals.filter((r) => {
+    if (!r.createdAt) return false
+    const d = new Date(r.createdAt)
+    const now = new Date()
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+  })
+
+  const renderBusinessCard = (biz: BusinessWithOffer, size: 'sm' | 'lg') => {
+    const img = biz.offer?.image || biz.images?.[0]
+    const commission = biz.offer?.referrerCommissionAmount || 0
+    const url = user ? generateReferralUrl(biz.id, user.id) : ''
+    const h = size === 'lg' ? 'h-52' : 'h-[120px]'
+    const textSize = size === 'lg' ? 'text-base' : 'text-sm'
+    const subSize = size === 'lg' ? 'text-xs mb-3' : 'text-xs mb-2'
+    const btnSize = size === 'lg' ? 'w-full h-9' : 'w-auto h-8 px-4'
+
+    return (
+      <div
+        key={biz.id}
+        className={`relative overflow-hidden rounded-xl ${h}`}
+        style={img ? {
+          backgroundImage: `url(${img})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        } : undefined}
+      >
+        {!img && (
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center opacity-30">
+            <Building2 className="h-16 w-16 text-white" />
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        <div className="relative h-full p-4 flex flex-col justify-end">
+          <h3 className={`text-white font-bold ${textSize} mb-1 leading-tight`}>{biz.name}</h3>
+          {commission > 0 && (
+            <p className={`text-white/95 ${subSize}`}>
+              {formatCurrency(commission)} {t('dashboard.perCustomer', 'per customer')}
+            </p>
+          )}
+          <Button
+            size="sm"
+            className={`${btnSize} bg-blue-400 hover:bg-blue-500 rounded-lg text-xs font-semibold`}
+            onClick={() => {
+              navigator.clipboard.writeText(url)
+              toast({ title: t('cards.linkCopied') })
+            }}
+          >
+            {t('dashboard.copyLink')}
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   const renderDesktopContent = () => (
     <div className="space-y-6">
       {/* Top Row: Stats Cards */}
       <div className="grid grid-cols-3 gap-6">
-        {/* Total Earnings */}
         <div className="bg-card backdrop-blur-sm rounded-xl p-5 shadow-lg">
           <p className="text-xs text-muted-foreground mb-1">{t('dashboard.totalEarnings')}:</p>
           <p className="text-3xl font-bold text-foreground mb-3">
-            {formatCurrency(data?.stats.totalEarnings || 0)}
+            {formatCurrency(earningsStats.totalEarnings)}
           </p>
-          <Button size="sm" className="w-full bg-blue-500 hover:bg-blue-600 rounded-lg h-10 text-sm">
-            {t('dashboard.withdraw')}
-          </Button>
+          <Link href="/dashboard/earnings">
+            <Button size="sm" className="w-full bg-blue-500 hover:bg-blue-600 rounded-lg h-10 text-sm">
+              {t('dashboard.viewEarnings', 'View Earnings')}
+            </Button>
+          </Link>
         </div>
 
-        {/* New Customers */}
         <div className="bg-card backdrop-blur-sm rounded-xl p-5 shadow-lg">
           <p className="text-xs text-muted-foreground mb-1">{t('dashboard.newCustomers')}:</p>
           <div className="flex items-baseline gap-2 mb-2">
             <p className="text-3xl font-bold text-foreground">
-              {data?.stats.newCustomersThisMonth || 0}
+              {thisMonthReferrals.length}
             </p>
             <p className="text-xs text-muted-foreground">{t('dashboard.thisMonth')}</p>
           </div>
-          {/* Mini chart */}
-          <div className="h-16 mt-2">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData.slice(0, 4)}>
-                <Bar dataKey="amount" fill="url(#miniGradient)" radius={[4, 4, 0, 0]} />
-                <defs>
-                  <linearGradient id="miniGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--theme-primaryLight)" stopOpacity={0.8} />
-                    <stop offset="100%" stopColor="var(--theme-primary)" stopOpacity={0.6} />
-                  </linearGradient>
-                </defs>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          {chartData.length > 0 && (
+            <div className="h-16 mt-2">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData}>
+                  <Bar dataKey="amount" fill="url(#miniGradient)" radius={[4, 4, 0, 0]} />
+                  <defs>
+                    <linearGradient id="miniGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--theme-primaryLight)" stopOpacity={0.8} />
+                      <stop offset="100%" stopColor="var(--theme-primary)" stopOpacity={0.6} />
+                    </linearGradient>
+                  </defs>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </div>
 
-        {/* Pending Payouts */}
         <div className="bg-card backdrop-blur-sm rounded-xl p-5 shadow-lg">
           <p className="text-xs text-muted-foreground mb-1">{t('dashboard.pendingPayouts')}:</p>
-          <p className="text-3xl font-bold text-foreground mb-3">$300</p>
-          <Button size="sm" className="w-full bg-blue-500 hover:bg-blue-600 rounded-lg h-10 text-sm">
-            {t('dashboard.review')} &gt;
-          </Button>
+          <p className="text-3xl font-bold text-foreground mb-3">
+            {formatCurrency(earningsStats.pendingEarnings)}
+          </p>
+          <Link href="/dashboard/earnings">
+            <Button size="sm" className="w-full bg-blue-500 hover:bg-blue-600 rounded-lg h-10 text-sm">
+              {t('dashboard.review')} &gt;
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -199,19 +318,17 @@ export default function EnhancedDashboardPage() {
       <div className="grid grid-cols-[1fr_1.2fr_1fr] gap-6">
         {/* Column 1: My Referral Link & Your Earnings */}
         <div className="space-y-6">
-          {/* My Referral Link */}
           <div className="bg-gradient-to-br from-blue-900 to-blue-700 rounded-2xl p-5 shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-bold text-white">{t('dashboard.myReferralLink')}</h2>
               <ChevronRight className="h-4 w-4 text-white/60" />
             </div>
-
             <div className="bg-card rounded-xl p-4 flex flex-col items-center">
               {qrCode && (
                 <img src={qrCode} alt="QR Code" className="w-40 h-40 mb-3" />
               )}
               <p className="text-xs text-muted-foreground text-center mb-3 truncate w-full">
-                smartreferrals.io//boat...
+                {referralUrl ? referralUrl.replace('https://', '').replace('http://', '') : '...'}
               </p>
               <Button onClick={copyLink} className="w-full mb-2 bg-blue-600 hover:bg-blue-700 rounded-lg h-11 text-sm font-semibold">
                 <Copy className="h-4 w-4 mr-2" />
@@ -220,367 +337,24 @@ export default function EnhancedDashboardPage() {
             </div>
           </div>
 
-          {/* Your Earnings Chart */}
           <div className="bg-card backdrop-blur-sm rounded-2xl p-5 shadow-xl">
             <div className="flex items-center justify-between mb-3">
               <div>
                 <h2 className="text-base font-bold text-foreground mb-1">{t('dashboard.yourEarnings')}:</h2>
-                <p className="text-3xl font-bold text-foreground">{formatCurrency(1250)}</p>
+                <p className="text-3xl font-bold text-foreground">{formatCurrency(earningsStats.thisMonth)}</p>
               </div>
-              <button className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1">
+              <Link href="/dashboard/earnings" className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1">
                 {t('dashboard.thisMonth')} &gt;
-              </button>
+              </Link>
             </div>
             <p className="text-xs text-muted-foreground mb-4">{t('dashboard.thisMonth')}</p>
 
-            {/* Chart */}
-            <div className="h-40 mb-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
-                  <XAxis
-                    dataKey="date"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: '#6b7280', fontSize: 10 }}
-                  />
-                  <Bar dataKey="amount" fill="url(#earningsGradient)" radius={[6, 6, 0, 0]} />
-                  <defs>
-                    <linearGradient id="earningsGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="var(--theme-primaryLight)" stopOpacity={1} />
-                      <stop offset="100%" stopColor="var(--theme-primary)" stopOpacity={0.8} />
-                    </linearGradient>
-                  </defs>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Commission Breakdown */}
-            <div>
-              <h3 className="text-xs font-semibold text-foreground mb-2">
-                {t('dashboard.commissionBreakdown')}
-              </h3>
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-blue-500"></div>
-                  <span className="text-xs font-semibold text-foreground">$1,100</span>
-                  <span className="text-xs text-muted-foreground">{t('dashboard.referrals')}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-blue-400"></div>
-                  <span className="text-xs font-semibold text-foreground">$150</span>
-                  <span className="text-xs text-muted-foreground">{t('dashboard.bonuses')}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Column 2: Top Businesses & Write a Review */}
-        <div className="space-y-6">
-          {/* Top Businesses This Week */}
-          <div className="bg-gradient-to-br from-blue-900 to-blue-700 rounded-2xl p-5 shadow-xl">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-bold text-white">{t('dashboard.topBusinessesWeek')}</h2>
-              <div className="flex items-center gap-2">
-                <button className="text-white/60 hover:text-white">
-                  <ChevronRight className="h-4 w-4 rotate-180" />
-                </button>
-                <button className="text-white/60 hover:text-white">
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              {/* Marina Boat Tours */}
-              <div
-                className="relative overflow-hidden rounded-xl h-52"
-                style={{
-                  backgroundImage: 'url(/dashboard/assets/marina-boat-tours-background.png)',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-                <div className="relative h-full p-4 flex flex-col justify-between">
-                  <div className="flex-1"></div>
-                  <div>
-                    <h3 className="text-white font-bold text-base mb-1.5 leading-tight">Marina Boat Tours</h3>
-                    <p className="text-white/95 text-xs mb-3">$100 per new customer</p>
-                    <Button size="sm" className="w-full bg-blue-400 hover:bg-blue-500 rounded-lg h-9 text-xs font-semibold">
-                      {t('dashboard.copyLink')}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bella Spa & Wellness */}
-              <div
-                className="relative overflow-hidden rounded-xl h-52"
-                style={{
-                  backgroundImage: 'url(/dashboard/assets/bella-spa-candles-background.png)',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-t from-blue-900/80 via-blue-900/30 to-transparent"></div>
-                <div className="relative h-full p-4 flex flex-col justify-between">
-                  <div className="flex-1"></div>
-                  <div>
-                    <h3 className="text-white font-bold text-base mb-1.5 leading-tight">Bella Spa & Wellness</h3>
-                    <p className="text-yellow-300 text-xs mb-3">Get 20% Cash Back</p>
-                    <Button size="sm" className="w-full bg-blue-400 hover:bg-blue-500 rounded-lg h-9 text-xs font-semibold">
-                      Whatsapp
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Write a Review & Earn */}
-          <div
-            className="relative overflow-hidden rounded-2xl shadow-xl"
-            style={{
-              backgroundImage: 'url(/dashboard/assets/bella-spa-review-background.jpg)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-b from-blue-900/85 to-blue-700/85"></div>
-            <div className="relative p-5">
-              <h2 className="text-base font-bold text-white mb-3">{t('dashboard.writeReviewEarn')}</h2>
-
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                  <Building2 className="h-5 w-5 text-white" />
-                </div>
-                <span className="text-white font-semibold text-sm">Bella Spa & Wellness</span>
-              </div>
-
-              <div className="flex gap-1 mb-3">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star key={star} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                ))}
-              </div>
-
-              <p className="text-white/95 text-xs mb-3">
-                {t('dashboard.shareExperience')}
-              </p>
-
-              <textarea
-                className="w-full h-16 px-3 py-2 rounded-lg bg-card text-foreground placeholder:text-muted-foreground border-0 focus:ring-2 focus:ring-white/50 mb-3 text-xs resize-none"
-                placeholder={t('dashboard.writeReview')}
-              ></textarea>
-
-              <Button className="w-full bg-blue-500 hover:bg-blue-600 rounded-lg h-10 text-xs font-semibold">
-                {t('dashboard.submitReview')}
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Column 3: Recent Conversions */}
-        <div>
-          {/* Recent Conversions */}
-          <div className="bg-gradient-to-br from-blue-900 to-blue-700 rounded-2xl p-5 shadow-xl">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-bold text-white">{t('dashboard.recentConversions')}</h2>
-              <ChevronRight className="h-4 w-4 text-white/60" />
-            </div>
-
-            <div className="space-y-3">
-              {recentConversions.map((conversion) => (
-                <div key={conversion.id} className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                  <div className="w-10 h-10 rounded-full bg-white/20 overflow-hidden flex-shrink-0">
-                    <img
-                      src={`https://ui-avatars.com/api/?name=${conversion.name}&background=random`}
-                      alt={conversion.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white font-semibold text-sm">{conversion.name}</p>
-                    <p className="text-white/70 text-xs">{conversion.type}</p>
-                  </div>
-                  {conversion.verified && (
-                    <Badge className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
-                      {t('dashboard.verified')}
-                    </Badge>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-
-  const renderMobileContent = () => (
-    <div className="px-0">
-      {/* Stats Cards - Single Row on Desktop, Scrollable on Mobile */}
-      <div className="flex gap-2 mb-6 overflow-x-visible pb-2">
-        {/* Total Earnings */}
-        <div className="bg-card backdrop-blur-sm rounded-xl p-3 shadow-lg flex-1 min-w-0 md:flex-none md:w-56">
-          <p className="text-[10px] text-muted-foreground mb-0.5">{t('dashboard.totalEarnings')}:</p>
-          <p className="text-xl md:text-3xl font-bold text-foreground mb-2">
-            {formatCurrency(data?.stats.totalEarnings || 0)}
-          </p>
-          <Button size="sm" className="w-full bg-blue-500 hover:bg-blue-600 rounded-lg h-8 md:h-10 text-[10px] md:text-sm">
-            Copy Link
-          </Button>
-        </div>
-
-        {/* New Customers */}
-        <div className="bg-card backdrop-blur-sm rounded-xl p-3 shadow-lg flex-1 min-w-0 md:flex-none md:w-56">
-          <p className="text-[10px] text-muted-foreground mb-0.5">{t('dashboard.newCustomers')}:</p>
-          <div className="flex items-baseline gap-1 mb-0.5">
-            <p className="text-xl md:text-3xl font-bold text-foreground">
-              {data?.stats.newCustomersThisMonth || 0}
-            </p>
-            <p className="text-[10px] text-muted-foreground">This Month</p>
-          </div>
-          {/* Mini chart */}
-          <div className="h-10 md:h-14 mt-1">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData.slice(0, 4)}>
-                <Bar dataKey="amount" fill="url(#miniGradient)" radius={[4, 4, 0, 0]} />
-                <defs>
-                  <linearGradient id="miniGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--theme-primaryLight)" stopOpacity={0.8} />
-                    <stop offset="100%" stopColor="var(--theme-primary)" stopOpacity={0.6} />
-                  </linearGradient>
-                </defs>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Pending Payouts */}
-        <div className="bg-card backdrop-blur-sm rounded-xl p-3 shadow-lg flex-1 min-w-0 md:flex-none md:w-56">
-          <p className="text-[10px] text-muted-foreground mb-0.5">{t('dashboard.pendingPayouts')}:</p>
-          <p className="text-xl md:text-3xl font-bold text-foreground mb-2">$300</p>
-          <Button size="sm" className="w-full bg-blue-500 hover:bg-blue-600 rounded-lg h-8 md:h-10 text-[10px] md:text-sm">
-            Review
-          </Button>
-        </div>
-      </div>
-
-      {/* Main Content Grid */}
-      <div className="grid lg:grid-cols-2 gap-2">
-        {/* Left Column */}
-        <div className="space-y-2">
-          {/* My Referral Link & Top Businesses - Two Column Layout */}
-          <div className="bg-gradient-to-br from-blue-900 to-blue-700 rounded-xl p-2.5 shadow-lg">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-sm font-bold text-white whitespace-nowrap">{t('dashboard.myReferralLink')}</h2>
-              <Link
-                href="/dashboard/referrals"
-                className="text-[10px] text-white/90 hover:text-white flex items-center gap-0.5"
-              >
-                {t('dashboard.topBusinessesWeek')} <ChevronRight className="h-3 w-3" />
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-[0.85fr_1.15fr] gap-1.5">
-              {/* My Referral Link - Left Side */}
-              <div className="flex flex-col items-center bg-card rounded-lg p-2">
-                {qrCode && (
-                  <img src={qrCode} alt="QR Code" className="w-full h-auto mb-1.5" />
-                )}
-                <p className="text-[9px] text-muted-foreground text-center mb-1.5 truncate w-full">
-                  smartreferrals.i...
-                </p>
-                <Button onClick={copyLink} className="w-full mb-1.5 bg-blue-600 hover:bg-blue-700 rounded-md h-7 text-[10px] font-medium">
-                  <Copy className="h-2.5 w-2.5 mr-0.5" />
-                  Copy Link
-                </Button>
-                <div className="flex gap-1 w-full">
-                  <button className="flex-1 h-7 bg-teal-500 hover:bg-teal-600 text-white rounded-md flex items-center justify-center">
-                    <MessageCircle className="h-3.5 w-3.5" />
-                  </button>
-                  <button className="flex-1 h-7 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center justify-center">
-                    <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                    </svg>
-                  </button>
-                  <button className="flex-1 h-7 bg-gray-500 hover:bg-gray-600 text-white rounded-md flex items-center justify-center" onClick={share}>
-                    <Share2 className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Top Businesses - Right Side */}
-              <div className="space-y-1.5">
-                {/* Marina Boat Tours */}
-                <div
-                  className="relative overflow-hidden rounded-lg h-[120px]"
-                  style={{
-                    backgroundImage: 'url(/dashboard/assets/marina-boat-tours-background.png)',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                  }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-                  <div className="relative h-full p-3 flex flex-col justify-between">
-                    <div className="flex-1"></div>
-                    <div>
-                      <h3 className="text-white font-bold text-sm mb-1 leading-tight">Marina Boat Tours</h3>
-                      <p className="text-white/95 text-xs mb-2">$100 per new customer</p>
-                      <Button size="sm" className="w-auto bg-blue-400 hover:bg-blue-500 rounded-lg h-8 px-4 text-xs font-semibold">
-                        Copy Link
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Bella Spa & Wellness */}
-                <div
-                  className="relative overflow-hidden rounded-lg h-[120px]"
-                  style={{
-                    backgroundImage: 'url(/dashboard/assets/bella-spa-candles-background.png)',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                  }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-t from-blue-900/80 via-blue-900/30 to-transparent"></div>
-                  <div className="relative h-full p-3 flex flex-col justify-between">
-                    <div className="flex-1"></div>
-                    <div>
-                      <h3 className="text-white font-bold text-sm mb-1 leading-tight">Bella Spa & Wellness</h3>
-                      <p className="text-yellow-300 text-xs mb-2">Get 20% Cash Back</p>
-                      <Button size="sm" className="w-auto bg-blue-400 hover:bg-blue-500 rounded-lg h-8 px-4 text-xs font-semibold">
-                        Whatsapp
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Your Earnings & Write a Review - Two Column Layout */}
-          <div className="grid grid-cols-[0.85fr_1.15fr] gap-1.5">
-            {/* Your Earnings Chart - Left Side */}
-            <div className="bg-card backdrop-blur-sm rounded-xl p-2.5 shadow-lg">
-              <div className="mb-2">
-                <h2 className="text-sm font-bold text-foreground mb-0.5">{t('dashboard.yourEarnings')}:</h2>
-                <p className="text-xl font-bold text-foreground">{formatCurrency(1250)}</p>
-                <p className="text-[10px] text-muted-foreground">{t('dashboard.thisMonth')}</p>
-              </div>
-
-              {/* Chart */}
-              <div className="h-24 mb-2">
+            {chartData.length > 0 && (
+              <div className="h-40 mb-4">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData}>
-                    <XAxis
-                      dataKey="date"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: '#6b7280', fontSize: 8 }}
-                    />
-                    <Bar dataKey="amount" fill="url(#earningsGradient)" radius={[3, 3, 0, 0]} />
+                    <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 10 }} />
+                    <Bar dataKey="amount" fill="url(#earningsGradient)" radius={[6, 6, 0, 0]} />
                     <defs>
                       <linearGradient id="earningsGradient" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="var(--theme-primaryLight)" stopOpacity={1} />
@@ -590,65 +364,239 @@ export default function EnhancedDashboardPage() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
+            )}
 
-              {/* Commission Breakdown */}
-              <div>
-                <h3 className="text-[10px] font-semibold text-foreground mb-1.5">
-                  {t('dashboard.commissionBreakdown')}
-                </h3>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                    <span className="text-[10px] font-medium text-foreground">$1,100</span>
-                    <span className="text-[10px] text-muted-foreground">{t('dashboard.referrals')}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-blue-400"></div>
-                    <span className="text-[10px] font-medium text-foreground">$150</span>
-                    <span className="text-[10px] text-muted-foreground">{t('dashboard.bonuses')}</span>
-                  </div>
+            <div>
+              <h3 className="text-xs font-semibold text-foreground mb-2">{t('dashboard.commissionBreakdown')}</h3>
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                  <span className="text-xs font-semibold text-foreground">{formatCurrency(earningsStats.completedEarnings)}</span>
+                  <span className="text-xs text-muted-foreground">{t('dashboard.referrals')}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-blue-400" />
+                  <span className="text-xs font-semibold text-foreground">{formatCurrency(earningsStats.pendingEarnings)}</span>
+                  <span className="text-xs text-muted-foreground">{t('earnings.pending', 'Pending')}</span>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* Write a Review & Earn - Right Side */}
-            <div
-              className="relative overflow-hidden rounded-xl shadow-lg"
-              style={{
-                backgroundImage: 'url(/dashboard/assets/bella-spa-review-background.jpg)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-b from-blue-900/85 to-blue-700/85"></div>
-              <div className="relative p-2.5">
-                <h2 className="text-sm font-bold text-white mb-2">{t('dashboard.writeReviewEarn')}</h2>
+        {/* Column 2: Top Businesses */}
+        <div className="space-y-6">
+          <div className="bg-gradient-to-br from-blue-900 to-blue-700 rounded-2xl p-5 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-bold text-white">{t('dashboard.topBusinessesWeek')}</h2>
+              <Link href="/dashboard/referrals" className="text-white/60 hover:text-white">
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            </div>
 
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <div className="w-5 h-5 bg-white/20 rounded-md flex items-center justify-center">
-                    <Building2 className="h-3 w-3 text-white" />
+            {businesses.length > 0 ? (
+              <div className="grid grid-cols-2 gap-3">
+                {businesses.slice(0, 4).map((biz) => renderBusinessCard(biz, 'lg'))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Building2 className="h-10 w-10 text-white/30 mx-auto mb-3" />
+                <p className="text-white/60 text-sm">{t('dashboard.noBusinesses', 'No businesses available yet')}</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Column 3: Recent Conversions */}
+        <div>
+          <div className="bg-gradient-to-br from-blue-900 to-blue-700 rounded-2xl p-5 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-bold text-white">{t('dashboard.recentConversions')}</h2>
+              <ChevronRight className="h-4 w-4 text-white/60" />
+            </div>
+
+            {recentTransactions.length > 0 ? (
+              <div className="space-y-3">
+                {recentTransactions.slice(0, 5).map((tx) => (
+                  <div key={tx.id} className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                    <div className="w-10 h-10 rounded-full bg-white/20 overflow-hidden flex-shrink-0">
+                      <img
+                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(tx.customer)}&background=random`}
+                        alt={tx.customer}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-semibold text-sm truncate">{tx.customer}</p>
+                      <p className="text-white/70 text-xs truncate">{tx.business}</p>
+                    </div>
+                    <Badge className={`text-white text-xs px-2 py-1 rounded-full ${
+                      tx.status === 'completed' ? 'bg-green-500' : tx.status === 'processing' ? 'bg-blue-500' : 'bg-yellow-500'
+                    }`}>
+                      {formatCurrency(tx.amount)}
+                    </Badge>
                   </div>
-                  <span className="text-white font-semibold text-xs">Bella Spa & Wellness</span>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Users className="h-10 w-10 text-white/30 mx-auto mb-3" />
+                <p className="text-white/60 text-sm">{t('dashboard.noConversions', 'No conversions yet')}</p>
+                <p className="text-white/40 text-xs mt-1">{t('dashboard.startSharing', 'Start sharing your referral links!')}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  const renderMobileContent = () => (
+    <div className="px-0">
+      {/* Stats Cards */}
+      <div className="flex gap-2 mb-6 overflow-x-visible pb-2">
+        <div className="bg-card backdrop-blur-sm rounded-xl p-3 shadow-lg flex-1 min-w-0">
+          <p className="text-[10px] text-muted-foreground mb-0.5">{t('dashboard.totalEarnings')}:</p>
+          <p className="text-xl font-bold text-foreground mb-2">
+            {formatCurrency(earningsStats.totalEarnings)}
+          </p>
+          <Button size="sm" className="w-full bg-blue-500 hover:bg-blue-600 rounded-lg h-8 text-[10px]" onClick={copyLink}>
+            {t('dashboard.copyLink')}
+          </Button>
+        </div>
+
+        <div className="bg-card backdrop-blur-sm rounded-xl p-3 shadow-lg flex-1 min-w-0">
+          <p className="text-[10px] text-muted-foreground mb-0.5">{t('dashboard.newCustomers')}:</p>
+          <div className="flex items-baseline gap-1 mb-0.5">
+            <p className="text-xl font-bold text-foreground">{thisMonthReferrals.length}</p>
+            <p className="text-[10px] text-muted-foreground">{t('dashboard.thisMonth')}</p>
+          </div>
+          {chartData.length > 0 && (
+            <div className="h-10 mt-1">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData}>
+                  <Bar dataKey="amount" fill="url(#miniGradient)" radius={[4, 4, 0, 0]} />
+                  <defs>
+                    <linearGradient id="miniGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--theme-primaryLight)" stopOpacity={0.8} />
+                      <stop offset="100%" stopColor="var(--theme-primary)" stopOpacity={0.6} />
+                    </linearGradient>
+                  </defs>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </div>
+
+        <div className="bg-card backdrop-blur-sm rounded-xl p-3 shadow-lg flex-1 min-w-0">
+          <p className="text-[10px] text-muted-foreground mb-0.5">{t('dashboard.pendingPayouts')}:</p>
+          <p className="text-xl font-bold text-foreground mb-2">
+            {formatCurrency(earningsStats.pendingEarnings)}
+          </p>
+          <Link href="/dashboard/earnings">
+            <Button size="sm" className="w-full bg-blue-500 hover:bg-blue-600 rounded-lg h-8 text-[10px]">
+              {t('dashboard.review')}
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="space-y-2">
+        {/* My Referral Link & Top Businesses */}
+        <div className="bg-gradient-to-br from-blue-900 to-blue-700 rounded-xl p-2.5 shadow-lg">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-sm font-bold text-white whitespace-nowrap">{t('dashboard.myReferralLink')}</h2>
+            <Link
+              href="/dashboard/referrals"
+              className="text-[10px] text-white/90 hover:text-white flex items-center gap-0.5"
+            >
+              {t('dashboard.topBusinessesWeek')} <ChevronRight className="h-3 w-3" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-[0.85fr_1.15fr] gap-1.5">
+            {/* QR Code / Link */}
+            <div className="flex flex-col items-center bg-card rounded-lg p-2">
+              {qrCode && (
+                <img src={qrCode} alt="QR Code" className="w-full h-auto mb-1.5" />
+              )}
+              <p className="text-[9px] text-muted-foreground text-center mb-1.5 truncate w-full">
+                {referralUrl ? referralUrl.replace('https://', '').replace('http://', '').substring(0, 20) + '...' : '...'}
+              </p>
+              <Button onClick={copyLink} className="w-full mb-1.5 bg-blue-600 hover:bg-blue-700 rounded-md h-7 text-[10px] font-medium">
+                <Copy className="h-2.5 w-2.5 mr-0.5" />
+                {t('dashboard.copyLink')}
+              </Button>
+              <div className="flex gap-1 w-full">
+                <button
+                  className="flex-1 h-7 bg-teal-500 hover:bg-teal-600 text-white rounded-md flex items-center justify-center"
+                  onClick={share}
+                >
+                  <Share2 className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  className="flex-1 h-7 bg-muted-foreground/50 hover:bg-muted-foreground/60 text-white rounded-md flex items-center justify-center"
+                  onClick={shareApp}
+                >
+                  <QrCodeIcon className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Top Businesses */}
+            <div className="space-y-1.5">
+              {businesses.length > 0 ? (
+                businesses.slice(0, 2).map((biz) => renderBusinessCard(biz, 'sm'))
+              ) : (
+                <div className="flex items-center justify-center h-full bg-white/5 rounded-lg p-4">
+                  <div className="text-center">
+                    <Building2 className="h-8 w-8 text-white/30 mx-auto mb-2" />
+                    <p className="text-white/50 text-[10px]">{t('dashboard.noBusinesses', 'No businesses yet')}</p>
+                  </div>
                 </div>
+              )}
+            </div>
+          </div>
+        </div>
 
-                <div className="flex gap-0.5 mb-2">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star key={star} className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
+        {/* Earnings Chart */}
+        <div className="bg-card backdrop-blur-sm rounded-xl p-2.5 shadow-lg">
+          <div className="mb-2">
+            <h2 className="text-sm font-bold text-foreground mb-0.5">{t('dashboard.yourEarnings')}:</h2>
+            <p className="text-xl font-bold text-foreground">{formatCurrency(earningsStats.thisMonth)}</p>
+            <p className="text-[10px] text-muted-foreground">{t('dashboard.thisMonth')}</p>
+          </div>
 
-                <p className="text-white/95 text-[10px] mb-2">
-                  {t('dashboard.shareExperience')}
-                </p>
+          {chartData.length > 0 && (
+            <div className="h-24 mb-2">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData}>
+                  <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 8 }} />
+                  <Bar dataKey="amount" fill="url(#earningsGradient)" radius={[3, 3, 0, 0]} />
+                  <defs>
+                    <linearGradient id="earningsGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--theme-primaryLight)" stopOpacity={1} />
+                      <stop offset="100%" stopColor="var(--theme-primary)" stopOpacity={0.8} />
+                    </linearGradient>
+                  </defs>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
 
-                <textarea
-                  className="w-full h-12 px-2 py-1.5 rounded-md bg-card text-foreground placeholder:text-muted-foreground border-0 focus:ring-2 focus:ring-white/50 mb-2 text-[10px]"
-                  placeholder={t('dashboard.writeReview')}
-                ></textarea>
-
-                <Button className="w-full bg-blue-500 hover:bg-blue-600 rounded-md h-7 text-[10px] font-semibold">
-                  {t('dashboard.submitReview')}
-                </Button>
+          <div>
+            <h3 className="text-[10px] font-semibold text-foreground mb-1.5">{t('dashboard.commissionBreakdown')}</h3>
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-blue-500" />
+                <span className="text-[10px] font-medium text-foreground">{formatCurrency(earningsStats.completedEarnings)}</span>
+                <span className="text-[10px] text-muted-foreground">{t('dashboard.referrals')}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-blue-400" />
+                <span className="text-[10px] font-medium text-foreground">{formatCurrency(earningsStats.pendingEarnings)}</span>
+                <span className="text-[10px] text-muted-foreground">{t('earnings.pending', 'Pending')}</span>
               </div>
             </div>
           </div>
@@ -660,7 +608,7 @@ export default function EnhancedDashboardPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-theme-primary"></div>
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
@@ -680,9 +628,7 @@ export default function EnhancedDashboardPage() {
         }}
       >
         <div className="relative z-10">
-          {/* Top bar with logo and profile */}
           <div className="flex items-center justify-between mb-8">
-            {/* Logo - tap to share app */}
             <button
               onClick={shareApp}
               className="flex items-center gap-3 hover:opacity-80 transition-opacity"
@@ -696,7 +642,6 @@ export default function EnhancedDashboardPage() {
               </div>
             </button>
 
-            {/* Profile */}
             <div className="relative">
               <div className="w-14 h-14 rounded-full border-2 border-white/30 overflow-hidden bg-white/10">
                 <img
@@ -708,10 +653,9 @@ export default function EnhancedDashboardPage() {
             </div>
           </div>
 
-          {/* Welcome message */}
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-1">
-              {t('dashboard.welcomeBack', { name: user?.name?.split(' ')[0] || 'Ethan' })}
+            <h1 className="text-3xl font-bold text-white mb-1">
+              {t('dashboard.welcomeBack', { name: user?.name?.split(' ')[0] || '' })}
             </h1>
             <p className="text-white/90 text-lg">{t('dashboard.trackReferEarn')}</p>
           </div>
@@ -720,9 +664,7 @@ export default function EnhancedDashboardPage() {
 
       {/* Desktop Layout */}
       <div className="hidden md:flex min-h-screen">
-        {/* Desktop Sidebar */}
         <aside className="w-80 bg-gradient-to-b from-blue-900 via-blue-900 to-blue-800 flex flex-col">
-          {/* Logo - tap to share app */}
           <div className="p-8">
             <button
               onClick={shareApp}
@@ -738,41 +680,27 @@ export default function EnhancedDashboardPage() {
             </button>
           </div>
 
-          {/* Navigation Menu */}
           <nav className="flex-1 px-4">
-            <Link
-              href="/dashboard"
-              className="flex items-center gap-4 px-6 py-4 mb-2 bg-blue-700/50 rounded-lg text-white"
-            >
+            <Link href="/dashboard" className="flex items-center gap-4 px-6 py-4 mb-2 bg-blue-700/50 rounded-lg text-white">
               <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
               </svg>
               <span className="text-base font-medium">Dashboard</span>
             </Link>
-            <Link
-              href="/dashboard/referrals"
-              className="flex items-center gap-4 px-6 py-4 mb-2 text-white/80 hover:bg-blue-700/30 rounded-lg transition-colors"
-            >
+            <Link href="/dashboard/referrals" className="flex items-center gap-4 px-6 py-4 mb-2 text-white/80 hover:bg-blue-700/30 rounded-lg transition-colors">
               <Users className="h-6 w-6" />
               <span className="text-base font-medium">My Promotions</span>
             </Link>
-            <Link
-              href="/dashboard/earnings"
-              className="flex items-center gap-4 px-6 py-4 mb-2 text-white/80 hover:bg-blue-700/30 rounded-lg transition-colors"
-            >
+            <Link href="/dashboard/earnings" className="flex items-center gap-4 px-6 py-4 mb-2 text-white/80 hover:bg-blue-700/30 rounded-lg transition-colors">
               <DollarSign className="h-6 w-6" />
               <span className="text-base font-medium">Earnings</span>
             </Link>
-            <Link
-              href="/dashboard/business"
-              className="flex items-center gap-4 px-6 py-4 mb-2 text-white/80 hover:bg-blue-700/30 rounded-lg transition-colors"
-            >
+            <Link href="/dashboard/business" className="flex items-center gap-4 px-6 py-4 mb-2 text-white/80 hover:bg-blue-700/30 rounded-lg transition-colors">
               <Building2 className="h-6 w-6" />
               <span className="text-base font-medium">Businesses</span>
             </Link>
           </nav>
 
-          {/* Bottom Profile Section */}
           <div className="p-4">
             <div className="flex items-center gap-3 px-4 py-3 bg-blue-700/30 rounded-lg">
               <div className="w-12 h-12 rounded-full border-2 border-white/30 overflow-hidden bg-white/10">
@@ -783,16 +711,14 @@ export default function EnhancedDashboardPage() {
                 />
               </div>
               <div className="flex-1">
-                <p className="text-white font-semibold text-sm">Admin</p>
+                <p className="text-white font-semibold text-sm">{user?.name || 'User'}</p>
               </div>
               <ChevronRight className="h-5 w-5 text-white/60" />
             </div>
           </div>
         </aside>
 
-        {/* Main Content Area */}
         <div className="flex-1 overflow-y-auto">
-          {/* Desktop Header */}
           <header
             className="px-12 pt-12 pb-8"
             style={{
@@ -805,7 +731,7 @@ export default function EnhancedDashboardPage() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h1 className="text-4xl font-bold text-white mb-2">
-                  {t('dashboard.welcomeBack', { name: user?.name?.split(' ')[0] || 'Ethan' })}
+                  {t('dashboard.welcomeBack', { name: user?.name?.split(' ')[0] || '' })}
                 </h1>
                 <p className="text-white/90 text-lg">{t('dashboard.trackReferEarn')}</p>
               </div>
@@ -818,14 +744,13 @@ export default function EnhancedDashboardPage() {
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-white font-semibold text-base">Admin</span>
+                  <span className="text-white font-semibold text-base">{user?.name?.split(' ')[0] || 'User'}</span>
                   <ChevronRight className="h-5 w-5 text-white/80 rotate-90" />
                 </div>
               </div>
             </div>
           </header>
 
-          {/* Desktop Content */}
           <div className="px-12 pb-8">
             {renderDesktopContent()}
           </div>
@@ -833,7 +758,7 @@ export default function EnhancedDashboardPage() {
       </div>
 
       {/* Mobile Spacer for fixed header */}
-      <div className="md:hidden h-56"></div>
+      <div className="md:hidden h-56" />
 
       {/* Mobile Content */}
       <div className="md:hidden px-0 pb-24">{renderMobileContent()}</div>
