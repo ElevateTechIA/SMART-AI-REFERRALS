@@ -221,7 +221,11 @@
     "pricePerCustomer": "Precio/cliente",
     "receiptLabel": "Recibo",
     "receiptDetails": "Detalles del Recibo",
-    "viewReceiptImage": "Ver imagen del recibo"
+    "viewReceiptImage": "Ver imagen del recibo",
+    "searchUsersPlaceholder": "Buscar por nombre o correo...",
+    "roleUpdateSuccess": "Roles de usuario actualizados exitosamente",
+    "roleUpdateFailed": "Error al actualizar roles del usuario",
+    "mustHaveOneRole": "El usuario debe tener al menos un rol"
   },
   "earnings": {
     "title": "Tus Ganancias",

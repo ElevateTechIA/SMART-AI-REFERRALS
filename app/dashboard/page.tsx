@@ -2,9 +2,18 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { formatCurrency, generateReferralUrl } from '@/lib/utils'
@@ -18,6 +27,8 @@ import {
   QrCode as QrCodeIcon,
   Building2,
   Loader2,
+  Settings,
+  LogOut,
 } from 'lucide-react'
 import { BarChart, Bar, XAxis, ResponsiveContainer } from 'recharts'
 import QRCode from 'qrcode'
@@ -90,7 +101,8 @@ interface EarningsResponse {
 }
 
 export default function EnhancedDashboardPage() {
-  const { user } = useAuth()
+  const { user, signOut } = useAuth()
+  const router = useRouter()
   const { t } = useTranslation()
   const { toast } = useToast()
   const [businesses, setBusinesses] = useState<BusinessWithOffer[]>([])
@@ -201,6 +213,11 @@ export default function EnhancedDashboardPage() {
 
   const shareApp = () => {
     setShowShareModal(true)
+  }
+
+  const handleSignOut = async () => {
+    await signOut()
+    router.push('/')
   }
 
   // Computed values
@@ -315,19 +332,19 @@ export default function EnhancedDashboardPage() {
       </div>
 
       {/* Main Grid: 3 Columns */}
-      <div className="grid grid-cols-[1fr_1.2fr_1fr] gap-6">
+      <div className="grid grid-cols-[1fr_1.2fr_1fr] gap-4 min-w-0">
         {/* Column 1: My Referral Link & Your Earnings */}
-        <div className="space-y-6">
-          <div className="bg-gradient-to-br from-blue-900 to-blue-700 rounded-2xl p-5 shadow-xl">
+        <div className="space-y-6 min-w-0">
+          <div className="bg-gradient-to-br from-blue-900 to-blue-700 rounded-2xl p-5 shadow-xl overflow-hidden">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-bold text-white">{t('dashboard.myReferralLink')}</h2>
               <ChevronRight className="h-4 w-4 text-white/60" />
             </div>
-            <div className="bg-card rounded-xl p-4 flex flex-col items-center">
+            <div className="bg-card rounded-xl p-4 flex flex-col items-center overflow-hidden">
               {qrCode && (
                 <img src={qrCode} alt="QR Code" className="w-40 h-40 mb-3" />
               )}
-              <p className="text-xs text-muted-foreground text-center mb-3 truncate w-full">
+              <p className="text-xs text-muted-foreground text-center mb-3 truncate w-full break-all">
                 {referralUrl ? referralUrl.replace('https://', '').replace('http://', '') : '...'}
               </p>
               <Button onClick={copyLink} className="w-full mb-2 bg-blue-600 hover:bg-blue-700 rounded-lg h-11 text-sm font-semibold">
@@ -385,8 +402,8 @@ export default function EnhancedDashboardPage() {
         </div>
 
         {/* Column 2: Top Businesses */}
-        <div className="space-y-6">
-          <div className="bg-gradient-to-br from-blue-900 to-blue-700 rounded-2xl p-5 shadow-xl">
+        <div className="space-y-6 min-w-0">
+          <div className="bg-gradient-to-br from-blue-900 to-blue-700 rounded-2xl p-5 shadow-xl overflow-hidden">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-bold text-white">{t('dashboard.topBusinessesWeek')}</h2>
               <Link href="/dashboard/referrals" className="text-white/60 hover:text-white">
@@ -395,8 +412,48 @@ export default function EnhancedDashboardPage() {
             </div>
 
             {businesses.length > 0 ? (
-              <div className="grid grid-cols-2 gap-3">
-                {businesses.slice(0, 4).map((biz) => renderBusinessCard(biz, 'lg'))}
+              <div className="space-y-3">
+                {businesses.slice(0, 4).map((biz) => {
+                  const img = biz.offer?.image || biz.images?.[0]
+                  const commission = biz.offer?.referrerCommissionAmount || 0
+                  const url = user ? generateReferralUrl(biz.id, user.id) : ''
+                  return (
+                    <div
+                      key={biz.id}
+                      className="flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-xl p-3 hover:bg-white/15 transition-colors"
+                    >
+                      <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-white/10">
+                        {img ? (
+                          <img src={img} alt={biz.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Building2 className="h-8 w-8 text-white/40" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-white font-semibold text-sm truncate">{biz.name}</h3>
+                        <p className="text-white/60 text-xs truncate">{biz.category}</p>
+                        {commission > 0 && (
+                          <p className="text-blue-300 text-xs font-medium mt-0.5">
+                            {formatCurrency(commission)} {t('dashboard.perCustomer', 'per customer')}
+                          </p>
+                        )}
+                      </div>
+                      <Button
+                        size="sm"
+                        className="bg-blue-400 hover:bg-blue-500 rounded-lg text-xs font-semibold h-8 px-3 flex-shrink-0"
+                        onClick={() => {
+                          navigator.clipboard.writeText(url)
+                          toast({ title: t('cards.linkCopied') })
+                        }}
+                      >
+                        <Copy className="h-3 w-3 mr-1" />
+                        {t('dashboard.copyLink')}
+                      </Button>
+                    </div>
+                  )
+                })}
               </div>
             ) : (
               <div className="text-center py-8">
@@ -408,7 +465,7 @@ export default function EnhancedDashboardPage() {
         </div>
 
         {/* Column 3: Recent Conversions */}
-        <div>
+        <div className="min-w-0">
           <div className="bg-gradient-to-br from-blue-900 to-blue-700 rounded-2xl p-5 shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-bold text-white">{t('dashboard.recentConversions')}</h2>
@@ -642,15 +699,39 @@ export default function EnhancedDashboardPage() {
               </div>
             </button>
 
-            <div className="relative">
-              <div className="w-14 h-14 rounded-full border-2 border-white/30 overflow-hidden bg-white/10">
-                <img
-                  src={user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=3B82F6&color=fff`}
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="relative cursor-pointer">
+                  <div className="w-14 h-14 rounded-full border-2 border-white/30 overflow-hidden bg-white/10">
+                    <img
+                      src={user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=3B82F6&color=fff`}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{user?.name}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard/settings" className="cursor-pointer">
+                    <Settings className="mr-2 h-4 w-4" />
+                    {t('nav.settings')}
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-600">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  {t('nav.signOut')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           <div>
@@ -701,26 +782,11 @@ export default function EnhancedDashboardPage() {
             </Link>
           </nav>
 
-          <div className="p-4">
-            <div className="flex items-center gap-3 px-4 py-3 bg-blue-700/30 rounded-lg">
-              <div className="w-12 h-12 rounded-full border-2 border-white/30 overflow-hidden bg-white/10">
-                <img
-                  src={user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=3B82F6&color=fff`}
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="flex-1">
-                <p className="text-white font-semibold text-sm">{user?.name || 'User'}</p>
-              </div>
-              <ChevronRight className="h-5 w-5 text-white/60" />
-            </div>
-          </div>
         </aside>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0">
           <header
-            className="px-12 pt-12 pb-8"
+            className="px-8 pt-12 pb-8"
             style={{
               backgroundImage: 'url(/dashboard/assets/header-backgroun.png)',
               backgroundSize: 'cover',
@@ -735,23 +801,47 @@ export default function EnhancedDashboardPage() {
                 </h1>
                 <p className="text-white/90 text-lg">{t('dashboard.trackReferEarn')}</p>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full border-2 border-white/30 overflow-hidden bg-white/10">
-                  <img
-                    src={user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=3B82F6&color=fff`}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-white font-semibold text-base">{user?.name?.split(' ')[0] || 'User'}</span>
-                  <ChevronRight className="h-5 w-5 text-white/80 rotate-90" />
-                </div>
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
+                    <div className="w-12 h-12 rounded-full border-2 border-white/30 overflow-hidden bg-white/10">
+                      <img
+                        src={user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=3B82F6&color=fff`}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-white font-semibold text-base">{user?.name?.split(' ')[0] || 'User'}</span>
+                      <ChevronRight className="h-5 w-5 text-white/80 rotate-90" />
+                    </div>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{user?.name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/settings" className="cursor-pointer">
+                      <Settings className="mr-2 h-4 w-4" />
+                      {t('nav.settings')}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-600">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    {t('nav.signOut')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </header>
 
-          <div className="px-12 pb-8">
+          <div className="px-8 pb-8">
             {renderDesktopContent()}
           </div>
         </div>

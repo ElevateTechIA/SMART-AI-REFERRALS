@@ -35,6 +35,9 @@ import {
   CreditCard,
   ShoppingBag,
   Image,
+  Search,
+  Plus,
+  X,
 } from 'lucide-react'
 
 interface AdminDataResponse {
@@ -79,6 +82,8 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [commissionSaving, setCommissionSaving] = useState(false)
+  const [userSearch, setUserSearch] = useState('')
+  const [roleLoading, setRoleLoading] = useState<string | null>(null)
 
   useEffect(() => {
     // Check if user is admin
@@ -305,6 +310,65 @@ export default function AdminDashboardPage() {
       setCommissionSaving(false)
     }
   }
+
+  const handleToggleRole = async (userId: string, role: string, currentRoles: string[]) => {
+    setRoleLoading(`${userId}-${role}`)
+    try {
+      const hasRole = currentRoles.includes(role)
+      const newRoles = hasRole
+        ? currentRoles.filter((r) => r !== role)
+        : [...currentRoles, role]
+
+      if (newRoles.length === 0) {
+        toast({
+          title: t('common.error'),
+          description: t('admin.mustHaveOneRole'),
+          variant: 'destructive',
+        })
+        return
+      }
+
+      const result = await apiPut<{ success: boolean; error?: string }>(
+        `/api/admin/users/${userId}/roles`,
+        { roles: newRoles }
+      )
+
+      if (!result.ok) {
+        throw new Error(result.error || t('admin.roleUpdateFailed'))
+      }
+
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === userId ? { ...u, roles: newRoles as User['roles'] } : u
+        )
+      )
+
+      toast({
+        title: t('common.success'),
+        description: t('admin.roleUpdateSuccess'),
+      })
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : t('admin.roleUpdateFailed')
+      toast({
+        title: t('common.error'),
+        description: errorMessage,
+        variant: 'destructive',
+      })
+    } finally {
+      setRoleLoading(null)
+    }
+  }
+
+  const allRoles = ['admin', 'business', 'referrer', 'consumer'] as const
+
+  const filteredUsers = users.filter((u) => {
+    if (!userSearch) return true
+    const search = userSearch.toLowerCase()
+    return (
+      u.name?.toLowerCase().includes(search) ||
+      u.email?.toLowerCase().includes(search)
+    )
+  })
 
   const referrers = users.filter((u) => u.roles.includes('referrer'))
 
@@ -765,16 +829,35 @@ export default function AdminDashboardPage() {
               <CardDescription>{t('admin.manageUsers')}</CardDescription>
             </CardHeader>
             <CardContent>
-              {users.length === 0 ? (
+              {/* Search bar */}
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder={t('admin.searchUsersPlaceholder')}
+                  value={userSearch}
+                  onChange={(e) => setUserSearch(e.target.value)}
+                  className="pl-9"
+                />
+                {userSearch && (
+                  <button
+                    onClick={() => setUserSearch('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+
+              {filteredUsers.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
-                  {t('admin.noUsers')}
+                  {userSearch ? t('common.noResults') : t('admin.noUsers')}
                 </p>
               ) : (
                 <div className="divide-y">
-                  {users.map((u) => (
+                  {filteredUsers.map((u) => (
                     <div
                       key={u.id}
-                      className="py-4 flex items-center justify-between"
+                      className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-3"
                     >
                       <div className="flex items-center gap-4">
                         <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
@@ -787,15 +870,30 @@ export default function AdminDashboardPage() {
                           <p className="text-sm text-muted-foreground">{u.email}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        {u.roles.map((role) => (
-                          <Badge
-                            key={role}
-                            variant={role === 'admin' ? 'default' : 'secondary'}
-                          >
-                            {t('roles.' + (role === 'referrer' ? 'promoter' : role))}
-                          </Badge>
-                        ))}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {allRoles.map((role) => {
+                          const hasRole = u.roles.includes(role)
+                          const isLoading = roleLoading === `${u.id}-${role}`
+                          return (
+                            <Badge
+                              key={role}
+                              variant={hasRole ? (role === 'admin' ? 'default' : 'secondary') : 'outline'}
+                              className={`cursor-pointer select-none transition-colors ${
+                                hasRole ? '' : 'opacity-50 hover:opacity-80'
+                              }`}
+                              onClick={() => !isLoading && handleToggleRole(u.id, role, u.roles as string[])}
+                            >
+                              {isLoading ? (
+                                <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                              ) : hasRole ? (
+                                <X className="h-3 w-3 mr-1" />
+                              ) : (
+                                <Plus className="h-3 w-3 mr-1" />
+                              )}
+                              {t('roles.' + (role === 'referrer' ? 'promoter' : role))}
+                            </Badge>
+                          )
+                        })}
                       </div>
                     </div>
                   ))}

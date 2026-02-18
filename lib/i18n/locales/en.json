@@ -221,7 +221,11 @@
     "pricePerCustomer": "Price/customer",
     "receiptLabel": "Receipt",
     "receiptDetails": "Receipt Details",
-    "viewReceiptImage": "View receipt image"
+    "viewReceiptImage": "View receipt image",
+    "searchUsersPlaceholder": "Search by name or email...",
+    "roleUpdateSuccess": "User roles updated successfully",
+    "roleUpdateFailed": "Failed to update user roles",
+    "mustHaveOneRole": "User must have at least one role"
   },
   "earnings": {
     "title": "Your Earnings",
