@@ -125,7 +125,9 @@ export function DashboardNav() {
             <nav className="hidden md:flex items-center gap-1">
               {filteredNavItems.map((item) => {
                 const Icon = item.icon
-                const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+                const isActive = item.href === '/dashboard'
+                  ? pathname === '/dashboard'
+                  : pathname === item.href || pathname.startsWith(item.href + '/')
                 return (
                   <Link key={item.href} href={item.href}>
                     <Button
