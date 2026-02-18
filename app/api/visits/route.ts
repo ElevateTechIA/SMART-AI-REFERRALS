@@ -63,7 +63,8 @@ export async function POST(request: NextRequest) {
         )
       }
       const referrerData = referrerDoc.data()
-      if (referrerData?.referrerStatus !== 'active') {
+      const isReferrerAdmin = referrerData?.roles?.includes('admin')
+      if (!isReferrerAdmin && referrerData?.referrerStatus !== 'active') {
         return NextResponse.json(
           { error: 'Referrer is not approved to make referrals' },
           { status: 403 }

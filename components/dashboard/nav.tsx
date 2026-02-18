@@ -129,9 +129,12 @@ export function DashboardNav() {
                 return (
                   <Link key={item.href} href={item.href}>
                     <Button
-                      variant={isActive ? 'secondary' : 'ghost'}
+                      variant={isActive ? 'default' : 'ghost'}
                       size="sm"
-                      className={cn('gap-2', isActive && 'bg-secondary')}
+                      className={cn(
+                        'gap-2',
+                        isActive && 'bg-theme-primary text-white shadow-md hover:bg-theme-primary/90'
+                      )}
                     >
                       <Icon className="w-4 h-4" />
                       {item.label}

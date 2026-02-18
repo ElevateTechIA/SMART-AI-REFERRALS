@@ -21,24 +21,22 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const period = searchParams.get('period') || 'all' // all, month, year
 
-    // Fetch all earnings for the user
-    let query = db.collection('earnings')
+    // Fetch all earnings for the user (date filtering done in JS to avoid composite index)
+    const earningsSnapshot = await db.collection('earnings')
       .where('userId', '==', userId)
+      .get()
 
-    // Add date filter if needed
+    // Build date cutoff for period filter
+    let periodCutoff: Date | null = null
     if (period === 'month') {
-      const startOfMonth = new Date()
-      startOfMonth.setDate(1)
-      startOfMonth.setHours(0, 0, 0, 0)
-      query = query.where('createdAt', '>=', startOfMonth)
+      periodCutoff = new Date()
+      periodCutoff.setDate(1)
+      periodCutoff.setHours(0, 0, 0, 0)
     } else if (period === 'year') {
-      const startOfYear = new Date()
-      startOfYear.setMonth(0, 1)
-      startOfYear.setHours(0, 0, 0, 0)
-      query = query.where('createdAt', '>=', startOfYear)
+      periodCutoff = new Date()
+      periodCutoff.setMonth(0, 1)
+      periodCutoff.setHours(0, 0, 0, 0)
     }
-
-    const earningsSnapshot = await query.get()
 
     // Calculate stats
     let totalEarnings = 0
@@ -56,6 +54,12 @@ export async function GET(request: NextRequest) {
     for (const doc of earningsSnapshot.docs) {
       const data = doc.data()
       const amount = data.amount || 0
+      const createdAt = data.createdAt?.toDate() as Date | undefined
+
+      // Skip if outside period filter
+      if (periodCutoff && (!createdAt || createdAt < periodCutoff)) {
+        continue
+      }
 
       // Calculate stats
       totalEarnings += amount
@@ -67,7 +71,6 @@ export async function GET(request: NextRequest) {
       }
 
       // This month earnings
-      const createdAt = data.createdAt?.toDate()
       if (createdAt && createdAt >= startOfMonth) {
         thisMonthEarnings += amount
       }

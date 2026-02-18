@@ -1,11 +1,13 @@
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useState, useMemo, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { apiGet } from '@/lib/api-client'
@@ -21,6 +23,7 @@ import {
   Building2,
   Clock,
   ShieldAlert,
+  Search,
 } from 'lucide-react'
 
 interface ReferralsApiResponse {
@@ -41,6 +44,8 @@ function ReferralsContent() {
   const [earnings, setEarnings] = useState<Earning[]>([])
   const [loading, setLoading] = useState(true)
   const [serverReferrerStatus, setServerReferrerStatus] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('all')
 
   useEffect(() => {
     const fetchData = async () => {
@@ -91,6 +96,20 @@ function ReferralsContent() {
 
     fetchData()
   }, [user, toast, t])
+
+  const categories = useMemo(() => {
+    const cats = new Set(businesses.map((b) => b.category).filter(Boolean))
+    return Array.from(cats).sort()
+  }, [businesses])
+
+  const filteredBusinesses = useMemo(() => {
+    const query = searchQuery.toLowerCase().trim()
+    return businesses.filter((b) => {
+      const matchesCategory = selectedCategory === 'all' || b.category === selectedCategory
+      const matchesSearch = !query || b.name.toLowerCase().includes(query) || b.category?.toLowerCase().includes(query)
+      return matchesCategory && matchesSearch
+    })
+  }, [businesses, searchQuery, selectedCategory])
 
   if (loading) {
     return (
@@ -217,7 +236,38 @@ function ReferralsContent() {
               {t('promotions.swipeToBrowse')}
             </p>
           </div>
-          <ReferralCardCarousel businesses={businesses} userId={user!.id} />
+
+          {/* Search & Category Filter */}
+          <div className="flex flex-col sm:flex-row gap-2 mb-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder={t('promotions.searchPlaceholder')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="sm:w-[200px]">
+                <SelectValue placeholder={t('promotions.allCategories')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('promotions.allCategories')}</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {filteredBusinesses.length > 0 ? (
+            <ReferralCardCarousel businesses={filteredBusinesses} userId={user!.id} />
+          ) : (
+            <p className="text-center text-muted-foreground py-8 text-sm">
+              {t('promotions.noResults')}
+            </p>
+          )}
         </div>
       )}
 
