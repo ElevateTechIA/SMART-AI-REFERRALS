@@ -36,7 +36,7 @@ export interface Business {
 }
 
 // Consumer Reward Type (admin-controlled platform payout)
-export type ConsumerRewardType = 'cash' | 'points' | 'discount' | 'none'
+export type ConsumerRewardType = 'cash' | 'none'
 
 // Business Promotion Type (business-controlled incentive for consumer)
 export type PromotionType = 'discount_percent' | 'discount_fixed' | 'free_item' | 'none'
@@ -50,7 +50,7 @@ export interface Offer {
   referrerCommissionAmount: number // Fixed amount referrer earns (admin-set)
   referrerCommissionPercentage?: number // Alternative: percentage of pricePerNewCustomer
   consumerRewardType: ConsumerRewardType // Admin-set platform payout
-  consumerRewardValue: number // Amount/points/discount percentage
+  consumerRewardValue: number // Cash back amount
   promotionType: PromotionType // Business-set incentive for consumer
   promotionValue: number // Discount % or $ amount
   promotionDescription?: string // Free text, e.g. "Free appetizer on first visit"

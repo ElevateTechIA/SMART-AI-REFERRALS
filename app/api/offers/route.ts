@@ -38,7 +38,7 @@ function validatePercentage(value: unknown): number | null {
   return Math.round(num * 100) / 100
 }
 
-const VALID_REWARD_TYPES = ['none', 'cash', 'discount', 'points'] as const
+const VALID_REWARD_TYPES = ['none', 'cash'] as const
 const VALID_PROMOTION_TYPES = ['none', 'discount_percent', 'discount_fixed', 'free_item'] as const
 
 export async function POST(request: NextRequest) {
@@ -139,6 +139,16 @@ export async function POST(request: NextRequest) {
     if (consumerRewardValue !== undefined && consumerRewardValue !== '' && validatedRewardValue === null) {
       return NextResponse.json(
         { error: 'Consumer reward value must be a valid number between 0 and the price per customer' },
+        { status: 400 }
+      )
+    }
+
+    // Validate that referrer commission + consumer reward (cash only) don't exceed price
+    const effectiveCommission = validatedCommissionAmount || 0
+    const effectiveReward = rewardType === 'cash' ? (validatedRewardValue || 0) : 0
+    if (effectiveCommission + effectiveReward > validatedPrice) {
+      return NextResponse.json(
+        { error: `Referrer commission ($${effectiveCommission}) + consumer cash reward ($${effectiveReward}) cannot exceed the price per customer ($${validatedPrice})` },
         { status: 400 }
       )
     }

@@ -659,8 +659,6 @@ export default function AdminDashboardPage() {
                                   <SelectContent>
                                     <SelectItem value="none">{t('admin.noReward')}</SelectItem>
                                     <SelectItem value="cash">{t('admin.cashBack')}</SelectItem>
-                                    <SelectItem value="points">{t('admin.rewardPoints')}</SelectItem>
-                                    <SelectItem value="discount">{t('admin.discount')}</SelectItem>
                                   </SelectContent>
                                 </Select>
                               </div>
@@ -668,8 +666,7 @@ export default function AdminDashboardPage() {
                               {commissionForm.consumerRewardType !== 'none' && (
                                 <div className="space-y-2">
                                   <Label>
-                                    {t('admin.rewardValue')}
-                                    {commissionForm.consumerRewardType === 'discount' ? ' (%)' : ' ($)'}
+                                    {t('admin.rewardValue')} ($)
                                   </Label>
                                   <Input
                                     type="number"

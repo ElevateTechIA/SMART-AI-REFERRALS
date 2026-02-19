@@ -157,6 +157,14 @@ export async function POST(
       }
     }
 
+    // Offer is required to create financial records
+    if (!offer) {
+      return NextResponse.json(
+        { error: 'No offer configured for this business. Please create an offer before converting visits.' },
+        { status: 400 }
+      )
+    }
+
     // Get referrer data before transaction if needed
     let referrerNeedsRoleUpdate = false
     if (visit.referrerUserId) {
@@ -181,85 +189,84 @@ export async function POST(
         }),
       })
 
-      if (offer) {
-        const pricePerCustomer = offer.pricePerNewCustomer || 100
-        let referrerAmount = 0
-        let consumerRewardAmount = 0
-        let platformAmount = pricePerCustomer
+      const pricePerCustomer = offer.pricePerNewCustomer || 100
+      let referrerAmount = 0
+      let consumerRewardAmount = 0
+      let platformAmount = pricePerCustomer
 
-        // Calculate referrer commission
-        if (visit.referrerUserId && visit.attributionType === 'REFERRER') {
-          referrerAmount = offer.referrerCommissionAmount || 0
-          if (!referrerAmount && offer.referrerCommissionPercentage) {
-            referrerAmount = (pricePerCustomer * offer.referrerCommissionPercentage) / 100
-          }
-
-          // Create earning for referrer
-          if (referrerAmount > 0) {
-            const referrerEarningRef = getAdminDb().collection('earnings').doc()
-            transaction.set(referrerEarningRef, {
-              userId: visit.referrerUserId,
-              businessId: visit.businessId,
-              visitId,
-              offerId: offer.id,
-              amount: referrerAmount,
-              type: 'REFERRER_COMMISSION',
-              status: 'PENDING',
-              createdAt: FieldValue.serverTimestamp(),
-              updatedAt: FieldValue.serverTimestamp(),
-            })
-
-            platformAmount -= referrerAmount
-
-            // Update referrer role if needed
-            if (referrerNeedsRoleUpdate) {
-              const referrerRef = getAdminDb().collection('users').doc(visit.referrerUserId)
-              transaction.update(referrerRef, {
-                roles: FieldValue.arrayUnion('referrer'),
-                updatedAt: FieldValue.serverTimestamp(),
-              })
-            }
-          }
+      // Calculate referrer commission
+      if (visit.referrerUserId && visit.attributionType === 'REFERRER') {
+        referrerAmount = offer.referrerCommissionAmount || 0
+        if (!referrerAmount && offer.referrerCommissionPercentage) {
+          referrerAmount = (pricePerCustomer * offer.referrerCommissionPercentage) / 100
         }
 
-        // Calculate consumer reward
-        if (offer.consumerRewardType !== 'none' && offer.consumerRewardValue > 0) {
-          consumerRewardAmount = offer.consumerRewardValue
-
-          // Create earning for consumer
-          const consumerEarningRef = getAdminDb().collection('earnings').doc()
-          transaction.set(consumerEarningRef, {
-            userId: visit.consumerUserId,
+        // Create earning for referrer
+        if (referrerAmount > 0) {
+          const referrerEarningRef = getAdminDb().collection('earnings').doc()
+          transaction.set(referrerEarningRef, {
+            userId: visit.referrerUserId,
             businessId: visit.businessId,
             visitId,
             offerId: offer.id,
-            amount: consumerRewardAmount,
-            type: 'CONSUMER_REWARD',
+            amount: referrerAmount,
+            type: 'REFERRER_COMMISSION',
             status: 'PENDING',
             createdAt: FieldValue.serverTimestamp(),
             updatedAt: FieldValue.serverTimestamp(),
           })
 
-          if (offer.consumerRewardType === 'cash') {
-            platformAmount -= consumerRewardAmount
+          platformAmount -= referrerAmount
+
+          // Update referrer role if needed
+          if (referrerNeedsRoleUpdate) {
+            const referrerRef = getAdminDb().collection('users').doc(visit.referrerUserId)
+            transaction.update(referrerRef, {
+              roles: FieldValue.arrayUnion('referrer'),
+              updatedAt: FieldValue.serverTimestamp(),
+            })
           }
         }
+      }
 
-        // Create charge for business
-        const chargeRef = getAdminDb().collection('charges').doc()
-        transaction.set(chargeRef, {
+      // Calculate consumer reward (only cash rewards create earnings and reduce platform cut)
+      if (offer.consumerRewardType === 'cash' && offer.consumerRewardValue > 0) {
+        consumerRewardAmount = offer.consumerRewardValue
+
+        // Create earning for consumer (only for cash rewards)
+        const consumerEarningRef = getAdminDb().collection('earnings').doc()
+        transaction.set(consumerEarningRef, {
+          userId: visit.consumerUserId,
           businessId: visit.businessId,
           visitId,
           offerId: offer.id,
-          amount: pricePerCustomer,
-          platformAmount: Math.max(0, platformAmount),
-          referrerAmount,
-          consumerRewardAmount,
-          status: 'OWED',
+          amount: consumerRewardAmount,
+          type: 'CONSUMER_REWARD',
+          status: 'PENDING',
           createdAt: FieldValue.serverTimestamp(),
           updatedAt: FieldValue.serverTimestamp(),
         })
+
+        platformAmount -= consumerRewardAmount
       }
+
+      // Safety: ensure platform amount is never negative
+      platformAmount = Math.max(0, platformAmount)
+
+      // Create charge for business
+      const chargeRef = getAdminDb().collection('charges').doc()
+      transaction.set(chargeRef, {
+        businessId: visit.businessId,
+        visitId,
+        offerId: offer.id,
+        amount: pricePerCustomer,
+        platformAmount,
+        referrerAmount,
+        consumerRewardAmount,
+        status: 'OWED',
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      })
     })
 
     return NextResponse.json({

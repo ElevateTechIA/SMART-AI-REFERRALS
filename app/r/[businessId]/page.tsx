@@ -216,9 +216,7 @@ function ReferralPageContent() {
               <div className="bg-primary/5 p-4 rounded-lg text-center">
                 <p className="text-sm text-muted-foreground mb-1">{t('referralPage.yourReward')}</p>
                 <p className="text-lg font-semibold text-primary">
-                  {offer.consumerRewardType === 'cash' && formatCurrency(offer.consumerRewardValue)}
-                  {offer.consumerRewardType === 'points' && t('referralPage.points', { value: offer.consumerRewardValue })}
-                  {offer.consumerRewardType === 'discount' && t('referralPage.percentOff', { value: offer.consumerRewardValue })}
+                  {formatCurrency(offer.consumerRewardValue)}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   {t('referralPage.rewardApplied')}
@@ -317,14 +315,10 @@ function ReferralPageContent() {
             <CardContent className="pt-4">
               <div className="text-center">
                 <p className="text-3xl font-bold text-primary">
-                  {offer.consumerRewardType === 'cash' && formatCurrency(offer.consumerRewardValue)}
-                  {offer.consumerRewardType === 'points' && t('referralPage.points', { value: offer.consumerRewardValue })}
-                  {offer.consumerRewardType === 'discount' && t('referralPage.percentOff', { value: offer.consumerRewardValue })}
+                  {formatCurrency(offer.consumerRewardValue)}
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {offer.consumerRewardType === 'cash' && t('referralPage.cashBackFirstVisit')}
-                  {offer.consumerRewardType === 'points' && t('referralPage.rewardPoints')}
-                  {offer.consumerRewardType === 'discount' && t('referralPage.discountOnPurchase')}
+                  {t('referralPage.cashBackFirstVisit')}
                 </p>
               </div>
             </CardContent>

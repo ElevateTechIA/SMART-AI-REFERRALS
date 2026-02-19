@@ -35,11 +35,11 @@ export async function GET(request: NextRequest) {
       getAdminDb().collection('fraudFlags').where('resolved', '==', false).count().get(),
     ])
 
-    // Calculate total revenue (only from PAID charges)
+    // Calculate total revenue (only platform's net cut from PAID charges)
     let totalRevenue = 0
     chargesSnapshot.forEach((doc) => {
       const data = doc.data()
-      totalRevenue += data.amount || 0
+      totalRevenue += data.platformAmount || 0
     })
 
     return NextResponse.json({

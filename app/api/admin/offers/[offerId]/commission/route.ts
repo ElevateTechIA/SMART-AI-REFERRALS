@@ -4,7 +4,7 @@ import { FieldValue } from 'firebase-admin/firestore'
 
 export const dynamic = 'force-dynamic'
 
-const VALID_REWARD_TYPES = ['none', 'cash', 'discount', 'points'] as const
+const VALID_REWARD_TYPES = ['none', 'cash'] as const
 
 export async function PUT(
   request: NextRequest,
@@ -63,6 +63,15 @@ export async function PUT(
     if (rewardType !== 'none' && (isNaN(rewardValue) || rewardValue < 0 || rewardValue > offerData.pricePerNewCustomer)) {
       return NextResponse.json(
         { error: 'Reward value must be between 0 and the price per customer' },
+        { status: 400 }
+      )
+    }
+
+    // Validate that referrer commission + consumer reward (cash only) don't exceed price
+    const effectiveReward = rewardType === 'cash' ? rewardValue : 0
+    if (commission + effectiveReward > offerData.pricePerNewCustomer) {
+      return NextResponse.json(
+        { error: `Referrer commission ($${commission}) + consumer cash reward ($${effectiveReward}) cannot exceed the price per customer ($${offerData.pricePerNewCustomer})` },
         { status: 400 }
       )
     }
