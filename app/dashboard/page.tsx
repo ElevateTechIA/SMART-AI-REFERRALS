@@ -331,8 +331,8 @@ export default function EnhancedDashboardPage() {
         </div>
       </div>
 
-      {/* Main Grid: 3 Columns */}
-      <div className="grid grid-cols-[1fr_1.2fr_1fr] gap-4 min-w-0">
+      {/* Main Grid: responsive columns */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr_1fr] gap-4 min-w-0">
         {/* Column 1: My Referral Link & Your Earnings */}
         <div className="space-y-6 min-w-0">
           <div className="bg-gradient-to-br from-blue-900 to-blue-700 rounded-2xl p-5 shadow-xl overflow-hidden">
@@ -420,14 +420,14 @@ export default function EnhancedDashboardPage() {
                   return (
                     <div
                       key={biz.id}
-                      className="flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-xl p-3 hover:bg-white/15 transition-colors"
+                      className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-3 hover:bg-white/15 transition-colors"
                     >
-                      <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-white/10">
+                      <div className="w-12 h-12 lg:w-16 lg:h-16 rounded-lg overflow-hidden flex-shrink-0 bg-white/10">
                         {img ? (
                           <img src={img} alt={biz.name} className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <Building2 className="h-8 w-8 text-white/40" />
+                            <Building2 className="h-6 w-6 lg:h-8 lg:w-8 text-white/40" />
                           </div>
                         )}
                       </div>
@@ -435,21 +435,21 @@ export default function EnhancedDashboardPage() {
                         <h3 className="text-white font-semibold text-sm truncate">{biz.name}</h3>
                         <p className="text-white/60 text-xs truncate">{biz.category}</p>
                         {commission > 0 && (
-                          <p className="text-blue-300 text-xs font-medium mt-0.5">
+                          <p className="text-blue-300 text-xs font-medium mt-0.5 truncate">
                             {formatCurrency(commission)} {t('dashboard.perCustomer', 'per customer')}
                           </p>
                         )}
                       </div>
                       <Button
                         size="sm"
-                        className="bg-blue-400 hover:bg-blue-500 rounded-lg text-xs font-semibold h-8 px-3 flex-shrink-0"
+                        className="bg-blue-400 hover:bg-blue-500 rounded-lg text-xs font-semibold h-8 px-2 lg:px-3 flex-shrink-0"
                         onClick={() => {
                           navigator.clipboard.writeText(url)
                           toast({ title: t('cards.linkCopied') })
                         }}
                       >
-                        <Copy className="h-3 w-3 mr-1" />
-                        {t('dashboard.copyLink')}
+                        <Copy className="h-3 w-3 lg:mr-1" />
+                        <span className="hidden lg:inline">{t('dashboard.copyLink')}</span>
                       </Button>
                     </div>
                   )
