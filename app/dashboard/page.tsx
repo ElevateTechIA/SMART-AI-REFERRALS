@@ -776,10 +776,12 @@ export default function EnhancedDashboardPage() {
               <DollarSign className="h-6 w-6" />
               <span className="text-base font-medium">Earnings</span>
             </Link>
-            <Link href="/dashboard/business" className="flex items-center gap-4 px-6 py-4 mb-2 text-white/80 hover:bg-blue-700/30 rounded-lg transition-colors">
-              <Building2 className="h-6 w-6" />
-              <span className="text-base font-medium">Businesses</span>
-            </Link>
+            {user?.roles?.includes('business') && (
+              <Link href="/dashboard/business" className="flex items-center gap-4 px-6 py-4 mb-2 text-white/80 hover:bg-blue-700/30 rounded-lg transition-colors">
+                <Building2 className="h-6 w-6" />
+                <span className="text-base font-medium">Businesses</span>
+              </Link>
+            )}
           </nav>
 
         </aside>
