@@ -49,7 +49,7 @@ export function BottomNav() {
       label: t('nav.dashboard'),
       href: '/dashboard',
       icon: LayoutDashboard,
-      roles: ['consumer', 'referrer', 'business', 'admin'],
+      roles: ['referrer', 'business', 'admin'],
     },
     {
       label: t('nav.admin'),
@@ -79,7 +79,7 @@ export function BottomNav() {
       label: t('nav.visits'),
       href: '/dashboard/visits',
       icon: Gift,
-      roles: ['consumer', 'referrer'],
+      roles: ['referrer'],
     },
   ]
 

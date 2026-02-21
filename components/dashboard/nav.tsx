@@ -75,7 +75,7 @@ export function DashboardNav() {
       label: t('nav.dashboard'),
       href: '/dashboard',
       icon: LayoutDashboard,
-      roles: ['consumer', 'referrer', 'business', 'admin'],
+      roles: ['referrer', 'business', 'admin'],
     },
     {
       label: t('nav.business'),
@@ -93,7 +93,7 @@ export function DashboardNav() {
       label: t('nav.myVisits'),
       href: '/dashboard/visits',
       icon: Gift,
-      roles: ['consumer', 'referrer'],
+      roles: ['referrer'],
     },
     {
       label: t('nav.admin'),
@@ -170,7 +170,7 @@ export function DashboardNav() {
                       {user?.email}
                     </p>
                     <div className="flex flex-wrap gap-1 mt-2">
-                      {user?.roles.map((role) => (
+                      {user?.roles.filter((role) => role !== 'consumer').map((role) => (
                         <span
                           key={role}
                           className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full capitalize"
@@ -241,7 +241,7 @@ export function DashboardNav() {
                 <p className="text-theme-textPrimary font-semibold text-lg truncate">{user?.name}</p>
                 <p className="text-theme-textMuted text-sm truncate">{user?.email}</p>
                 <div className="flex flex-wrap gap-1 mt-1.5">
-                  {user?.roles.map((role) => (
+                  {user?.roles.filter((role) => role !== 'consumer').map((role) => (
                     <span
                       key={role}
                       className="text-[10px] bg-theme-primary/10 text-theme-textSecondary px-2 py-0.5 rounded-full capitalize"

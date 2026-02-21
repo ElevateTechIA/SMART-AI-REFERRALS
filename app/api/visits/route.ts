@@ -130,16 +130,21 @@ export async function POST(request: NextRequest) {
         })
       }
 
-      // Ensure consumer has the consumer role
+      // Ensure visiting user has the referrer (promoter) role
       const userRef = getAdminDb().collection('users').doc(consumerUserId)
       const userDoc = await userRef.get()
       if (userDoc.exists) {
         const userData = userDoc.data()
-        if (!userData?.roles?.includes('consumer')) {
-          transaction.update(userRef, {
-            roles: FieldValue.arrayUnion('consumer'),
-            updatedAt: FieldValue.serverTimestamp(),
-          })
+        const updateFields: Record<string, unknown> = {}
+        if (!userData?.roles?.includes('referrer')) {
+          updateFields.roles = FieldValue.arrayUnion('referrer')
+        }
+        if (!userData?.referrerStatus) {
+          updateFields.referrerStatus = 'pending'
+        }
+        if (Object.keys(updateFields).length > 0) {
+          updateFields.updatedAt = FieldValue.serverTimestamp()
+          transaction.update(userRef, updateFields)
         }
       }
 

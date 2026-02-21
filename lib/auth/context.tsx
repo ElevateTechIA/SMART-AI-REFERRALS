@@ -55,8 +55,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   ): Promise<User> => {
     // Admin role is only assigned through server-side scripts (scripts/make-admin.js)
     // Never assign admin role on client side to prevent privilege escalation
-    // Default to 'referrer' for new users (most common case)
-    const userRole: UserRole = role === 'admin' ? 'referrer' : (role || 'referrer')
+    // All users get 'referrer' (promoter) role unless registering as business
+    const userRole: UserRole = role === 'admin' ? 'referrer' : (role === 'business' ? 'business' : 'referrer')
     const roles: UserRole[] = [userRole]
 
     // Set referrerStatus to pending if registering as referrer

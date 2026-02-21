@@ -359,7 +359,7 @@ export default function AdminDashboardPage() {
     }
   }
 
-  const allRoles = ['admin', 'business', 'referrer', 'consumer'] as const
+  const allRoles = ['admin', 'business', 'referrer'] as const
 
   const filteredUsers = users.filter((u) => {
     if (!userSearch) return true

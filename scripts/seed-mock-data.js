@@ -94,27 +94,32 @@ const mockUsers = [
   {
     name: `${MOCK_PREFIX}Alice Referrer`,
     email: 'mock.alice@example.com',
-    roles: ['consumer'],
+    roles: ['referrer'],
+    referrerStatus: 'active',
   },
   {
     name: `${MOCK_PREFIX}Bob Referrer`,
     email: 'mock.bob@example.com',
-    roles: ['consumer'],
+    roles: ['referrer'],
+    referrerStatus: 'active',
   },
   {
     name: `${MOCK_PREFIX}Carol Consumer`,
     email: 'mock.carol@example.com',
-    roles: ['consumer'],
+    roles: ['referrer'],
+    referrerStatus: 'pending',
   },
   {
     name: `${MOCK_PREFIX}David Consumer`,
     email: 'mock.david@example.com',
-    roles: ['consumer'],
+    roles: ['referrer'],
+    referrerStatus: 'pending',
   },
   {
     name: `${MOCK_PREFIX}Eva BusinessOwner`,
     email: 'mock.eva@example.com',
-    roles: ['consumer', 'business'],
+    roles: ['referrer', 'business'],
+    referrerStatus: 'active',
   },
 ]
 

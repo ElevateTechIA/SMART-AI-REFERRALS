@@ -151,8 +151,8 @@ function ReferralPageContent() {
   const handleGoogleSignUp = async () => {
     setRegistering(true)
     try {
-      // Users registering via referral link are consumers
-      await signInWithGoogle('consumer')
+      // Users registering via referral link get referrer (promoter) role with pending status
+      await signInWithGoogle('referrer')
       toast({
         title: t('referralPage.signedIn'),
         description: t('referralPage.signedInDesc'),

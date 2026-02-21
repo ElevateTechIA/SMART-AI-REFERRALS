@@ -63,8 +63,8 @@ async function checkMyAccount(email) {
     console.log('📍 DÓNDE VER TUS REFERRALS:')
     console.log('='.repeat(80))
 
-    if (roles.includes('consumer')) {
-      console.log('👤 Como CONSUMER (visitaste negocios):')
+    if (roles.includes('referrer') || roles.includes('consumer')) {
+      console.log('👤 Como PROMOTER (visitaste negocios):')
       console.log('   URL: https://smart-ai-referrals.vercel.app/dashboard/visits')
       console.log('   Local: http://localhost:3000/dashboard/visits\n')
     }

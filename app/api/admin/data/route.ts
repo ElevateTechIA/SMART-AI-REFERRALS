@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
           id: doc.id,
           name: data.name,
           email: data.email,
-          roles: data.roles || ['consumer'],
+          roles: data.roles || ['referrer'],
           referrerStatus: data.referrerStatus || null,
           createdAt: data.createdAt?.toDate() || null,
           updatedAt: data.updatedAt?.toDate() || null,
