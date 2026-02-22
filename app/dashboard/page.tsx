@@ -716,6 +716,16 @@ export default function EnhancedDashboardPage() {
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">{user?.name}</p>
                     <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {user?.roles.filter((role) => role !== 'consumer').map((role) => (
+                        <span
+                          key={role}
+                          className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full capitalize"
+                        >
+                          {role === 'referrer' ? 'promoter' : role}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
@@ -824,6 +834,16 @@ export default function EnhancedDashboardPage() {
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">{user?.name}</p>
                       <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {user?.roles.filter((role) => role !== 'consumer').map((role) => (
+                          <span
+                            key={role}
+                            className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full capitalize"
+                          >
+                            {role === 'referrer' ? 'promoter' : role}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
