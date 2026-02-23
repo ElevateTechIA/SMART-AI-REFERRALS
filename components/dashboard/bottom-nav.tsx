@@ -76,7 +76,7 @@ export function BottomNav() {
       roles: ['referrer', 'business', 'admin'],
     },
     {
-      label: t('nav.visits'),
+      label: t('nav.myVisits'),
       href: '/dashboard/visits',
       icon: Gift,
       roles: ['referrer'],

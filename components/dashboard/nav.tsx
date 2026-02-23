@@ -24,7 +24,6 @@ import {
   QrCode,
   LayoutDashboard,
   Building2,
-  Users,
   Gift,
   Settings,
   LogOut,
@@ -37,6 +36,7 @@ import {
   Monitor,
   Palette,
   Check,
+  DollarSign,
 } from 'lucide-react'
 
 const languages = [
@@ -90,6 +90,12 @@ export function DashboardNav() {
       roles: ['referrer', 'admin'],
     },
     {
+      label: t('nav.earnings'),
+      href: '/dashboard/earnings',
+      icon: DollarSign,
+      roles: ['referrer', 'business', 'admin'],
+    },
+    {
       label: t('nav.myVisits'),
       href: '/dashboard/visits',
       icon: Gift,
@@ -112,16 +118,12 @@ export function DashboardNav() {
       <header className="sticky top-0 z-50 w-full border-b border-theme-cardBorder glass-card">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-6">
-            <button
-              onClick={() => { setMenuOpen(false); setShowShareModal(true) }}
-              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-              title={t('share.shareApp', 'Share App')}
-            >
+            <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <div className="w-8 h-8 bg-theme-primary rounded-lg flex items-center justify-center glow">
                 <QrCode className="w-4 h-4 text-white" />
               </div>
               <span className="font-bold hidden md:inline-block text-theme-textPrimary">Smart AI Referrals</span>
-            </button>
+            </Link>
             <nav className="hidden md:flex items-center gap-1">
               {filteredNavItems.map((item) => {
                 const Icon = item.icon

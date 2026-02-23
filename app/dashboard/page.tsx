@@ -29,6 +29,7 @@ import {
   Loader2,
   Settings,
   LogOut,
+  Gift,
 } from 'lucide-react'
 import { BarChart, Bar, XAxis, ResponsiveContainer } from 'recharts'
 import QRCode from 'qrcode'
@@ -686,8 +687,8 @@ export default function EnhancedDashboardPage() {
       >
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-8">
-            <button
-              onClick={shareApp}
+            <Link
+              href="/dashboard"
               className="flex items-center gap-3 hover:opacity-80 transition-opacity"
             >
               <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center p-2">
@@ -697,7 +698,7 @@ export default function EnhancedDashboardPage() {
                 <span className="text-white font-bold text-lg leading-tight">SMART AI</span>
                 <span className="text-white font-bold text-lg leading-tight">REFERRALS</span>
               </div>
-            </button>
+            </Link>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -757,8 +758,8 @@ export default function EnhancedDashboardPage() {
       <div className="hidden md:flex min-h-screen">
         <aside className="w-80 bg-gradient-to-b from-blue-900 via-blue-900 to-blue-800 flex flex-col">
           <div className="p-8">
-            <button
-              onClick={shareApp}
+            <Link
+              href="/dashboard"
               className="flex items-center gap-3 hover:opacity-80 transition-opacity"
             >
               <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center p-2.5">
@@ -768,7 +769,7 @@ export default function EnhancedDashboardPage() {
                 <span className="text-white font-bold text-xl leading-tight">SMART AI</span>
                 <span className="text-white font-bold text-xl leading-tight">REFERRALS</span>
               </div>
-            </button>
+            </Link>
           </div>
 
           <nav className="flex-1 px-4">
@@ -786,6 +787,12 @@ export default function EnhancedDashboardPage() {
               <DollarSign className="h-6 w-6" />
               <span className="text-base font-medium">Earnings</span>
             </Link>
+            {user?.roles?.includes('referrer') && (
+              <Link href="/dashboard/visits" className="flex items-center gap-4 px-6 py-4 mb-2 text-white/80 hover:bg-blue-700/30 rounded-lg transition-colors">
+                <Gift className="h-6 w-6" />
+                <span className="text-base font-medium">My Visits</span>
+              </Link>
+            )}
             {user?.roles?.includes('business') && (
               <Link href="/dashboard/business" className="flex items-center gap-4 px-6 py-4 mb-2 text-white/80 hover:bg-blue-700/30 rounded-lg transition-colors">
                 <Building2 className="h-6 w-6" />
