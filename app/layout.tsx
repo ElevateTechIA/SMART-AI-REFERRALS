@@ -1,17 +1,36 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/lib/auth/context'
 import { ThemeProvider } from '@/lib/theme/theme-provider'
 import { I18nProvider } from '@/lib/i18n/provider'
 import { Toaster } from '@/components/ui/toaster'
+import { OfflineIndicator } from '@/components/pwa/offline-indicator'
+import { SyncManager } from '@/components/pwa/sync-manager'
+import { InstallPrompt } from '@/components/pwa/install-prompt'
 import { themes, defaultTheme } from '@/lib/theme/colors'
 
 const inter = Inter({ subsets: ['latin'] })
 
+export const viewport: Viewport = {
+  themeColor: '#3B82F6',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+}
+
 export const metadata: Metadata = {
   title: 'Smart AI Referrals',
   description: 'Earn money by promoting local businesses',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'SmartRef',
+  },
+  other: {
+    'mobile-web-app-capable': 'yes',
+  },
 }
 
 export default function RootLayout({
@@ -22,6 +41,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -53,7 +73,10 @@ export default function RootLayout({
         <I18nProvider>
           <ThemeProvider>
             <AuthProvider>
+              <OfflineIndicator />
               {children}
+              <SyncManager />
+              <InstallPrompt />
               <Toaster />
             </AuthProvider>
           </ThemeProvider>

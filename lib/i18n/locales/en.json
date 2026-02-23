@@ -648,5 +648,13 @@
       "fitness": "Fitness",
       "other": "Other"
     }
+  },
+  "pwa": {
+    "offlineMode": "You are offline. Changes will sync when you reconnect.",
+    "syncComplete": "Changes synced!",
+    "syncFailed": "Some changes failed to sync.",
+    "pendingChanges": "{{count}} pending change(s) will sync when online.",
+    "installApp": "Install App",
+    "installDesc": "Add to your home screen for quick access"
   }
 }

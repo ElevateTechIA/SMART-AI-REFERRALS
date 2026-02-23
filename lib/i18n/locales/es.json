@@ -648,5 +648,13 @@
       "fitness": "Fitness",
       "other": "Otro"
     }
+  },
+  "pwa": {
+    "offlineMode": "Estás sin conexión. Los cambios se sincronizarán cuando te reconectes.",
+    "syncComplete": "¡Cambios sincronizados!",
+    "syncFailed": "Algunos cambios no se pudieron sincronizar.",
+    "pendingChanges": "{{count}} cambio(s) pendiente(s) se sincronizarán cuando estés en línea.",
+    "installApp": "Instalar App",
+    "installDesc": "Agrega la app a tu pantalla de inicio"
   }
 }
