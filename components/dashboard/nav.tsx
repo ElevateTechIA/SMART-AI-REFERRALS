@@ -29,7 +29,6 @@ import {
   LogOut,
   Shield,
   Share2,
-  Menu,
   X,
   Sun,
   Moon,
@@ -216,12 +215,17 @@ export function DashboardNav() {
             </DropdownMenu>
           </div>
 
-          {/* Mobile: hamburger button */}
+          {/* Mobile: profile avatar opens menu */}
           <button
-            className="md:hidden flex items-center justify-center h-10 w-10 rounded-lg hover:bg-white/10 transition-colors"
+            className="md:hidden"
             onClick={() => setMenuOpen(true)}
           >
-            <Menu className="h-6 w-6 text-theme-textPrimary" />
+            <Avatar className="h-9 w-9 ring-2 ring-theme-primary/30">
+              <AvatarImage src={user?.photoURL} alt={user?.name} />
+              <AvatarFallback className="text-sm bg-theme-primary text-white">
+                {user?.name?.charAt(0).toUpperCase() || 'U'}
+              </AvatarFallback>
+            </Avatar>
           </button>
         </div>
       </header>
