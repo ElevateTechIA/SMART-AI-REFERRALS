@@ -24,7 +24,7 @@ export default function SigninRedirect() {
           backgroundRepeat: 'no-repeat',
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/40 via-purple-800/30 to-purple-900/50"></div>
+        <div className="absolute inset-0 auth-overlay"></div>
       </div>
       <div className="relative z-10 min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-white" />

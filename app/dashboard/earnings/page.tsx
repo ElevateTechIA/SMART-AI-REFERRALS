@@ -94,7 +94,7 @@ export default function EarningsPage() {
     const statusConfig = {
       completed: { label: t('earnings.statusCompleted'), className: 'bg-green-500 text-white' },
       pending: { label: t('earnings.statusPending'), className: 'bg-yellow-500 text-white' },
-      processing: { label: t('earnings.statusProcessing'), className: 'bg-blue-500 text-white' },
+      processing: { label: t('earnings.statusProcessing'), className: 'bg-theme-primary text-white' },
     }
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending
     return <Badge className={config.className}>{config.label}</Badge>
@@ -111,7 +111,7 @@ export default function EarningsPage() {
   return (
     <div className="min-h-screen">
       {/* Header with gradient matching dashboard */}
-      <div className="bg-gradient-to-br from-blue-900 to-blue-700 px-6 py-8">
+      <div className="px-6 py-8 rounded-2xl mx-4 mt-4 overflow-hidden" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
         <div className="max-w-7xl mx-auto">
           <Link
             href="/dashboard"
@@ -131,8 +131,8 @@ export default function EarningsPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-card backdrop-blur-sm rounded-xl p-6 shadow-xl">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <DollarSign className="h-6 w-6 text-blue-600" />
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'color-mix(in srgb, var(--theme-primary) 15%, transparent)' }}>
+                <DollarSign className="h-6 w-6 text-theme-primary" />
               </div>
               <span className="text-sm text-muted-foreground">{t('earnings.totalEarnings')}</span>
             </div>
@@ -167,8 +167,8 @@ export default function EarningsPage() {
 
           <div className="bg-card backdrop-blur-sm rounded-xl p-6 shadow-xl">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Calendar className="h-6 w-6 text-blue-600" />
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'color-mix(in srgb, var(--theme-primary) 15%, transparent)' }}>
+                <Calendar className="h-6 w-6 text-theme-primary" />
               </div>
               <span className="text-sm text-muted-foreground">{t('earnings.thisMonth')}</span>
             </div>
@@ -189,13 +189,13 @@ export default function EarningsPage() {
                 <select
                   value={selectedPeriod}
                   onChange={(e) => setSelectedPeriod(e.target.value)}
-                  className="px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-blue-500"
+                  className="px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-theme-primary"
                 >
                   <option value="all">{t('earnings.allTime')}</option>
                   <option value="month">{t('earnings.thisMonthOption')}</option>
                   <option value="year">{t('earnings.thisYear')}</option>
                 </select>
-                <Button className="bg-blue-600 hover:bg-blue-700 rounded-lg">
+                <Button className="bg-theme-primary hover:opacity-90 text-white rounded-lg">
                   <Download className="h-4 w-4 mr-2" />
                   {t('common.export')}
                 </Button>

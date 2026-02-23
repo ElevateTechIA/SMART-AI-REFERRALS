@@ -157,7 +157,7 @@
 @layer utilities {
   /* ===== BLUE GRADIENT CARD (like the Total Ganado card) ===== */
   .card-gradient-blue {
-    background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 50%, #1D4ED8 100%);
+    background: linear-gradient(135deg, var(--theme-primaryLight) 0%, var(--theme-primary) 50%, var(--theme-primaryDark) 100%);
     border-radius: 1.25rem;
     color: white;
     position: relative;
@@ -220,18 +220,18 @@
 
   /* ===== BLUE BUTTON (Primary action) ===== */
   .btn-blue {
-    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primaryDark) 100%);
     color: white;
     font-weight: 600;
     padding: 0.75rem 1.5rem;
     border-radius: 0.75rem;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
+    box-shadow: 0 2px 4px color-mix(in srgb, var(--theme-primaryDark) 30%, transparent);
   }
 
   .btn-blue:hover {
-    background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
-    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.4);
+    background: linear-gradient(135deg, var(--theme-primaryDark) 0%, var(--theme-primaryDark) 100%);
+    box-shadow: 0 4px 8px color-mix(in srgb, var(--theme-primaryDark) 40%, transparent);
     transform: translateY(-1px);
   }
 
@@ -255,11 +255,11 @@
   /* ===== OUTLINE BUTTON ===== */
   .btn-outline-blue {
     background: white;
-    color: #3B82F6;
+    color: var(--theme-primary);
     font-weight: 600;
     padding: 0.75rem 1.5rem;
     border-radius: 0.75rem;
-    border: 2px solid #3B82F6;
+    border: 2px solid var(--theme-primary);
     transition: all 0.2s ease;
   }
 
@@ -268,17 +268,17 @@
   }
 
   .btn-outline-blue:hover {
-    background: #EFF6FF;
+    background: var(--theme-primaryBg);
   }
 
   .dark .btn-outline-blue:hover {
-    background: #1E3A8A;
+    background: var(--theme-secondary);
   }
 
   /* ===== BADGE STYLES ===== */
   .badge-blue {
-    background: #EFF6FF;
-    color: #2563EB;
+    background: var(--theme-primaryBg);
+    color: var(--theme-primaryDark);
     padding: 0.25rem 0.75rem;
     border-radius: 9999px;
     font-size: 0.75rem;
@@ -286,8 +286,8 @@
   }
 
   .dark .badge-blue {
-    background: rgba(37, 99, 235, 0.2);
-    color: #60A5FA;
+    background: color-mix(in srgb, var(--theme-primary) 20%, transparent);
+    color: var(--theme-primaryLight);
   }
 
   .badge-green {
@@ -327,7 +327,7 @@
   }
 
   .progress-bar-fill {
-    background: linear-gradient(90deg, #60A5FA 0%, #3B82F6 100%);
+    background: linear-gradient(90deg, var(--theme-primaryLight) 0%, var(--theme-primary) 100%);
     height: 100%;
     border-radius: 9999px;
     transition: width 0.5s ease;
@@ -388,7 +388,7 @@
 
   .glass-card:hover {
     background: var(--theme-cardBgHover);
-    border-color: var(--theme-blue-300);
+    border-color: var(--theme-primaryBorder);
   }
 
   /* Gradient Text */
@@ -404,7 +404,7 @@
   }
 
   .gradient-text-blue {
-    background: linear-gradient(90deg, #3B82F6, #1D4ED8);
+    background: linear-gradient(90deg, var(--theme-primary), var(--theme-primaryDark));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -443,7 +443,7 @@
   }
 
   .glow-blue {
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+    box-shadow: 0 0 20px color-mix(in srgb, var(--theme-primary) 50%, transparent);
   }
 
   /* Shimmer Animation */
@@ -539,13 +539,23 @@
   }
 
   .bottom-nav-item.active {
-    color: #3B82F6;
+    color: var(--theme-primary);
   }
 
   .bottom-nav-center-btn {
-    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primaryDark) 100%);
     color: white;
     border-radius: 1rem;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--theme-primaryDark) 40%, transparent);
+  }
+
+  /* Auth page overlay */
+  .auth-overlay {
+    background: linear-gradient(
+      to bottom,
+      var(--theme-overlayFrom),
+      color-mix(in srgb, var(--theme-overlayFrom) 70%, transparent),
+      var(--theme-overlayTo)
+    );
   }
 }

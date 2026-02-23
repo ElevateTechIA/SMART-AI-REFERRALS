@@ -60,7 +60,7 @@ export function ChatSummaryCard({
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Header */}
-      <div className="px-4 py-3 bg-gradient-to-r from-indigo-500 to-indigo-600">
+      <div className="px-4 py-3" style={{ background: 'linear-gradient(to right, var(--theme-primaryLight), var(--theme-primary))' }}>
         <h3 className="text-white font-medium">{t.title}</h3>
       </div>
 
@@ -159,9 +159,9 @@ export function ChatSummaryCard({
           onClick={onConfirm}
           className={cn(
             'flex-1 flex items-center justify-center gap-2 px-4 py-2',
-            'text-sm font-medium text-white bg-indigo-600',
+            'text-sm font-medium text-white bg-theme-primary',
             'rounded-lg',
-            'hover:bg-indigo-700 transition-colors'
+            'hover:opacity-90 transition-colors'
           )}
         >
           <Check className="w-4 h-4" />

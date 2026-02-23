@@ -93,7 +93,7 @@ export function ReferralCardCarousel({ businesses, userId }: ReferralCardCarouse
             onClick={() => emblaApi?.scrollTo(index)}
             className={`h-2 rounded-full transition-all duration-300 ${
               index === selectedIndex
-                ? 'w-6 bg-blue-500'
+                ? 'w-6 bg-theme-primary'
                 : 'w-2 bg-muted-foreground/30'
             }`}
           />

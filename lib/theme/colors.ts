@@ -37,6 +37,13 @@ export const themes = {
       cardBgHover: 'rgba(45, 27, 105, 0.6)',
       cardBorder: 'rgba(157, 78, 221, 0.3)',
 
+      // Light tint surfaces
+      primaryBg: '#f3e8ff',
+      primaryBgHover: '#e9d5ff',
+      primaryBorder: 'rgba(157, 78, 221, 0.2)',
+      overlayFrom: 'rgba(90, 24, 154, 0.4)',
+      overlayTo: 'rgba(90, 24, 154, 0.5)',
+
       // Text colors
       textPrimary: '#ffffff',
       textSecondary: '#e0aaff',
@@ -69,6 +76,13 @@ export const themes = {
       cardBgHover: 'rgba(30, 58, 138, 0.6)',
       cardBorder: 'rgba(96, 165, 250, 0.3)',
 
+      // Light tint surfaces
+      primaryBg: '#eff6ff',
+      primaryBgHover: '#dbeafe',
+      primaryBorder: 'rgba(96, 165, 250, 0.2)',
+      overlayFrom: 'rgba(30, 58, 138, 0.4)',
+      overlayTo: 'rgba(30, 58, 138, 0.5)',
+
       textPrimary: '#ffffff',
       textSecondary: '#bfdbfe',
       textMuted: '#93c5fd',
@@ -100,6 +114,13 @@ export const themes = {
       cardBgHover: 'rgba(26, 77, 46, 0.6)',
       cardBorder: 'rgba(74, 222, 128, 0.3)',
 
+      // Light tint surfaces
+      primaryBg: '#f0fdf4',
+      primaryBgHover: '#dcfce7',
+      primaryBorder: 'rgba(74, 222, 128, 0.2)',
+      overlayFrom: 'rgba(21, 128, 61, 0.4)',
+      overlayTo: 'rgba(21, 128, 61, 0.5)',
+
       textPrimary: '#ffffff',
       textSecondary: '#bbf7d0',
       textMuted: '#86efac',
@@ -107,33 +128,40 @@ export const themes = {
   },
 
   sunset: {
-    name: 'Sunset Orange',
+    name: 'Sunset Gold',
     colors: {
-      gradientFrom: '#1f0a0a',
-      gradientVia: '#7c2d12',
-      gradientTo: '#f97316',
+      gradientFrom: '#1a1207',
+      gradientVia: '#6b4f1d',
+      gradientTo: '#d4a844',
 
-      primary: '#f97316',
-      primaryLight: '#fb923c',
-      primaryDark: '#ea580c',
+      primary: '#c9952c',
+      primaryLight: '#d4a844',
+      primaryDark: '#a67c22',
 
-      secondary: '#c2410c',
-      secondaryLight: '#f97316',
+      secondary: '#8b6914',
+      secondaryLight: '#c9952c',
 
-      accent: '#fbbf24',
-      accentHover: '#fcd34d',
+      accent: '#e8c547',
+      accentHover: '#f0d264',
 
       success: '#10b981',
       warning: '#f59e0b',
       error: '#ef4444',
 
-      cardBg: 'rgba(124, 45, 18, 0.4)',
-      cardBgHover: 'rgba(124, 45, 18, 0.6)',
-      cardBorder: 'rgba(251, 146, 60, 0.3)',
+      cardBg: 'rgba(107, 79, 29, 0.4)',
+      cardBgHover: 'rgba(107, 79, 29, 0.6)',
+      cardBorder: 'rgba(212, 168, 68, 0.3)',
+
+      // Light tint surfaces
+      primaryBg: '#fdf8ed',
+      primaryBgHover: '#faf0d5',
+      primaryBorder: 'rgba(201, 149, 44, 0.2)',
+      overlayFrom: 'rgba(107, 79, 29, 0.4)',
+      overlayTo: 'rgba(107, 79, 29, 0.5)',
 
       textPrimary: '#ffffff',
-      textSecondary: '#fed7aa',
-      textMuted: '#fdba74',
+      textSecondary: '#f0dca8',
+      textMuted: '#d4b87a',
     }
   },
 
@@ -163,6 +191,13 @@ export const themes = {
       cardBg: 'rgba(255, 255, 255, 0.95)',
       cardBgHover: 'rgba(255, 255, 255, 1)',
       cardBorder: 'rgba(229, 231, 235, 1)',
+
+      // Light tint surfaces
+      primaryBg: '#EFF6FF',
+      primaryBgHover: '#DBEAFE',
+      primaryBorder: 'rgba(59, 130, 246, 0.2)',
+      overlayFrom: 'rgba(30, 58, 138, 0.4)',
+      overlayTo: 'rgba(30, 58, 138, 0.5)',
 
       // Dark text on light background
       textPrimary: '#111827',

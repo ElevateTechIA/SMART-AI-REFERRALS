@@ -318,7 +318,7 @@ export function RegistrationChatbot({
     return (
       <button
         onClick={() => setIsMinimized(false)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-indigo-600 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-indigo-700 transition-all hover:scale-105 z-50"
+        className="fixed bottom-6 right-6 w-14 h-14 bg-theme-primary text-white rounded-full shadow-lg flex items-center justify-center hover:opacity-90 transition-all hover:scale-105 z-50"
       >
         <MessageCircle className="w-6 h-6" />
       </button>
@@ -335,7 +335,7 @@ export function RegistrationChatbot({
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-t-xl">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 rounded-t-xl" style={{ background: 'linear-gradient(to right, var(--theme-primaryLight), var(--theme-primary))' }}>
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
             <MessageCircle className="w-5 h-5 text-white" />
@@ -378,7 +378,7 @@ export function RegistrationChatbot({
       {progress > 0 && (
         <div className="h-1 bg-gray-100">
           <div
-            className="h-full bg-indigo-500 transition-all duration-500"
+            className="h-full bg-theme-primary transition-all duration-500"
             style={{ width: `${progress}%` }}
           />
         </div>

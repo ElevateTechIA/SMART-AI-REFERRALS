@@ -53,7 +53,7 @@ export default function LoginPage() {
           backgroundRepeat: 'no-repeat',
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/40 via-purple-800/30 to-purple-900/50"></div>
+        <div className="absolute inset-0 auth-overlay"></div>
       </div>
 
       {/* Content Container */}
@@ -63,7 +63,7 @@ export default function LoginPage() {
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <Link href="/" className="flex items-center gap-3">
               <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center p-2">
-                <QrCode className="w-full h-full text-indigo-600" />
+                <QrCode className="w-full h-full text-theme-primary" />
               </div>
               <div className="flex flex-col">
                 <span className="text-white font-bold text-lg leading-tight">SMART AI</span>
@@ -92,7 +92,7 @@ export default function LoginPage() {
             <CardFooter className="flex flex-col gap-3 pt-0">
               <p className="text-sm text-gray-700 text-center font-medium">
                 {t('auth.noAccount')}{' '}
-                <Link href="/auth/register" className="text-indigo-600 hover:text-indigo-700 font-semibold hover:underline">
+                <Link href="/auth/register" className="text-theme-primary hover:opacity-80 font-semibold hover:underline">
                   {t('auth.signUp')}
                 </Link>
               </p>

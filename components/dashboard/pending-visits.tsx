@@ -103,8 +103,8 @@ export function PendingVisits() {
           })}
         </div>
 
-        <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-          <p className="text-xs text-blue-900">
+        <div className="mt-4 p-3 bg-theme-primaryBg rounded-lg">
+          <p className="text-xs text-theme-textPrimary">
             💡 <strong>Tip:</strong> These businesses are saved in your browser.
             Complete your visit within 7 days to claim your rewards!
           </p>

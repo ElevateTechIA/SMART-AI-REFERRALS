@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/context'
 import { DashboardNav } from '@/components/dashboard/nav'
 import { BottomNav } from '@/components/dashboard/bottom-nav'
@@ -14,7 +14,6 @@ export default function DashboardLayout({
 }) {
   const { user, loading } = useAuth()
   const router = useRouter()
-  const pathname = usePathname()
 
   useEffect(() => {
     if (!loading && !user) {
@@ -34,12 +33,10 @@ export default function DashboardLayout({
     return null
   }
 
-  const isMainDashboard = pathname === '/dashboard'
-
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
-      {!isMainDashboard && <DashboardNav />}
-      <main className={`container mx-auto px-4 ${isMainDashboard ? 'py-0' : 'py-8 pb-20 md:pb-8'}`}>
+      <DashboardNav />
+      <main className="container mx-auto px-4 py-8 pb-20 md:pb-8">
         {children}
       </main>
       <BottomNav />

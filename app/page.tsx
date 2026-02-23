@@ -10,9 +10,12 @@ import QRCode from 'qrcode'
 import { LanguageSwitcher } from '@/components/language-switcher'
 import { RegisterShareModal } from '@/components/register-share-modal'
 import { RegistrationChatbot } from '@/components/chatbot/RegistrationChatbot'
+import { useTheme } from '@/lib/theme/theme-provider'
+import { themes } from '@/lib/theme/colors'
 
 export default function LandingPage() {
   const { t } = useTranslation()
+  const { theme } = useTheme()
   const [showQR, setShowQR] = useState(false)
   const [qrCode, setQrCode] = useState('')
   const [showReferrerModal, setShowReferrerModal] = useState(false)
@@ -21,7 +24,7 @@ export default function LandingPage() {
 
   useEffect(() => {
     generateQRCode()
-  }, [])
+  }, [theme])
 
   const generateQRCode = async () => {
     try {
@@ -29,7 +32,7 @@ export default function LandingPage() {
         width: 300,
         margin: 2,
         color: {
-          dark: '#4f46e5',
+          dark: themes[theme].colors.primaryDark,
           light: '#ffffff',
         },
       })
@@ -52,7 +55,7 @@ export default function LandingPage() {
         }}
       >
         {/* Overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/40 via-purple-800/30 to-purple-900/50"></div>
+        <div className="absolute inset-0 auth-overlay"></div>
       </div>
 
       {/* Content Container */}
@@ -66,7 +69,7 @@ export default function LandingPage() {
               className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
             >
               <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center p-2">
-                <svg className="w-full h-full text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-full h-full text-theme-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
                 </svg>
               </div>
@@ -95,7 +98,7 @@ export default function LandingPage() {
             <div className="space-y-8 text-center lg:text-left">
               <div>
                 <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-                  {t('landing.heroTitle')} <span className="text-blue-400">{t('landing.heroTitleHighlight')}</span>
+                  {t('landing.heroTitle')} <span className="text-theme-primaryLight">{t('landing.heroTitleHighlight')}</span>
                 </h1>
                 <p className="text-xl md:text-2xl text-white/90 leading-relaxed">
                   {t('landing.heroSubtitle')}
@@ -107,7 +110,7 @@ export default function LandingPage() {
                 <Button
                   size="lg"
                   onClick={() => setShowReferrerModal(true)}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-6 text-lg font-semibold rounded-xl shadow-2xl shadow-indigo-500/50 w-full sm:w-auto"
+                  className="bg-theme-primary hover:opacity-90 text-white px-8 py-6 text-lg font-semibold rounded-xl shadow-2xl w-full sm:w-auto"
                 >
                   {t('landing.startEarningFree')}
                 </Button>
@@ -139,8 +142,8 @@ export default function LandingPage() {
                 />
 
                 {/* Floating Decorative Elements */}
-                <div className="absolute -top-4 -right-4 w-20 h-20 bg-blue-400/20 rounded-full blur-2xl animate-pulse"></div>
-                <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-purple-400/20 rounded-full blur-2xl animate-pulse delay-1000"></div>
+                <div className="absolute -top-4 -right-4 w-20 h-20 rounded-full blur-2xl animate-pulse" style={{ background: 'color-mix(in srgb, var(--theme-primary) 20%, transparent)' }}></div>
+                <div className="absolute -bottom-4 -left-4 w-32 h-32 rounded-full blur-2xl animate-pulse delay-1000" style={{ background: 'color-mix(in srgb, var(--theme-accent) 20%, transparent)' }}></div>
               </div>
             </div>
           </div>
@@ -151,7 +154,7 @@ export default function LandingPage() {
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center mb-8">
               <h2 className="text-2xl md:text-3xl font-bold text-white">
-                {t('landing.trustedBy')} <span className="text-blue-400">{t('landing.trustedByHighlight')}</span>
+                {t('landing.trustedBy')} <span className="text-theme-primaryLight">{t('landing.trustedByHighlight')}</span>
               </h2>
             </div>
 
@@ -160,8 +163,8 @@ export default function LandingPage() {
               {/* Pay per real customer */}
               <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
                 <div className="flex items-center gap-4 mb-3">
-                  <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
-                    <CheckCircle2 className="w-6 h-6 text-blue-400" />
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'color-mix(in srgb, var(--theme-primary) 20%, transparent)' }}>
+                    <CheckCircle2 className="w-6 h-6 text-theme-primaryLight" />
                   </div>
                   <div>
                     <h3 className="text-white font-bold text-lg">{t('landing.payPerCustomer')}</h3>
@@ -173,8 +176,8 @@ export default function LandingPage() {
               {/* AI-verified visits */}
               <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
                 <div className="flex items-center gap-4 mb-3">
-                  <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
-                    <Users className="w-6 h-6 text-purple-400" />
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'color-mix(in srgb, var(--theme-accent) 20%, transparent)' }}>
+                    <Users className="w-6 h-6 text-theme-accent" />
                   </div>
                   <div>
                     <h3 className="text-white font-bold text-lg">{t('landing.aiVerifiedVisits')}</h3>
@@ -186,8 +189,8 @@ export default function LandingPage() {
               {/* Secure payouts */}
               <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
                 <div className="flex items-center gap-4 mb-3">
-                  <div className="w-12 h-12 bg-cyan-500/20 rounded-xl flex items-center justify-center">
-                    <Shield className="w-6 h-6 text-cyan-400" />
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'color-mix(in srgb, var(--theme-secondaryLight) 20%, transparent)' }}>
+                    <Shield className="w-6 h-6 text-theme-secondaryLight" />
                   </div>
                   <div>
                     <h3 className="text-white font-bold text-lg">{t('landing.securePayouts')}</h3>
@@ -203,7 +206,7 @@ export default function LandingPage() {
         <div className="py-16 bg-white/5 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-6 text-center">
             <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
-              {t('landing.notJustWebsite')} <span className="text-blue-400">{t('landing.notJustWebsiteHighlight')}</span>
+              {t('landing.notJustWebsite')} <span className="text-theme-primaryLight">{t('landing.notJustWebsiteHighlight')}</span>
             </h2>
             <p className="text-xl text-white/90 mb-8">
               {t('landing.appDescription')}
@@ -213,7 +216,7 @@ export default function LandingPage() {
             <Link href="/dashboard">
               <Button
                 size="lg"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-6 text-lg font-semibold rounded-xl shadow-2xl shadow-indigo-500/50"
+                className="bg-theme-primary hover:opacity-90 text-white px-8 py-6 text-lg font-semibold rounded-xl shadow-2xl"
               >
                 {t('landing.previewDashboard')}
               </Button>
@@ -248,7 +251,7 @@ export default function LandingPage() {
                 </div>
 
                 {/* Earnings Card - Show second on mobile */}
-                <div className="bg-gradient-to-br from-indigo-600/40 to-purple-600/40 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-white/20 order-2 md:order-1">
+                <div className="backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-white/20 order-2 md:order-1" style={{ background: 'linear-gradient(to bottom right, color-mix(in srgb, var(--theme-primary) 40%, transparent), color-mix(in srgb, var(--theme-accent) 40%, transparent))' }}>
                   <div className="mb-4 md:mb-6">
                     <p className="text-white/80 text-base md:text-lg mb-2">{t('landing.passiveIncome')}</p>
                     <div className="flex items-baseline gap-2 mb-1">
@@ -258,7 +261,7 @@ export default function LandingPage() {
                   </div>
                   <Button
                     size="lg"
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm md:text-base"
+                    className="w-full bg-theme-primary hover:opacity-90 text-white font-semibold rounded-xl text-sm md:text-base"
                   >
                     {t('landing.seeHowMuch')}
                   </Button>
@@ -298,7 +301,7 @@ export default function LandingPage() {
 
             {/* Header */}
             <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-theme-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Share2 className="h-8 w-8 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-2">{t('landing.shareTheApp')}</h3>
@@ -306,7 +309,7 @@ export default function LandingPage() {
             </div>
 
             {/* QR Code */}
-            <div className="bg-white rounded-2xl p-4 border-2 border-indigo-100 mb-6">
+            <div className="bg-white rounded-2xl p-4 border-2 border-theme-primaryBorder mb-6">
               {qrCode && (
                 <img
                   src={qrCode}
@@ -319,7 +322,7 @@ export default function LandingPage() {
             {/* URL */}
             <div className="bg-gray-50 rounded-xl p-4 mb-4">
               <p className="text-xs text-gray-600 mb-1 text-center">{t('landing.orVisit')}</p>
-              <p className="text-sm font-semibold text-indigo-600 text-center break-all">
+              <p className="text-sm font-semibold text-theme-primary text-center break-all">
                 smart-ai-referrals.vercel.app
               </p>
             </div>
@@ -330,7 +333,7 @@ export default function LandingPage() {
                 onClick={() => {
                   navigator.clipboard.writeText('https://smart-ai-referrals.vercel.app/')
                 }}
-                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl"
+                className="flex-1 bg-theme-primary hover:opacity-90 text-white rounded-xl"
               >
                 {t('landing.copyLink')}
               </Button>
@@ -344,7 +347,7 @@ export default function LandingPage() {
                     })
                   }}
                   variant="outline"
-                  className="flex-1 border-indigo-600 text-indigo-600 hover:bg-indigo-50 rounded-xl"
+                  className="flex-1 border-theme-primary text-theme-primary hover:bg-theme-primaryBg rounded-xl"
                 >
                   {t('landing.share')}
                 </Button>
@@ -376,7 +379,7 @@ export default function LandingPage() {
       ) : (
         <button
           onClick={() => setShowChatbot(true)}
-          className="fixed bottom-6 right-6 w-14 h-14 bg-indigo-600 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-indigo-700 transition-all hover:scale-105 z-50 group"
+          className="fixed bottom-6 right-6 w-14 h-14 bg-theme-primary text-white rounded-full shadow-lg flex items-center justify-center hover:opacity-90 transition-all hover:scale-105 z-50 group"
           aria-label={t('landing.chatWithUs')}
         >
           <MessageCircle className="w-6 h-6" />

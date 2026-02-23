@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/use-toast'
 import { X, Share2 } from 'lucide-react'
 import QRCode from 'qrcode'
+import { useTheme } from '@/lib/theme/theme-provider'
+import { themes } from '@/lib/theme/colors'
 
 interface ShareAppModalProps {
   isOpen: boolean
@@ -15,6 +17,7 @@ interface ShareAppModalProps {
 export function ShareAppModal({ isOpen, onClose }: ShareAppModalProps) {
   const { t } = useTranslation()
   const { toast } = useToast()
+  const { theme } = useTheme()
   const [qrCode, setQrCode] = useState<string>('')
   const [canShare, setCanShare] = useState(false)
 
@@ -29,7 +32,7 @@ export function ShareAppModal({ isOpen, onClose }: ShareAppModalProps) {
     if (isOpen) {
       generateQRCode()
     }
-  }, [isOpen])
+  }, [isOpen, theme])
 
   const generateQRCode = async () => {
     try {
@@ -37,7 +40,7 @@ export function ShareAppModal({ isOpen, onClose }: ShareAppModalProps) {
         width: 280,
         margin: 2,
         color: {
-          dark: '#1D4ED8',
+          dark: themes[theme].colors.primaryDark,
           light: '#ffffff',
         },
       })
@@ -96,7 +99,7 @@ export function ShareAppModal({ isOpen, onClose }: ShareAppModalProps) {
 
         {/* Header */}
         <div className="text-center mb-6">
-          <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-theme-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Share2 className="h-8 w-8 text-white" />
           </div>
           <h3 className="text-2xl font-bold text-foreground mb-2">
@@ -108,7 +111,7 @@ export function ShareAppModal({ isOpen, onClose }: ShareAppModalProps) {
         </div>
 
         {/* QR Code */}
-        <div className="bg-background rounded-2xl p-4 border-2 border-blue-100 dark:border-blue-900 mb-6">
+        <div className="bg-background rounded-2xl p-4 border-2 border-theme-primaryBorder mb-6">
           {qrCode && (
             <img
               src={qrCode}
@@ -123,7 +126,7 @@ export function ShareAppModal({ isOpen, onClose }: ShareAppModalProps) {
           <p className="text-xs text-muted-foreground mb-1 text-center">
             {t('landing.orVisit', 'Or visit')}
           </p>
-          <p className="text-sm font-semibold text-blue-600 text-center break-all">
+          <p className="text-sm font-semibold text-theme-primary text-center break-all">
             {appUrl.replace('https://', '').replace('http://', '')}
           </p>
         </div>
@@ -132,7 +135,7 @@ export function ShareAppModal({ isOpen, onClose }: ShareAppModalProps) {
         <div className="flex gap-3">
           <Button
             onClick={copyLink}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl"
+            className="flex-1 bg-theme-primary hover:opacity-90 text-white rounded-xl"
           >
             {t('landing.copyLink', 'Copy Link')}
           </Button>
@@ -140,7 +143,7 @@ export function ShareAppModal({ isOpen, onClose }: ShareAppModalProps) {
             <Button
               onClick={shareApp}
               variant="outline"
-              className="flex-1 border-blue-600 text-blue-600 hover:bg-blue-50 rounded-xl"
+              className="flex-1 border-theme-primary text-theme-primary hover:bg-theme-primaryBg rounded-xl"
             >
               {t('landing.share', 'Share')}
             </Button>

@@ -8,6 +8,8 @@ import QRCode from 'qrcode'
 import { Copy, Download, Share2, Building2, Gift, Link2 } from 'lucide-react'
 import type { Business, Offer } from '@/lib/types'
 import { useTranslation } from 'react-i18next'
+import { useTheme } from '@/lib/theme/theme-provider'
+import { themes } from '@/lib/theme/colors'
 
 const GRADIENTS = [
   'from-rose-500 via-pink-500 to-teal-500',
@@ -34,6 +36,7 @@ interface ReferralCardProps {
 export function ReferralCard({ business, userId }: ReferralCardProps) {
   const { toast } = useToast()
   const { t } = useTranslation()
+  const { theme } = useTheme()
   const [qrCode, setQrCode] = useState<string | null>(null)
   const referralUrl = generateReferralUrl(business.id, userId)
   const coverImage = business.offer?.image || business.images?.[0] || null
@@ -43,11 +46,11 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
     QRCode.toDataURL(referralUrl, {
       width: 240,
       margin: 2,
-      color: { dark: '#1e293b', light: '#ffffff' },
+      color: { dark: themes[theme].colors.primaryDark, light: '#ffffff' },
     })
       .then(setQrCode)
       .catch(console.error)
-  }, [referralUrl])
+  }, [referralUrl, theme])
 
   const copyLink = () => {
     navigator.clipboard.writeText(referralUrl)

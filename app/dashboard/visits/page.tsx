@@ -298,11 +298,11 @@ export default function VisitsPage() {
                           </AlertDescription>
                         </Alert>
 
-                        <div className="bg-blue-50 rounded-lg p-4 w-full">
-                          <p className="text-sm font-semibold mb-2 text-blue-900">
+                        <div className="rounded-lg p-4 w-full" style={{ background: 'color-mix(in srgb, var(--theme-primary) 10%, transparent)' }}>
+                          <p className="text-sm font-semibold mb-2 text-theme-textPrimary">
                             {t('visits.instructions')}
                           </p>
-                          <div className="text-xs text-blue-900 space-y-1">
+                          <div className="text-xs text-theme-textPrimary space-y-1">
                             <p>{t('visits.instruction1')}</p>
                             <p>{t('visits.instruction2')}</p>
                             <p>{t('visits.instruction3')}</p>

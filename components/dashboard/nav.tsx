@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useTranslation } from 'react-i18next'
@@ -58,6 +58,23 @@ export function DashboardNav() {
   const { theme, setTheme, mode, setMode, availableThemes } = useTheme()
   const [showShareModal, setShowShareModal] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [headerHidden, setHeaderHidden] = useState(false)
+  const lastScrollY = useRef(0)
+
+  useEffect(() => {
+    const threshold = 10
+    const onScroll = () => {
+      const currentY = window.scrollY
+      if (currentY > lastScrollY.current + threshold && currentY > 64) {
+        setHeaderHidden(true)
+      } else if (currentY < lastScrollY.current - threshold) {
+        setHeaderHidden(false)
+      }
+      lastScrollY.current = currentY
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   const handleSignOut = async () => {
     setMenuOpen(false)
@@ -115,7 +132,7 @@ export function DashboardNav() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full border-b border-theme-cardBorder glass-card">
+      <header className={cn("sticky top-0 z-50 w-full border-b border-theme-cardBorder glass-card transition-transform duration-300", headerHidden && "-translate-y-full")}>
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-6">
             <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
@@ -360,11 +377,12 @@ export function DashboardNav() {
             <div className="px-4 py-4">
               <button
                 onClick={handleSignOut}
-                className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-red-500 hover:bg-red-500/10 transition-colors"
+                className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-theme-textPrimary hover:bg-white/10 transition-colors"
               >
                 <LogOut className="h-5 w-5" />
                 <span className="font-medium">{t('nav.signOut')}</span>
               </button>
+              <p className="text-center text-xs text-theme-textMuted mt-2">v1.0.0</p>
             </div>
           </div>
         </div>

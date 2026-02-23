@@ -32,11 +32,14 @@ import { QRScanner } from '@/components/business/qr-scanner'
 import { ReceiptDialog } from '@/components/receipt/receipt-dialog'
 import { useTranslation } from 'react-i18next'
 import QRCode from 'qrcode'
+import { useTheme } from '@/lib/theme/theme-provider'
+import { themes } from '@/lib/theme/colors'
 
 export default function BusinessDashboardPage() {
   const { user } = useAuth()
   const { toast } = useToast()
   const { t } = useTranslation()
+  const { theme } = useTheme()
   const [business, setBusiness] = useState<Business | null>(null)
   const [offer, setOffer] = useState<Offer | null>(null)
   const [visits, setVisits] = useState<Visit[]>([])
@@ -143,11 +146,11 @@ export default function BusinessDashboardPage() {
     QRCode.toDataURL(generateReferralUrl(business.id), {
       width: 240,
       margin: 2,
-      color: { dark: '#1e293b', light: '#ffffff' },
+      color: { dark: themes[theme].colors.primaryDark, light: '#ffffff' },
     })
       .then(setPromoQr)
       .catch(console.error)
-  }, [business])
+  }, [business, theme])
 
   const handleScanConvert = async (scanResult: { visitId: string; token: string }) => {
     try {

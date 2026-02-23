@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/use-toast'
 import { X, Users, Building2, ExternalLink } from 'lucide-react'
 import QRCode from 'qrcode'
+import { useTheme } from '@/lib/theme/theme-provider'
+import { themes } from '@/lib/theme/colors'
 
 interface RegisterShareModalProps {
   isOpen: boolean
@@ -16,6 +18,7 @@ interface RegisterShareModalProps {
 export function RegisterShareModal({ isOpen, onClose, type }: RegisterShareModalProps) {
   const { t } = useTranslation()
   const { toast } = useToast()
+  const { theme } = useTheme()
   const [qrCode, setQrCode] = useState<string>('')
   const [canShare, setCanShare] = useState(false)
 
@@ -31,7 +34,7 @@ export function RegisterShareModal({ isOpen, onClose, type }: RegisterShareModal
     if (isOpen) {
       generateQRCode()
     }
-  }, [isOpen, type])
+  }, [isOpen, type, theme])
 
   const generateQRCode = async () => {
     try {
@@ -39,7 +42,7 @@ export function RegisterShareModal({ isOpen, onClose, type }: RegisterShareModal
         width: 280,
         margin: 2,
         color: {
-          dark: '#4f46e5',
+          dark: themes[theme].colors.primaryDark,
           light: '#ffffff',
         },
       })
@@ -106,7 +109,7 @@ export function RegisterShareModal({ isOpen, onClose, type }: RegisterShareModal
 
         {/* Header */}
         <div className="text-center mb-6">
-          <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-theme-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
             {type === 'business' ? (
               <Building2 className="h-8 w-8 text-white" />
             ) : (
@@ -126,7 +129,7 @@ export function RegisterShareModal({ isOpen, onClose, type }: RegisterShareModal
         </div>
 
         {/* QR Code */}
-        <div className="bg-background rounded-2xl p-4 border-2 border-indigo-100 dark:border-indigo-900 mb-6">
+        <div className="bg-background rounded-2xl p-4 border-2 border-theme-primaryBorder mb-6">
           {qrCode && (
             <img
               src={qrCode}
@@ -140,7 +143,7 @@ export function RegisterShareModal({ isOpen, onClose, type }: RegisterShareModal
         <Button
           onClick={goToLink}
           variant="outline"
-          className="w-full border-indigo-200 text-indigo-600 hover:bg-indigo-50 rounded-xl mb-4 flex items-center justify-center gap-2"
+          className="w-full border-theme-primaryBorder text-theme-primary hover:bg-theme-primaryBg rounded-xl mb-4 flex items-center justify-center gap-2"
         >
           <ExternalLink className="h-4 w-4" />
           {t('common.goToLink', 'Go to Registration')}
@@ -150,7 +153,7 @@ export function RegisterShareModal({ isOpen, onClose, type }: RegisterShareModal
         <div className="flex gap-3">
           <Button
             onClick={copyLink}
-            className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl"
+            className="flex-1 bg-theme-primary hover:opacity-90 text-white rounded-xl"
           >
             {t('landing.copyLink')}
           </Button>
@@ -158,7 +161,7 @@ export function RegisterShareModal({ isOpen, onClose, type }: RegisterShareModal
             <Button
               onClick={shareLink}
               variant="outline"
-              className="flex-1 border-indigo-600 text-indigo-600 hover:bg-indigo-50 rounded-xl"
+              className="flex-1 border-theme-primary text-theme-primary hover:bg-theme-primaryBg rounded-xl"
             >
               {t('landing.share')}
             </Button>
