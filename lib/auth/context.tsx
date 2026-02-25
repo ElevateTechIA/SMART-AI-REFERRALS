@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react'
 import {
   User as FirebaseUser,
   GoogleAuthProvider,
@@ -29,6 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null)
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const signingInWithRoleRef = useRef(false)
 
   const fetchUserData = async (firebaseUser: FirebaseUser): Promise<User | null> => {
     const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid))
@@ -118,11 +119,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const userData = await fetchUserData(firebaseUser)
         if (userData) {
           setUser(userData)
-        } else {
-          // Create user document if it doesn't exist
+        } else if (!signingInWithRoleRef.current) {
+          // Only auto-create if signInWithGoogle is NOT handling it with a specific role
           const newUser = await createUserDocument(firebaseUser)
           setUser(newUser)
         }
+        // If signingInWithRoleRef is true, signInWithGoogle will create the doc with the correct role
       } else {
         setUser(null)
       }
@@ -137,11 +139,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const provider = new GoogleAuthProvider()
     provider.setCustomParameters({ prompt: 'select_account' })
 
+    // Signal that we're handling user creation with a specific role
+    // This prevents onAuthStateChanged from creating the doc without the role
+    if (role) signingInWithRoleRef.current = true
+
     try {
       const result = await signInWithPopup(auth, provider)
       const existingUser = await fetchUserData(result.user)
       if (!existingUser) {
-        await createUserDocument(result.user, undefined, role)
+        const newUser = await createUserDocument(result.user, undefined, role)
+        setUser(newUser)
       }
     } catch (error: unknown) {
       const firebaseError = error as { code?: string }
@@ -160,6 +167,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         throw error
       }
+    } finally {
+      signingInWithRoleRef.current = false
     }
   }
 
