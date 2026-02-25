@@ -549,6 +549,25 @@
     box-shadow: 0 4px 12px color-mix(in srgb, var(--theme-primaryDark) 40%, transparent);
   }
 
+  /* Card flip 3D */
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .preserve-3d {
+    transform-style: preserve-3d;
+    transition: transform 0.6s ease;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+
   /* Auth page overlay */
   .auth-overlay {
     background: linear-gradient(

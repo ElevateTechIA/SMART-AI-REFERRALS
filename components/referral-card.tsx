@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/use-toast'
 import { formatCurrency, generateReferralUrl } from '@/lib/utils'
 import QRCode from 'qrcode'
-import { Copy, Download, Share2, Building2, Gift, Link2 } from 'lucide-react'
+import { Copy, Download, Share2, Building2, Gift, Link2, MapPin, Phone, Globe, Mail, Star, ArrowLeft } from 'lucide-react'
 import type { Business, Offer } from '@/lib/types'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/lib/theme/theme-provider'
@@ -28,6 +28,79 @@ function getGradientForBusiness(name: string): string {
   return GRADIENTS[Math.abs(hash) % GRADIENTS.length]
 }
 
+function getFakeReviewCount(name: string): number {
+  let hash = 0
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 7) - hash)
+  }
+  return 50 + (Math.abs(hash) % 450) // 50–499 reviews
+}
+
+const FAKE_REVIEWERS = [
+  'Maria G.', 'Carlos R.', 'Ana P.', 'Luis M.', 'Sofia T.',
+  'Diego H.', 'Laura V.', 'Juan S.', 'Elena F.', 'Pedro A.',
+]
+
+const FAKE_REVIEW_TEXTS = [
+  'Excellent service and great prices! Highly recommended.',
+  'Amazing experience, will definitely come back again.',
+  'Very professional staff. The best in town!',
+  'Great quality and fast service. Love this place!',
+  'Wonderful atmosphere and friendly people. 10/10!',
+  'Outstanding! Exceeded all my expectations.',
+  'Top-notch quality. Couldn\'t be happier!',
+  'Fantastic experience from start to finish.',
+  'Best business in the area. Always reliable.',
+  'Incredible value for money. Five stars!',
+]
+
+const BAD_REVIEWS = [
+  { text: 'Service was a bit slow on my visit. Had to wait longer than expected.', stars: 3 },
+  { text: 'The experience was okay but not what I expected for the price.', stars: 2 },
+]
+
+const BUSINESS_REPLIES = [
+  'Thank you for your feedback! We apologize for the wait — we were short-staffed that day. We\'ve since added more team members to ensure faster service. We\'d love to make it up to you on your next visit!',
+  'We appreciate your honest review and are sorry we didn\'t meet your expectations. We\'ve taken your feedback to heart and made improvements. Please give us another chance — we\'re confident you\'ll notice the difference!',
+]
+
+interface FakeReview {
+  reviewer: string
+  text: string
+  stars: number
+  daysAgo: number
+  businessReply?: string
+  replyDaysAgo?: number
+}
+
+function getFakeReviews(name: string): FakeReview[] {
+  let hash = 0
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 3) - hash)
+  }
+  const offset = Math.abs(hash)
+  return Array.from({ length: 5 }).map((_, i) => {
+    // Reviews at index 1 and 3 are bad reviews with business replies
+    if (i === 1 || i === 3) {
+      const badIdx = i === 1 ? 0 : 1
+      return {
+        reviewer: FAKE_REVIEWERS[(offset + i) % FAKE_REVIEWERS.length],
+        text: BAD_REVIEWS[badIdx].text,
+        stars: BAD_REVIEWS[badIdx].stars,
+        daysAgo: 3 + ((offset + i * 7) % 25),
+        businessReply: BUSINESS_REPLIES[badIdx],
+        replyDaysAgo: 1 + ((offset + i * 3) % 5),
+      }
+    }
+    return {
+      reviewer: FAKE_REVIEWERS[(offset + i) % FAKE_REVIEWERS.length],
+      text: FAKE_REVIEW_TEXTS[(offset + i * 3) % FAKE_REVIEW_TEXTS.length],
+      stars: 5,
+      daysAgo: 1 + ((offset + i * 7) % 30),
+    }
+  })
+}
+
 interface ReferralCardProps {
   business: Business & { offer?: Offer; images?: string[] }
   userId: string
@@ -38,9 +111,11 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
   const { t } = useTranslation()
   const { theme } = useTheme()
   const [qrCode, setQrCode] = useState<string | null>(null)
+  const [flipped, setFlipped] = useState(false)
   const referralUrl = generateReferralUrl(business.id, userId)
   const coverImage = business.offer?.image || business.images?.[0] || null
   const gradient = getGradientForBusiness(business.name)
+  const fakeReviews = getFakeReviews(business.name)
 
   useEffect(() => {
     QRCode.toDataURL(referralUrl, {
@@ -82,102 +157,251 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
   }
 
   return (
-    <div className="w-full">
-      <div className="rounded-3xl overflow-hidden shadow-xl border border-border bg-card">
-        {/* Banner */}
-        <div className="relative h-40 sm:h-48">
-          {coverImage ? (
-            <img
-              src={coverImage}
-              alt={business.name}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div
-              className={`w-full h-full bg-gradient-to-br ${gradient}`}
-            >
-              <div className="absolute inset-0 flex items-center justify-center opacity-20">
-                <Building2 className="h-24 w-24 text-white" />
+    <div className="w-full perspective-1000">
+      <div className={`relative preserve-3d ${flipped ? 'rotate-y-180' : ''}`}>
+        {/* ===== FRONT FACE ===== */}
+        <div className="backface-hidden">
+          <div className="rounded-3xl overflow-hidden shadow-xl border border-border bg-card">
+            {/* Banner */}
+            <div className="relative h-40 sm:h-48">
+              {coverImage ? (
+                <img
+                  src={coverImage}
+                  alt={business.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div
+                  className={`w-full h-full bg-gradient-to-br ${gradient}`}
+                >
+                  <div className="absolute inset-0 flex items-center justify-center opacity-20">
+                    <Building2 className="h-24 w-24 text-white" />
+                  </div>
+                </div>
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+
+              {/* Business name & category */}
+              <div className="absolute bottom-4 left-5 right-5">
+                <h3 className="text-white font-extrabold text-xl sm:text-2xl drop-shadow-lg truncate tracking-wide uppercase">
+                  {business.name}
+                </h3>
+                <p className="text-white/80 text-sm drop-shadow font-medium">
+                  {business.category}
+                </p>
+              </div>
+
+              {/* Earn badge */}
+              {business.offer && (
+                <div className="absolute top-4 right-4">
+                  <div className="bg-green-50 dark:bg-green-900/80 border border-green-200 dark:border-green-700 rounded-xl px-3.5 py-1.5 flex items-center gap-1.5 shadow-lg">
+                    <Gift className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                    <span className="text-sm font-bold text-green-700 dark:text-green-300">
+                      {t('cards.earn', { amount: formatCurrency(business.offer.referrerCommissionAmount) })}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Scan to Refer & Earn label */}
+            <div className="pt-5 pb-2 text-center">
+              <h4 className="text-lg font-bold text-foreground">
+                {t('cards.scanToRefer')}
+              </h4>
+            </div>
+
+            {/* QR Code */}
+            <div className="flex justify-center px-4 pb-3">
+              <div className="bg-white rounded-2xl p-3 shadow-md border border-gray-100">
+                {qrCode ? (
+                  <img src={qrCode} alt="QR Code" className="w-36 h-36 sm:w-40 sm:h-40" />
+                ) : (
+                  <div className="w-36 h-36 sm:w-40 sm:h-40 bg-gray-100 animate-pulse rounded-xl" />
+                )}
               </div>
             </div>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
 
-          {/* Business name & category */}
-          <div className="absolute bottom-4 left-5 right-5">
-            <h3 className="text-white font-extrabold text-xl sm:text-2xl drop-shadow-lg truncate tracking-wide uppercase">
-              {business.name}
-            </h3>
-            <p className="text-white/80 text-sm drop-shadow font-medium">
-              {business.category}
-            </p>
-          </div>
-
-          {/* Earn badge */}
-          {business.offer && (
-            <div className="absolute top-4 right-4">
-              <div className="bg-green-50 dark:bg-green-900/80 border border-green-200 dark:border-green-700 rounded-xl px-3.5 py-1.5 flex items-center gap-1.5 shadow-lg">
-                <Gift className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
-                <span className="text-sm font-bold text-green-700 dark:text-green-300">
-                  {t('cards.earn', { amount: formatCurrency(business.offer.referrerCommissionAmount) })}
+            {/* Referral URL */}
+            <div className="px-5 pb-3">
+              <div className="flex items-center gap-2 bg-muted rounded-xl px-4 py-2.5">
+                <Link2 className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <span className="text-sm text-muted-foreground truncate">
+                  {referralUrl}
                 </span>
               </div>
             </div>
-          )}
-        </div>
 
-        {/* Scan to Refer & Earn label */}
-        <div className="pt-5 pb-2 text-center">
-          <h4 className="text-lg font-bold text-foreground">
-            {t('cards.scanToRefer')}
-          </h4>
-        </div>
+            {/* Action Buttons */}
+            <div className="px-5 pb-4 pt-1 grid grid-cols-3 gap-2">
+              <Button onClick={copyLink} size="sm" className="gap-1.5 text-xs rounded-xl">
+                <Copy className="h-3.5 w-3.5" />
+                {t('cards.copy')}
+              </Button>
+              <Button
+                onClick={downloadQR}
+                variant="outline"
+                size="sm"
+                className="gap-1.5 text-xs rounded-xl"
+              >
+                <Download className="h-3.5 w-3.5" />
+                {t('cards.qr')}
+              </Button>
+              <Button
+                onClick={shareLink}
+                variant="outline"
+                size="sm"
+                className="gap-1.5 text-xs rounded-xl"
+              >
+                <Share2 className="h-3.5 w-3.5" />
+                {t('cards.share')}
+              </Button>
+            </div>
 
-        {/* QR Code */}
-        <div className="flex justify-center px-4 pb-3">
-          <div className="bg-white rounded-2xl p-3 shadow-md border border-gray-100">
-            {qrCode ? (
-              <img src={qrCode} alt="QR Code" className="w-36 h-36 sm:w-40 sm:h-40" />
-            ) : (
-              <div className="w-36 h-36 sm:w-40 sm:h-40 bg-gray-100 animate-pulse rounded-xl" />
+            {/* Business Info */}
+            {(business.description || business.address || business.phone || business.email || business.website) && (
+              <div className="px-5 pb-5 pt-1 border-t border-border space-y-2">
+                {business.description && (
+                  <p className="text-xs text-muted-foreground pt-3">{business.description}</p>
+                )}
+                {business.address && (
+                  <div className="flex items-start gap-2 text-xs">
+                    <MapPin className="h-3.5 w-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                    <span>{business.address}</span>
+                  </div>
+                )}
+                {business.phone && (
+                  <div className="flex items-center gap-2 text-xs">
+                    <Phone className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                    <a href={`tel:${business.phone}`} className="hover:underline">
+                      {business.phone}
+                    </a>
+                  </div>
+                )}
+                {business.email && (
+                  <div className="flex items-center gap-2 text-xs">
+                    <Mail className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                    <a href={`mailto:${business.email}`} className="hover:underline truncate">
+                      {business.email}
+                    </a>
+                  </div>
+                )}
+                {business.website && (
+                  <div className="flex items-center gap-2 text-xs">
+                    <Globe className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                    <a
+                      href={business.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline truncate"
+                    >
+                      {business.website.replace(/^https?:\/\//, '')}
+                    </a>
+                  </div>
+                )}
+                {/* Reviews - tap to flip */}
+                <button
+                  onClick={() => setFlipped(true)}
+                  className="flex items-center justify-end gap-1.5 pt-1 w-full hover:opacity-80 transition-opacity"
+                >
+                  <div className="flex">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                    ))}
+                  </div>
+                  <span className="text-xs font-medium text-muted-foreground">
+                    ({getFakeReviewCount(business.name)})
+                  </span>
+                </button>
+              </div>
             )}
           </div>
         </div>
 
-        {/* Referral URL */}
-        <div className="px-5 pb-3">
-          <div className="flex items-center gap-2 bg-muted rounded-xl px-4 py-2.5">
-            <Link2 className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-            <span className="text-sm text-muted-foreground truncate">
-              {referralUrl}
-            </span>
-          </div>
-        </div>
+        {/* ===== BACK FACE (Reviews) ===== */}
+        <div className="backface-hidden rotate-y-180 absolute inset-0">
+          <div className="rounded-3xl overflow-hidden shadow-xl border border-border bg-card h-full flex flex-col">
+            {/* Header */}
+            <div className="px-5 pt-5 pb-3 border-b border-border">
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => setFlipped(false)}
+                  className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  {t('common.back')}
+                </button>
+                <div className="flex items-center gap-1.5">
+                  <div className="flex">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                    ))}
+                  </div>
+                  <span className="text-sm font-bold text-foreground">
+                    4.5
+                  </span>
+                </div>
+              </div>
+              <h3 className="text-lg font-bold text-foreground mt-2">
+                {t('cards.reviews', { count: getFakeReviewCount(business.name) })}
+              </h3>
+            </div>
 
-        {/* Action Buttons */}
-        <div className="px-5 pb-5 pt-1 grid grid-cols-3 gap-2">
-          <Button onClick={copyLink} size="sm" className="gap-1.5 text-xs rounded-xl">
-            <Copy className="h-3.5 w-3.5" />
-            {t('cards.copy')}
-          </Button>
-          <Button
-            onClick={downloadQR}
-            variant="outline"
-            size="sm"
-            className="gap-1.5 text-xs rounded-xl"
-          >
-            <Download className="h-3.5 w-3.5" />
-            {t('cards.qr')}
-          </Button>
-          <Button
-            onClick={shareLink}
-            variant="outline"
-            size="sm"
-            className="gap-1.5 text-xs rounded-xl"
-          >
-            <Share2 className="h-3.5 w-3.5" />
-            {t('cards.share')}
-          </Button>
+            {/* Reviews list */}
+            <div className="flex-1 overflow-y-auto px-5 py-3 space-y-4">
+              {fakeReviews.map((review, i) => (
+                <div key={i} className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-foreground">{review.reviewer}</span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {review.daysAgo}d ago
+                    </span>
+                  </div>
+                  <div className="flex">
+                    {Array.from({ length: 5 }).map((_, s) => (
+                      <Star
+                        key={s}
+                        className={`h-3 w-3 ${
+                          s < review.stars
+                            ? 'fill-amber-400 text-amber-400'
+                            : 'fill-muted text-muted-foreground/30'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {review.text}
+                  </p>
+                  {/* Business reply */}
+                  {review.businessReply && (
+                    <div className="ml-4 mt-1.5 pl-3 border-l-2 border-primary/30 bg-muted/50 rounded-r-lg py-2 pr-3">
+                      <div className="flex items-center justify-between mb-0.5">
+                        <span className="text-[10px] font-semibold text-foreground">
+                          {business.name}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">
+                          {review.replyDaysAgo}d ago
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        {review.businessReply}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div className="px-5 py-3 border-t border-border">
+              <button
+                onClick={() => setFlipped(false)}
+                className="w-full text-center text-sm font-medium text-theme-primary hover:opacity-80 transition-opacity"
+              >
+                {t('cards.viewPromo')}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

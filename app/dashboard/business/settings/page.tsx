@@ -22,6 +22,7 @@ import { useTranslation } from 'react-i18next'
 import { GoogleMapsProvider } from '@/lib/google-maps/provider'
 import { AddressAutocomplete } from '@/components/business/address-autocomplete'
 import { PhoneInput } from '@/components/business/phone-input'
+import { ImageCropper } from '@/components/business/image-cropper'
 
 const CATEGORIES = [
   'Restaurant',
@@ -47,6 +48,8 @@ export default function BusinessSettingsPage() {
   const [phoneValid, setPhoneValid] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [business, setBusiness] = useState<Business | null>(null)
+  const [cropperOpen, setCropperOpen] = useState(false)
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [formData, setFormData] = useState({
     name: '',
@@ -147,15 +150,28 @@ export default function BusinessSettingsPage() {
     }
   }
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || !business) return
 
     // Reset input so user can re-select same file
     if (fileInputRef.current) fileInputRef.current.value = ''
 
+    // Read file and open cropper
+    const reader = new FileReader()
+    reader.onload = () => {
+      setCropImageSrc(reader.result as string)
+      setCropperOpen(true)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleCroppedUpload = async (croppedBlob: Blob) => {
+    if (!business) return
+
     setUploading(true)
     try {
+      const file = new File([croppedBlob], 'logo.jpg', { type: 'image/jpeg' })
       const formData = new FormData()
       formData.append('file', file)
       formData.append('businessId', business.id)
@@ -174,6 +190,9 @@ export default function BusinessSettingsPage() {
         ...business,
         images: [...(business.images || []), result.data.url],
       })
+
+      setCropperOpen(false)
+      setCropImageSrc(null)
 
       toast({
         title: t('common.success'),
@@ -253,61 +272,56 @@ export default function BusinessSettingsPage() {
             ref={fileInputRef}
             type="file"
             accept="image/jpeg,image/png,image/webp,image/gif"
-            onChange={handleImageUpload}
+            onChange={handleFileSelect}
             className="hidden"
           />
-          {coverImage ? (
-            <div className="relative group rounded-lg overflow-hidden">
-              <div className="relative h-48 w-full">
+          <div className="flex justify-center">
+            {coverImage ? (
+              <div className="relative group rounded-lg overflow-hidden w-48 h-48">
                 <Image
                   src={coverImage}
-                  alt={`${business.name} cover`}
+                  alt={`${business.name} logo`}
                   fill
                   className="object-cover"
                   unoptimized
                 />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                  >
+                    {t('businessSettings.changeImage')}
+                  </Button>
+                </div>
               </div>
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  className="opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading}
-                >
-                  {uploading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {t('common.uploading')}
-                    </>
-                  ) : (
-                    t('businessSettings.changeImage')
-                  )}
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="w-full h-48 rounded-lg border-2 border-dashed border-muted-foreground/25 hover:border-muted-foreground/50 transition-colors flex flex-col items-center justify-center gap-2 text-muted-foreground"
-            >
-              {uploading ? (
-                <>
-                  <Loader2 className="h-8 w-8 animate-spin" />
-                  <span className="text-sm">{t('common.uploading')}</span>
-                </>
-              ) : (
-                <>
-                  <ImagePlus className="h-8 w-8" />
-                  <span className="text-sm font-medium">{t('businessSettings.uploadCoverImage')}</span>
-                  <span className="text-xs">{t('businessSettings.uploadFormats')}</span>
-                </>
-              )}
-            </button>
-          )}
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="w-48 h-48 rounded-lg border-2 border-dashed border-muted-foreground/25 hover:border-muted-foreground/50 transition-colors flex flex-col items-center justify-center gap-2 text-muted-foreground"
+              >
+                <ImagePlus className="h-8 w-8" />
+                <span className="text-sm font-medium">{t('businessSettings.uploadCoverImage')}</span>
+                <span className="text-xs">{t('businessSettings.uploadFormats')}</span>
+              </button>
+            )}
+          </div>
+
+          <ImageCropper
+            imageSrc={cropImageSrc}
+            open={cropperOpen}
+            onClose={() => {
+              setCropperOpen(false)
+              setCropImageSrc(null)
+            }}
+            onCropComplete={handleCroppedUpload}
+            uploading={uploading}
+          />
         </CardContent>
       </Card>
 

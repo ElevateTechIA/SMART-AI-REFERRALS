@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { apiGet, apiPost, apiPut } from '@/lib/api-client'
-import type { Business, User, Visit, FraudFlag, Offer, ConsumerRewardType, Receipt } from '@/lib/types'
+import type { Business, User, Visit, FraudFlag, Offer, ConsumerRewardType, Receipt, SupportTicket } from '@/lib/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import {
   Building2,
@@ -38,6 +38,9 @@ import {
   Search,
   Plus,
   X,
+  HelpCircle,
+  MessageSquare,
+  Send,
 } from 'lucide-react'
 
 interface AdminDataResponse {
@@ -84,6 +87,10 @@ export default function AdminDashboardPage() {
   const [commissionSaving, setCommissionSaving] = useState(false)
   const [userSearch, setUserSearch] = useState('')
   const [roleLoading, setRoleLoading] = useState<string | null>(null)
+  const [supportTickets, setSupportTickets] = useState<SupportTicket[]>([])
+  const [expandedTicket, setExpandedTicket] = useState<string | null>(null)
+  const [replyText, setReplyText] = useState('')
+  const [replyLoading, setReplyLoading] = useState<string | null>(null)
 
   useEffect(() => {
     // Check if user is admin
@@ -155,6 +162,18 @@ export default function AdminDashboardPage() {
               offersMap.set(offer.businessId, offer)
             })
             setOffers(offersMap)
+          }
+
+          // Fetch support tickets
+          const supportResult = await apiGet<{ tickets: SupportTicket[] }>('/api/admin/support')
+          if (supportResult.ok && supportResult.data?.tickets) {
+            setSupportTickets(
+              supportResult.data.tickets.map((t) => ({
+                ...t,
+                createdAt: t.createdAt ? new Date(t.createdAt) : new Date(),
+                updatedAt: t.updatedAt ? new Date(t.updatedAt) : new Date(),
+              }))
+            )
           }
         }
       } catch (error) {
@@ -359,6 +378,53 @@ export default function AdminDashboardPage() {
     }
   }
 
+  const handleSupportReply = async (ticketId: string, reply: string, newStatus?: string) => {
+    setReplyLoading(ticketId)
+    try {
+      const body: Record<string, string> = { ticketId }
+      if (reply.trim()) body.reply = reply.trim()
+      if (newStatus) body.status = newStatus
+
+      const result = await apiPut<{ success: boolean; error?: string }>(
+        '/api/admin/support',
+        body
+      )
+
+      if (!result.ok) {
+        throw new Error(result.error || t('admin.replyFailed'))
+      }
+
+      setSupportTickets((prev) =>
+        prev.map((t) =>
+          t.id === ticketId
+            ? {
+                ...t,
+                ...(reply.trim() ? { adminReply: reply.trim() } : {}),
+                ...(newStatus ? { status: newStatus as SupportTicket['status'] } : {}),
+                updatedAt: new Date(),
+              }
+            : t
+        )
+      )
+
+      setReplyText('')
+      setExpandedTicket(null)
+      toast({
+        title: t('admin.replySent'),
+        description: t('admin.replySentDesc'),
+      })
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : t('admin.replyFailed')
+      toast({
+        title: t('common.error'),
+        description: errorMessage,
+        variant: 'destructive',
+      })
+    } finally {
+      setReplyLoading(null)
+    }
+  }
+
   const allRoles = ['admin', 'business', 'referrer'] as const
 
   const filteredUsers = users.filter((u) => {
@@ -479,12 +545,22 @@ export default function AdminDashboardPage() {
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="businesses">
-        <TabsList>
-          <TabsTrigger value="businesses">{t('admin.tabBusinesses')}</TabsTrigger>
-          <TabsTrigger value="referrers">{t('admin.tabPromoters')}</TabsTrigger>
-          <TabsTrigger value="users">{t('admin.tabUsers')}</TabsTrigger>
-          <TabsTrigger value="visits">{t('admin.tabRecentVisits')}</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+          <TabsList className="w-max sm:w-auto">
+            <TabsTrigger value="businesses">{t('admin.tabBusinesses')}</TabsTrigger>
+            <TabsTrigger value="referrers">{t('admin.tabPromoters')}</TabsTrigger>
+            <TabsTrigger value="users">{t('admin.tabUsers')}</TabsTrigger>
+            <TabsTrigger value="visits">{t('admin.tabRecentVisits')}</TabsTrigger>
+            <TabsTrigger value="support">
+              {t('admin.tabSupport')}
+              {supportTickets.filter((t) => t.status === 'open').length > 0 && (
+                <Badge variant="destructive" className="ml-1.5 h-5 min-w-5 px-1 text-[10px]">
+                  {supportTickets.filter((t) => t.status === 'open').length}
+                </Badge>
+              )}
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="businesses" className="mt-4">
           <Card>
@@ -1084,6 +1160,139 @@ export default function AdminDashboardPage() {
                                 <ExternalLink className="h-3 w-3" />
                               </a>
                             )}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="support" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <HelpCircle className="h-5 w-5" />
+                {t('admin.supportTickets')}
+              </CardTitle>
+              <CardDescription>
+                {t('admin.manageSupportTickets')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {supportTickets.length === 0 ? (
+                <div className="text-center py-8">
+                  <MessageSquare className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
+                  <p className="text-muted-foreground">
+                    {t('admin.noSupportTickets')}
+                  </p>
+                </div>
+              ) : (
+                <div className="divide-y">
+                  {supportTickets.map((ticket) => {
+                    const isExpanded = expandedTicket === ticket.id
+                    return (
+                      <div key={ticket.id} className="py-4">
+                        <div className="flex flex-col md:flex-row md:items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-semibold text-sm truncate">{ticket.subject}</h4>
+                              <Badge variant={ticket.status === 'resolved' ? 'success' : 'warning'}>
+                                {ticket.status}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {ticket.userName} ({ticket.userEmail}) &bull; {formatDate(ticket.createdAt)}
+                            </p>
+                            <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                              {ticket.message}
+                            </p>
+                            {ticket.adminReply && (
+                              <div className="ml-4 mt-2 pl-3 border-l-2 border-primary/30 bg-muted/50 rounded-r-lg py-2 pr-3">
+                                <span className="text-[10px] font-semibold text-foreground">
+                                  {t('admin.reply')}
+                                </span>
+                                <p className="text-sm text-muted-foreground leading-relaxed mt-0.5">
+                                  {ticket.adminReply}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            {ticket.status === 'open' ? (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleSupportReply(ticket.id, '', 'resolved')}
+                                disabled={replyLoading === ticket.id}
+                              >
+                                {replyLoading === ticket.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <>
+                                    <CheckCircle className="h-4 w-4 mr-1" />
+                                    {t('admin.markResolved')}
+                                  </>
+                                )}
+                              </Button>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleSupportReply(ticket.id, '', 'open')}
+                                disabled={replyLoading === ticket.id}
+                              >
+                                {replyLoading === ticket.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  t('admin.markOpen')
+                                )}
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              variant={isExpanded ? 'default' : 'outline'}
+                              onClick={() => {
+                                setExpandedTicket(isExpanded ? null : ticket.id)
+                                setReplyText(ticket.adminReply || '')
+                              }}
+                            >
+                              <Send className="h-4 w-4 mr-1" />
+                              {t('admin.reply')}
+                            </Button>
+                          </div>
+                        </div>
+
+                        {isExpanded && (
+                          <div className="mt-3 ml-0 md:ml-4 p-3 rounded-lg bg-muted/50 border space-y-3">
+                            <textarea
+                              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                              placeholder={t('admin.replyPlaceholder')}
+                              value={replyText}
+                              onChange={(e) => setReplyText(e.target.value)}
+                            />
+                            <div className="flex justify-end">
+                              <Button
+                                size="sm"
+                                onClick={() => handleSupportReply(ticket.id, replyText, 'resolved')}
+                                disabled={!replyText.trim() || replyLoading === ticket.id}
+                              >
+                                {replyLoading === ticket.id ? (
+                                  <>
+                                    <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                                    {t('admin.sendingReply')}
+                                  </>
+                                ) : (
+                                  <>
+                                    <Send className="h-4 w-4 mr-1" />
+                                    {t('admin.sendReply')}
+                                  </>
+                                )}
+                              </Button>
+                            </div>
                           </div>
                         )}
                       </div>

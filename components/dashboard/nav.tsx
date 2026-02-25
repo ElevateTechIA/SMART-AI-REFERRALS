@@ -36,6 +36,7 @@ import {
   Palette,
   Check,
   DollarSign,
+  HelpCircle,
 } from 'lucide-react'
 
 const languages = [
@@ -206,6 +207,12 @@ export function DashboardNav() {
                     {t('nav.settings')}
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard/support" className="cursor-pointer">
+                    <HelpCircle className="mr-2 h-4 w-4" />
+                    {t('nav.contactSupport')}
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-600">
                   <LogOut className="mr-2 h-4 w-4" />
@@ -296,6 +303,15 @@ export function DashboardNav() {
                 <Share2 className="h-5 w-5 text-theme-primary" />
                 <span className="font-medium">{t('share.shareApp', 'Share App')}</span>
               </button>
+
+              <Link
+                href="/dashboard/support"
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-4 px-4 py-3.5 rounded-xl text-theme-textSecondary hover:bg-theme-primary/10 transition-colors"
+              >
+                <HelpCircle className="h-5 w-5 text-theme-primary" />
+                <span className="font-medium">{t('nav.contactSupport')}</span>
+              </Link>
             </div>
 
             <div className="mx-6 border-t border-theme-cardBorder" />

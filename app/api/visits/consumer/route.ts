@@ -93,9 +93,30 @@ export async function GET(request: NextRequest) {
         return b.createdAt.getTime() - a.createdAt.getTime()
       })
 
+    // Fetch user's reviews for visited businesses
+    const reviewsSnapshot = await db
+      .collection('reviews')
+      .where('userId', '==', userId)
+      .get()
+
+    const reviews = reviewsSnapshot.docs.map((doc) => {
+      const data = doc.data()
+      return {
+        id: doc.id,
+        businessId: data.businessId,
+        userId: data.userId,
+        userName: data.userName,
+        rating: data.rating,
+        text: data.text,
+        createdAt: data.createdAt?.toDate() || null,
+        updatedAt: data.updatedAt?.toDate() || null,
+      }
+    })
+
     return NextResponse.json({
       visits,
       rewards,
+      reviews,
     })
   } catch (error) {
     console.error('Error fetching consumer visits:', error)

@@ -29,6 +29,7 @@ export interface Business {
   address: string
   phone: string
   website?: string
+  email?: string // Owner email (populated from users collection)
   images: string[] // Firebase Storage URLs
   status: BusinessStatus
   createdAt: Date
@@ -187,6 +188,35 @@ export interface FraudFlag {
   resolved: boolean
   resolvedAt?: Date
   resolvedBy?: string
+}
+
+// Review
+export interface Review {
+  id: string
+  businessId: string
+  userId: string
+  userName: string
+  rating: number // 1-5
+  text: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+// Support Ticket
+export type SupportTicketStatus = 'open' | 'resolved'
+
+export interface SupportTicket {
+  id: string
+  userId: string
+  userName: string
+  userEmail: string
+  subject: string
+  message: string
+  status: SupportTicketStatus
+  adminReply?: string
+  repliedBy?: string
+  createdAt: Date
+  updatedAt: Date
 }
 
 // API Response Types

@@ -13,7 +13,7 @@ import { useToast } from '@/components/ui/use-toast'
 import { apiGet } from '@/lib/api-client'
 import type { Business, Offer, Visit, Earning } from '@/lib/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
-import { ReferralCardCarousel } from '@/components/referral-card-carousel'
+import { BusinessGrid } from '@/components/business-grid'
 import {
   DollarSign,
   Users,
@@ -224,17 +224,14 @@ function ReferralsContent() {
         </Card>
       </div>
 
-      {/* Referral Cards Carousel */}
-      {isReferrerApproved && businesses.length > 0 && (
-        <div className="overflow-hidden -mx-4 px-4">
-          <div className="mb-3">
+      {/* Stores Grid */}
+      {isReferrerApproved && (
+        <div>
+          <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold flex items-center gap-2">
               <QrCode className="h-5 w-5" />
-              {t('promotions.yourPromoCards')}
+              {t('promotions.storesForYou')}
             </h2>
-            <p className="text-xs text-muted-foreground">
-              {t('promotions.swipeToBrowse')}
-            </p>
           </div>
 
           {/* Search & Category Filter */}
@@ -261,13 +258,7 @@ function ReferralsContent() {
             </Select>
           </div>
 
-          {filteredBusinesses.length > 0 ? (
-            <ReferralCardCarousel businesses={filteredBusinesses} userId={user!.id} />
-          ) : (
-            <p className="text-center text-muted-foreground py-8 text-sm">
-              {t('promotions.noResults')}
-            </p>
-          )}
+          <BusinessGrid businesses={filteredBusinesses} userId={user!.id} />
         </div>
       )}
 
@@ -283,13 +274,6 @@ function ReferralsContent() {
         </Card>
       )}
 
-      {isReferrerApproved && businesses.length === 0 && (
-        <Card className="min-w-0 overflow-hidden">
-          <CardContent className="py-8 text-center text-muted-foreground text-sm">
-            {t('promotions.noBusinesses')}
-          </CardContent>
-        </Card>
-      )}
 
       {/* Referral History */}
       <Card className="min-w-0 overflow-hidden">

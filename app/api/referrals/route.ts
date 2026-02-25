@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
       address: string
       phone: string
       website?: string
+      email: string | null
       images: string[]
       status: string
       createdAt: Date | null
@@ -58,6 +59,16 @@ export async function GET(request: NextRequest) {
 
       if (offerDoc.exists && offerDoc.data()?.active) {
         const offerData = offerDoc.data()!
+
+        // Look up owner email from users collection
+        let ownerEmail: string | null = null
+        if (businessData.ownerUserId) {
+          const ownerDoc = await db.collection('users').doc(businessData.ownerUserId).get()
+          if (ownerDoc.exists) {
+            ownerEmail = ownerDoc.data()?.email || null
+          }
+        }
+
         businesses.push({
           id: businessDoc.id,
           name: businessData.name,
@@ -66,6 +77,7 @@ export async function GET(request: NextRequest) {
           address: businessData.address,
           phone: businessData.phone,
           website: businessData.website,
+          email: ownerEmail,
           images: businessData.images || [],
           status: businessData.status,
           createdAt: businessData.createdAt?.toDate() || null,
