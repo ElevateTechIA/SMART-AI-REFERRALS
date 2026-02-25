@@ -116,7 +116,6 @@ export default function LandingPage() {
                 </Button>
                 <Button
                   size="lg"
-                  variant="outline"
                   onClick={() => setShowBusinessModal(true)}
                   className="bg-white/10 backdrop-blur-sm border-2 border-white/30 text-white hover:bg-white/20 px-8 py-6 text-lg font-semibold rounded-xl w-full sm:w-auto"
                 >
