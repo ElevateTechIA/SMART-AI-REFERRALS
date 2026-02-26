@@ -619,8 +619,8 @@ function VisitsList({
     setLoadingReceipt(true)
     try {
       const res = await apiGet<{ receipt: Receipt }>(`/api/receipts?visitId=${visitId}`)
-      if (res.receipt) {
-        setViewingReceipt(res.receipt)
+      if (res.data?.receipt) {
+        setViewingReceipt(res.data.receipt)
       }
     } catch {
       toast({
