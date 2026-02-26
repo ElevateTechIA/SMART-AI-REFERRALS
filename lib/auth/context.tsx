@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState } from 'react'
 import {
   User as FirebaseUser,
   GoogleAuthProvider,
@@ -29,7 +29,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null)
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const signingInWithRoleRef = useRef(false)
 
   const fetchUserData = async (firebaseUser: FirebaseUser): Promise<User | null> => {
     const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid))
@@ -96,7 +95,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .then(async (result) => {
         if (result) {
           const existingUser = await fetchUserData(result.user)
-          if (!existingUser) {
+          if (existingUser) {
+            setUser(existingUser)
+          } else {
             let role: UserRole | undefined
             try {
               const stored = sessionStorage.getItem('pendingAuthRole')
@@ -105,7 +106,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             } catch {
               // sessionStorage may be unavailable
             }
-            await createUserDocument(result.user, undefined, role)
+            const newUser = await createUserDocument(result.user, undefined, role)
+            setUser(newUser)
           }
         }
       })
@@ -119,12 +121,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const userData = await fetchUserData(firebaseUser)
         if (userData) {
           setUser(userData)
-        } else if (!signingInWithRoleRef.current) {
-          // Only auto-create if signInWithGoogle is NOT handling it with a specific role
-          const newUser = await createUserDocument(firebaseUser)
-          setUser(newUser)
         }
-        // If signingInWithRoleRef is true, signInWithGoogle will create the doc with the correct role
+        // Never auto-create user docs here — only signInWithGoogle and
+        // getRedirectResult should create docs so the correct role is preserved
       } else {
         setUser(null)
       }
@@ -138,10 +137,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Create a fresh provider each time to ensure prompt: 'select_account' is always applied
     const provider = new GoogleAuthProvider()
     provider.setCustomParameters({ prompt: 'select_account' })
-
-    // Signal that we're handling user creation with a specific role
-    // This prevents onAuthStateChanged from creating the doc without the role
-    if (role) signingInWithRoleRef.current = true
 
     try {
       const result = await signInWithPopup(auth, provider)
@@ -167,8 +162,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         throw error
       }
-    } finally {
-      signingInWithRoleRef.current = false
     }
   }
 
