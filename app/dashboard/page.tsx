@@ -374,7 +374,7 @@ export default function EnhancedDashboardPage() {
         <div className="space-y-6 min-w-0">
           <div className="rounded-2xl p-5 shadow-xl overflow-hidden" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-bold text-white">{t('dashboard.topBusinessesWeek')}</h2>
+              <h2 className="text-base font-bold text-white">{t('dashboard.topPartnersWeek')}</h2>
               <Link href="/dashboard/referrals" className="text-white/60 hover:text-white">
                 <ChevronRight className="h-4 w-4" />
               </Link>
@@ -530,59 +530,59 @@ export default function EnhancedDashboardPage() {
       {/* Main Content */}
       <div className="space-y-2">
         {/* My Referral Link & Top Businesses */}
+        {/* My Promo Link - QR Code */}
+        <div className="rounded-xl p-2.5 shadow-lg" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
+          <h2 className="text-sm font-bold text-white mb-2">{t('dashboard.myReferralLink')}</h2>
+          <div className="flex flex-col items-center bg-card rounded-lg p-3">
+            {qrCode && (
+              <img src={qrCode} alt="QR Code" className="w-48 h-auto mb-2" />
+            )}
+            <p className="text-[9px] text-muted-foreground text-center mb-2 truncate w-full">
+              {referralUrl ? referralUrl.replace('https://', '').replace('http://', '').substring(0, 30) + '...' : '...'}
+            </p>
+            <Button onClick={copyLink} className="w-full mb-1.5 bg-theme-primary hover:opacity-90 rounded-md h-8 text-[11px] font-medium">
+              <Copy className="h-3 w-3 mr-1" />
+              {t('dashboard.copyLink')}
+            </Button>
+            <div className="flex gap-1.5 w-full">
+              <button
+                className="flex-1 h-8 bg-theme-accent hover:opacity-90 text-white rounded-md flex items-center justify-center"
+                onClick={share}
+              >
+                <Share2 className="h-4 w-4" />
+              </button>
+              <button
+                className="flex-1 h-8 bg-muted-foreground/50 hover:bg-muted-foreground/60 text-white rounded-md flex items-center justify-center"
+                onClick={shareApp}
+              >
+                <QrCodeIcon className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Top Partners This Week */}
         <div className="rounded-xl p-2.5 shadow-lg" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm font-bold text-white whitespace-nowrap">{t('dashboard.myReferralLink')}</h2>
+            <h2 className="text-sm font-bold text-white">{t('dashboard.topPartnersWeek')}</h2>
             <Link
               href="/dashboard/referrals"
               className="text-[10px] text-white/90 hover:text-white flex items-center gap-0.5"
             >
-              {t('dashboard.topBusinessesWeek')} <ChevronRight className="h-3 w-3" />
+              {t('dashboard.viewAll', 'View All')} <ChevronRight className="h-3 w-3" />
             </Link>
           </div>
-
-          <div className="grid grid-cols-[0.85fr_1.15fr] gap-1.5">
-            {/* QR Code / Link */}
-            <div className="flex flex-col items-center bg-card rounded-lg p-2">
-              {qrCode && (
-                <img src={qrCode} alt="QR Code" className="w-full h-auto mb-1.5" />
-              )}
-              <p className="text-[9px] text-muted-foreground text-center mb-1.5 truncate w-full">
-                {referralUrl ? referralUrl.replace('https://', '').replace('http://', '').substring(0, 20) + '...' : '...'}
-              </p>
-              <Button onClick={copyLink} className="w-full mb-1.5 bg-theme-primary hover:opacity-90 rounded-md h-7 text-[10px] font-medium">
-                <Copy className="h-2.5 w-2.5 mr-0.5" />
-                {t('dashboard.copyLink')}
-              </Button>
-              <div className="flex gap-1 w-full">
-                <button
-                  className="flex-1 h-7 bg-theme-accent hover:opacity-90 text-white rounded-md flex items-center justify-center"
-                  onClick={share}
-                >
-                  <Share2 className="h-3.5 w-3.5" />
-                </button>
-                <button
-                  className="flex-1 h-7 bg-muted-foreground/50 hover:bg-muted-foreground/60 text-white rounded-md flex items-center justify-center"
-                  onClick={shareApp}
-                >
-                  <QrCodeIcon className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Top Businesses */}
-            <div className="space-y-1.5">
-              {businesses.length > 0 ? (
-                businesses.slice(0, 2).map((biz) => renderBusinessCard(biz, 'sm'))
-              ) : (
-                <div className="flex items-center justify-center h-full bg-white/5 rounded-lg p-4">
-                  <div className="text-center">
-                    <Building2 className="h-8 w-8 text-white/30 mx-auto mb-2" />
-                    <p className="text-white/50 text-[10px]">{t('dashboard.noBusinesses', 'No businesses yet')}</p>
-                  </div>
+          <div className="space-y-1.5">
+            {businesses.length > 0 ? (
+              businesses.slice(0, 2).map((biz) => renderBusinessCard(biz, 'sm'))
+            ) : (
+              <div className="flex items-center justify-center bg-white/5 rounded-lg p-4">
+                <div className="text-center">
+                  <Building2 className="h-8 w-8 text-white/30 mx-auto mb-2" />
+                  <p className="text-white/50 text-[10px]">{t('dashboard.noBusinesses', 'No businesses yet')}</p>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
 
