@@ -30,6 +30,13 @@ import {
 } from 'lucide-react'
 import { QRScanner } from '@/components/business/qr-scanner'
 import { ReceiptDialog } from '@/components/receipt/receipt-dialog'
+import { ReceiptPreview } from '@/components/receipt/receipt-preview'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { useTranslation } from 'react-i18next'
 import QRCode from 'qrcode'
 import { useTheme } from '@/lib/theme/theme-provider'
@@ -591,6 +598,8 @@ function VisitsList({
   const { toast } = useToast()
   const [receiptDialogVisitId, setReceiptDialogVisitId] = useState<string | null>(null)
   const [visitReceipts, setVisitReceipts] = useState<Record<string, boolean>>({})
+  const [viewingReceipt, setViewingReceipt] = useState<Receipt | null>(null)
+  const [loadingReceipt, setLoadingReceipt] = useState(false)
 
   // Check which visits already have receipts
   useEffect(() => {
@@ -605,6 +614,24 @@ function VisitsList({
     }
     checkReceipts()
   }, [visits])
+
+  const handleViewReceipt = async (visitId: string) => {
+    setLoadingReceipt(true)
+    try {
+      const res = await apiGet<{ receipt: Receipt }>(`/api/receipts?visitId=${visitId}`)
+      if (res.receipt) {
+        setViewingReceipt(res.receipt)
+      }
+    } catch {
+      toast({
+        title: t('common.error'),
+        description: t('receipt.fetchError', 'Could not load receipt'),
+        variant: 'destructive',
+      })
+    } finally {
+      setLoadingReceipt(false)
+    }
+  }
 
   const handleReceiptSuccess = (receipt: Receipt) => {
     if (receiptDialogVisitId) {
@@ -645,10 +672,14 @@ function VisitsList({
                   {visit.attributionType === 'REFERRER' ? t('admin.promoter') : t('admin.platform')}
                 </p>
                 {visitReceipts[visit.id] && (
-                  <span className="text-xs text-green-600 flex items-center gap-1 mt-0.5">
+                  <button
+                    onClick={() => handleViewReceipt(visit.id)}
+                    disabled={loadingReceipt}
+                    className="text-xs text-green-600 hover:text-green-700 hover:underline flex items-center gap-1 mt-0.5"
+                  >
                     <ReceiptText className="h-3 w-3" />
                     {t('receipt.receiptAttached')}
-                  </span>
+                  </button>
                 )}
               </div>
             </div>
@@ -713,7 +744,7 @@ function VisitsList({
         ))}
       </div>
 
-      {/* Receipt Dialog */}
+      {/* Receipt Upload Dialog */}
       <ReceiptDialog
         open={!!receiptDialogVisitId}
         onOpenChange={(open) => !open && setReceiptDialogVisitId(null)}
@@ -721,6 +752,18 @@ function VisitsList({
         businessId={businessId}
         onSuccess={handleReceiptSuccess}
       />
+
+      {/* Receipt View Dialog */}
+      <Dialog open={!!viewingReceipt} onOpenChange={(open) => !open && setViewingReceipt(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('receipt.receiptDetails', 'Receipt Details')}</DialogTitle>
+          </DialogHeader>
+          {viewingReceipt && (
+            <ReceiptPreview receipt={viewingReceipt} showImage />
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

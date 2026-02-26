@@ -614,6 +614,7 @@
     "notAReceipt": "This image does not appear to be a receipt. Please try again.",
     "unreadable": "The receipt image is too blurry or dark. Please retake the photo.",
     "receiptAttached": "Receipt Attached",
+    "fetchError": "Could not load receipt",
     "noReceipt": "No Receipt",
     "viewReceipt": "View Receipt",
     "receiptSaved": "Receipt Saved",

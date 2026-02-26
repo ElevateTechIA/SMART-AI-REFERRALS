@@ -614,6 +614,7 @@
     "notAReceipt": "Esta imagen no parece ser un recibo. Por favor intenta de nuevo.",
     "unreadable": "La imagen del recibo es muy borrosa u oscura. Por favor toma otra foto.",
     "receiptAttached": "Recibo Adjunto",
+    "fetchError": "No se pudo cargar el recibo",
     "noReceipt": "Sin Recibo",
     "viewReceipt": "Ver Recibo",
     "receiptSaved": "Recibo Guardado",
