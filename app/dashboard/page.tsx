@@ -112,11 +112,14 @@ export default function EnhancedDashboardPage() {
     amount: tx.amount,
   }))
 
-  // First business for QR code link (or app URL fallback)
+  // App share link for QR code
+  const appUrl = 'https://smart-ai-referrals.vercel.app/'
+
+  // First business for referral link
   const firstBusiness = businesses[0]
   const referralUrl = firstBusiness && user
     ? generateReferralUrl(firstBusiness.id, user.id)
-    : typeof window !== 'undefined' ? window.location.origin : ''
+    : ''
 
   useEffect(() => {
     if (user) {
@@ -125,10 +128,8 @@ export default function EnhancedDashboardPage() {
   }, [user])
 
   useEffect(() => {
-    if (referralUrl) {
-      generateQRCode()
-    }
-  }, [referralUrl, theme])
+    generateQRCode()
+  }, [theme])
 
   const fetchDashboardData = async () => {
     try {
@@ -156,9 +157,8 @@ export default function EnhancedDashboardPage() {
   }
 
   const generateQRCode = async () => {
-    if (!referralUrl) return
     try {
-      const qr = await QRCode.toDataURL(referralUrl, {
+      const qr = await QRCode.toDataURL(appUrl, {
         width: 200,
         margin: 2,
         color: { dark: themes[theme].colors.primaryDark, light: '#ffffff' },
@@ -170,15 +170,14 @@ export default function EnhancedDashboardPage() {
   }
 
   const copyLink = () => {
-    if (!referralUrl) return
-    navigator.clipboard.writeText(referralUrl)
+    navigator.clipboard.writeText(appUrl)
     toast({ title: t('cards.linkCopied'), description: t('cards.linkCopiedDesc') })
   }
 
   const share = async () => {
-    if (navigator.share && referralUrl) {
+    if (navigator.share) {
       try {
-        await navigator.share({ title: 'Smart AI Referrals', url: referralUrl })
+        await navigator.share({ title: 'Smart AI Referrals', url: appUrl })
       } catch (error) {
         if ((error as Error).name !== 'AbortError') {
           console.error('Error sharing:', error)
@@ -314,7 +313,7 @@ export default function EnhancedDashboardPage() {
                 <img src={qrCode} alt="QR Code" className="w-40 h-40 mb-3" />
               )}
               <p className="text-xs text-muted-foreground text-center mb-3 truncate w-full break-all">
-                {referralUrl ? referralUrl.replace('https://', '').replace('http://', '') : '...'}
+                {appUrl.replace('https://', '')}
               </p>
               <Button onClick={copyLink} className="w-full mb-2 bg-theme-primary hover:opacity-90 rounded-lg h-11 text-sm font-semibold">
                 <Copy className="h-4 w-4 mr-2" />
@@ -538,7 +537,7 @@ export default function EnhancedDashboardPage() {
               <img src={qrCode} alt="QR Code" className="w-48 h-auto mb-2" />
             )}
             <p className="text-[9px] text-muted-foreground text-center mb-2 truncate w-full">
-              {referralUrl ? referralUrl.replace('https://', '').replace('http://', '').substring(0, 30) + '...' : '...'}
+              {appUrl.replace('https://', '')}
             </p>
             <Button onClick={copyLink} className="w-full mb-1.5 bg-theme-primary hover:opacity-90 rounded-md h-8 text-[11px] font-medium">
               <Copy className="h-3 w-3 mr-1" />
