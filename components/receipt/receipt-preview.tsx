@@ -68,9 +68,9 @@ export function ReceiptPreview({ receipt, showImage, compact }: ReceiptPreviewPr
             )}
           </div>
         </div>
-        {confidenceInfo && (
+        {confidenceInfo && receipt.confidence && (
           <Badge variant={confidenceInfo.variant}>
-            {t('receipt.confidence')}: {t(`receipt.${confidenceInfo.label}`)}
+            {t('receipt.confidence')}: {Math.round(receipt.confidence * 100)}%
           </Badge>
         )}
       </div>

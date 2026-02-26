@@ -1147,17 +1147,14 @@ export default function AdminDashboardPage() {
                               </div>
                             )}
 
-                            {/* Receipt image link */}
+                            {/* Receipt image thumbnail */}
                             {receipt.imageUrl && (
-                              <a
-                                href={receipt.imageUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-                              >
-                                <Image className="h-3 w-3" />
-                                {t('admin.viewReceiptImage')}
-                                <ExternalLink className="h-3 w-3" />
+                              <a href={receipt.imageUrl} target="_blank" rel="noopener noreferrer">
+                                <img
+                                  src={receipt.imageUrl}
+                                  alt="Receipt"
+                                  className="w-full max-h-40 object-contain rounded border cursor-pointer hover:opacity-80 transition-opacity"
+                                />
                               </a>
                             )}
                           </div>
