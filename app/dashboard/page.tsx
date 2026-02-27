@@ -247,57 +247,7 @@ export default function EnhancedDashboardPage() {
 
   const renderDesktopContent = () => (
     <div className="space-y-6">
-      {/* Top Row: Stats Cards */}
-      <div className="grid grid-cols-3 gap-6">
-        <div className="bg-card backdrop-blur-sm rounded-xl p-5 shadow-lg">
-          <p className="text-xs text-muted-foreground mb-1">{t('dashboard.totalEarnings')}:</p>
-          <p className="text-3xl font-bold text-foreground mb-3">
-            {formatCurrency(earningsStats.totalEarnings)}
-          </p>
-          <Link href="/dashboard/earnings">
-            <Button size="sm" className="w-full bg-theme-primary hover:opacity-90 rounded-lg h-10 text-sm">
-              {t('dashboard.viewEarnings', 'View Earnings')}
-            </Button>
-          </Link>
-        </div>
-
-        <div className="bg-card backdrop-blur-sm rounded-xl p-5 shadow-lg">
-          <p className="text-xs text-muted-foreground mb-1">{t('dashboard.newCustomers')}:</p>
-          <div className="flex items-baseline gap-2 mb-2">
-            <p className="text-3xl font-bold text-foreground">
-              {thisMonthReferrals.length}
-            </p>
-            <p className="text-xs text-muted-foreground">{t('dashboard.thisMonth')}</p>
-          </div>
-          {chartData.length > 0 && (
-            <div className="h-16 mt-2">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
-                  <Bar dataKey="amount" fill="url(#miniGradient)" radius={[4, 4, 0, 0]} />
-                  <defs>
-                    <linearGradient id="miniGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="var(--theme-primaryLight)" stopOpacity={0.8} />
-                      <stop offset="100%" stopColor="var(--theme-primary)" stopOpacity={0.6} />
-                    </linearGradient>
-                  </defs>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </div>
-
-        <div className="bg-card backdrop-blur-sm rounded-xl p-5 shadow-lg">
-          <p className="text-xs text-muted-foreground mb-1">{t('dashboard.pendingPayouts')}:</p>
-          <p className="text-3xl font-bold text-foreground mb-3">
-            {formatCurrency(earningsStats.pendingEarnings)}
-          </p>
-          <Link href="/dashboard/earnings">
-            <Button size="sm" className="w-full bg-theme-primary hover:opacity-90 rounded-lg h-10 text-sm">
-              {t('dashboard.review')} &gt;
-            </Button>
-          </Link>
-        </div>
-      </div>
+      {/* Top Row: Stats Cards - hidden for now */}
 
       {/* Main Grid: responsive columns */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr_1fr] gap-4 min-w-0">
@@ -478,53 +428,7 @@ export default function EnhancedDashboardPage() {
 
   const renderMobileContent = () => (
     <div>
-      {/* Stats Cards */}
-      <div className="flex gap-2 mb-6 overflow-x-visible pb-2">
-        <div className="bg-card backdrop-blur-sm rounded-xl p-3 shadow-lg flex-1 min-w-0">
-          <p className="text-[10px] text-muted-foreground mb-0.5">{t('dashboard.totalEarnings')}:</p>
-          <p className="text-xl font-bold text-foreground mb-2">
-            {formatCurrency(earningsStats.totalEarnings)}
-          </p>
-          <Button size="sm" className="w-full bg-theme-primary hover:opacity-90 rounded-lg h-8 text-[10px]" onClick={copyLink}>
-            {t('dashboard.copyLink')}
-          </Button>
-        </div>
-
-        <div className="bg-card backdrop-blur-sm rounded-xl p-3 shadow-lg flex-1 min-w-0">
-          <p className="text-[10px] text-muted-foreground mb-0.5">{t('dashboard.newCustomers')}:</p>
-          <div className="flex items-baseline gap-1 mb-0.5">
-            <p className="text-xl font-bold text-foreground">{thisMonthReferrals.length}</p>
-            <p className="text-[10px] text-muted-foreground">{t('dashboard.thisMonth')}</p>
-          </div>
-          {chartData.length > 0 && (
-            <div className="h-10 mt-1">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
-                  <Bar dataKey="amount" fill="url(#miniGradient)" radius={[4, 4, 0, 0]} />
-                  <defs>
-                    <linearGradient id="miniGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="var(--theme-primaryLight)" stopOpacity={0.8} />
-                      <stop offset="100%" stopColor="var(--theme-primary)" stopOpacity={0.6} />
-                    </linearGradient>
-                  </defs>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </div>
-
-        <div className="bg-card backdrop-blur-sm rounded-xl p-3 shadow-lg flex-1 min-w-0">
-          <p className="text-[10px] text-muted-foreground mb-0.5">{t('dashboard.pendingPayouts')}:</p>
-          <p className="text-xl font-bold text-foreground mb-2">
-            {formatCurrency(earningsStats.pendingEarnings)}
-          </p>
-          <Link href="/dashboard/earnings">
-            <Button size="sm" className="w-full bg-theme-primary hover:opacity-90 rounded-lg h-8 text-[10px]">
-              {t('dashboard.review')}
-            </Button>
-          </Link>
-        </div>
-      </div>
+      {/* Stats Cards - hidden for now */}
 
       {/* Main Content */}
       <div className="space-y-2">
