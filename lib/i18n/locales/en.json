@@ -115,7 +115,7 @@
     "howStep3Desc": "Once they pay, you get your reward.",
     "startSharingNow": "Start Sharing Now",
     "topBusinessesWeek": "Top Businesses This Week",
-    "topPartnersWeek": "Top Partners This Week",
+    "topPartnersWeek": "Top {{count}} Partners This Week",
     "writeReviewEarn": "Write a Review & Earn",
     "commissionBreakdown": "Commission Breakdown",
     "copyLink": "Copy Link",

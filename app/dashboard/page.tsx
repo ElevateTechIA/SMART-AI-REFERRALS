@@ -250,8 +250,42 @@ export default function EnhancedDashboardPage() {
       {/* Top Row: Stats Cards - hidden for now */}
 
       {/* Main Grid: responsive columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr_1fr] gap-4 min-w-0">
-        {/* Column 1: My Referral Link */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr_1.2fr] gap-4 min-w-0">
+        {/* Column 1: How It Works */}
+        <div className="min-w-0">
+          <div className="rounded-2xl p-5 shadow-xl h-full flex flex-col" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
+            <h2 className="text-base font-bold text-white mb-4">{t('dashboard.howItWorks')}</h2>
+            <div className="flex-1 flex flex-col justify-evenly">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">1</div>
+                <div>
+                  <p className="text-white font-semibold text-sm">{t('dashboard.howStep1Title')}</p>
+                  <p className="text-white/70 text-xs">{t('dashboard.howStep1Desc')}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">2</div>
+                <div>
+                  <p className="text-white font-semibold text-sm">{t('dashboard.howStep2Title')}</p>
+                  <p className="text-white/70 text-xs">{t('dashboard.howStep2Desc')}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">3</div>
+                <div>
+                  <p className="text-white font-semibold text-sm">{t('dashboard.howStep3Title')}</p>
+                  <p className="text-white/70 text-xs">{t('dashboard.howStep3Desc')}</p>
+                </div>
+              </div>
+            </div>
+            <Button onClick={copyLink} className="w-full mt-auto pt-4 bg-white text-theme-primary hover:bg-white/90 rounded-lg h-10 text-sm font-semibold">
+              <Share2 className="h-4 w-4 mr-2" />
+              {t('dashboard.startSharingNow')}
+            </Button>
+          </div>
+        </div>
+
+        {/* Column 2: My Referral Link */}
         <div className="min-w-0">
           <div className="rounded-2xl p-5 shadow-xl overflow-hidden h-full" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
             <div className="flex items-center justify-between mb-4">
@@ -273,11 +307,11 @@ export default function EnhancedDashboardPage() {
           </div>
         </div>
 
-        {/* Column 2: Top Businesses */}
+        {/* Column 3: Top Businesses */}
         <div className="space-y-6 min-w-0">
           <div className="rounded-2xl p-5 shadow-xl overflow-hidden" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-bold text-white">{t('dashboard.topPartnersWeek')}</h2>
+              <h2 className="text-base font-bold text-white">{t('dashboard.topPartnersWeek', { count: Math.min(businesses.length, 5) })}</h2>
               <Link href="/dashboard/referrals" className="text-white/60 hover:text-white">
                 <ChevronRight className="h-4 w-4" />
               </Link>
@@ -285,7 +319,7 @@ export default function EnhancedDashboardPage() {
 
             {businesses.length > 0 ? (
               <div className="space-y-3">
-                {businesses.slice(0, 4).map((biz) => {
+                {businesses.slice(0, 5).map((biz) => {
                   const img = biz.offer?.image || biz.images?.[0]
                   const commission = biz.offer?.referrerCommissionAmount || 0
                   const url = user ? generateReferralUrl(biz.id, user.id) : ''
@@ -336,39 +370,6 @@ export default function EnhancedDashboardPage() {
           </div>
         </div>
 
-        {/* Column 3: How It Works */}
-        <div className="min-w-0">
-          <div className="rounded-2xl p-5 shadow-xl h-full flex flex-col" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
-            <h2 className="text-base font-bold text-white mb-4">{t('dashboard.howItWorks')}</h2>
-            <div className="flex-1 flex flex-col justify-evenly">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">1</div>
-                <div>
-                  <p className="text-white font-semibold text-sm">{t('dashboard.howStep1Title')}</p>
-                  <p className="text-white/70 text-xs">{t('dashboard.howStep1Desc')}</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">2</div>
-                <div>
-                  <p className="text-white font-semibold text-sm">{t('dashboard.howStep2Title')}</p>
-                  <p className="text-white/70 text-xs">{t('dashboard.howStep2Desc')}</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">3</div>
-                <div>
-                  <p className="text-white font-semibold text-sm">{t('dashboard.howStep3Title')}</p>
-                  <p className="text-white/70 text-xs">{t('dashboard.howStep3Desc')}</p>
-                </div>
-              </div>
-            </div>
-            <Button onClick={copyLink} className="w-full mt-auto pt-4 bg-white text-theme-primary hover:bg-white/90 rounded-lg h-10 text-sm font-semibold">
-              <Share2 className="h-4 w-4 mr-2" />
-              {t('dashboard.startSharingNow')}
-            </Button>
-          </div>
-        </div>
       </div>
 
       {/* Your Earnings - below the grid */}
@@ -428,7 +429,38 @@ export default function EnhancedDashboardPage() {
 
       {/* Main Content */}
       <div className="space-y-2">
-        {/* My Referral Link & Top Businesses */}
+        {/* How It Works */}
+        <div className="rounded-xl p-2.5 shadow-lg" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
+          <h2 className="text-sm font-bold text-white mb-2">{t('dashboard.howItWorks')}</h2>
+          <div className="space-y-2.5">
+            <div className="flex items-start gap-2">
+              <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-[10px]">1</div>
+              <div>
+                <p className="text-white font-semibold text-xs">{t('dashboard.howStep1Title')}</p>
+                <p className="text-white/70 text-[10px]">{t('dashboard.howStep1Desc')}</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-[10px]">2</div>
+              <div>
+                <p className="text-white font-semibold text-xs">{t('dashboard.howStep2Title')}</p>
+                <p className="text-white/70 text-[10px]">{t('dashboard.howStep2Desc')}</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-[10px]">3</div>
+              <div>
+                <p className="text-white font-semibold text-xs">{t('dashboard.howStep3Title')}</p>
+                <p className="text-white/70 text-[10px]">{t('dashboard.howStep3Desc')}</p>
+              </div>
+            </div>
+          </div>
+          <Button onClick={copyLink} className="w-full mt-3 bg-white text-theme-primary hover:bg-white/90 rounded-lg h-8 text-[11px] font-semibold">
+            <Share2 className="h-3 w-3 mr-1" />
+            {t('dashboard.startSharingNow')}
+          </Button>
+        </div>
+
         {/* My Promo Link - QR Code */}
         <div className="rounded-xl p-2.5 shadow-lg" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
           <h2 className="text-sm font-bold text-white mb-2">{t('dashboard.myReferralLink')}</h2>
@@ -463,7 +495,7 @@ export default function EnhancedDashboardPage() {
         {/* Top Partners This Week */}
         <div className="rounded-xl p-2.5 shadow-lg" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm font-bold text-white">{t('dashboard.topPartnersWeek')}</h2>
+            <h2 className="text-sm font-bold text-white">{t('dashboard.topPartnersWeek', { count: Math.min(businesses.length, 5) })}</h2>
             <Link
               href="/dashboard/referrals"
               className="text-[10px] text-white/90 hover:text-white flex items-center gap-0.5"
@@ -485,39 +517,56 @@ export default function EnhancedDashboardPage() {
           </div>
         </div>
 
-        {/* Earnings Chart - hidden for now */}
+        {/* Earnings - promoters only */}
+        {user?.roles?.includes('referrer') && (
+          <div className="bg-card backdrop-blur-sm rounded-xl p-2.5 shadow-lg">
+            <div className="mb-2">
+              <h2 className="text-sm font-bold text-foreground mb-0.5">{t('dashboard.yourEarnings')}:</h2>
+              <p className="text-xl font-bold text-foreground">{formatCurrency(earningsStats.thisMonth)}</p>
+              <p className="text-[10px] text-muted-foreground">{t('dashboard.thisMonth')}</p>
+            </div>
 
-        {/* How It Works */}
-        <div className="rounded-xl p-2.5 shadow-lg" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
-          <h2 className="text-sm font-bold text-white mb-2">{t('dashboard.howItWorks')}</h2>
-          <div className="space-y-2.5">
-            <div className="flex items-start gap-2">
-              <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-[10px]">1</div>
-              <div>
-                <p className="text-white font-semibold text-xs">{t('dashboard.howStep1Title')}</p>
-                <p className="text-white/70 text-[10px]">{t('dashboard.howStep1Desc')}</p>
+            {chartData.length > 0 && (
+              <div className="h-24 mb-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData}>
+                    <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 8 }} />
+                    <Bar dataKey="amount" fill="url(#earningsGradient)" radius={[3, 3, 0, 0]} />
+                    <defs>
+                      <linearGradient id="earningsGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="var(--theme-primaryLight)" stopOpacity={1} />
+                        <stop offset="100%" stopColor="var(--theme-primary)" stopOpacity={0.8} />
+                      </linearGradient>
+                    </defs>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+
+            <div>
+              <h3 className="text-[10px] font-semibold text-foreground mb-1.5">{t('dashboard.commissionBreakdown')}</h3>
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full bg-theme-primary" />
+                  <span className="text-[10px] font-medium text-foreground">{formatCurrency(earningsStats.completedEarnings)}</span>
+                  <span className="text-[10px] text-muted-foreground">{t('dashboard.referrals')}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full bg-theme-primaryLight" />
+                  <span className="text-[10px] font-medium text-foreground">{formatCurrency(earningsStats.pendingEarnings)}</span>
+                  <span className="text-[10px] text-muted-foreground">{t('earnings.pending', 'Pending')}</span>
+                </div>
               </div>
             </div>
-            <div className="flex items-start gap-2">
-              <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-[10px]">2</div>
-              <div>
-                <p className="text-white font-semibold text-xs">{t('dashboard.howStep2Title')}</p>
-                <p className="text-white/70 text-[10px]">{t('dashboard.howStep2Desc')}</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-[10px]">3</div>
-              <div>
-                <p className="text-white font-semibold text-xs">{t('dashboard.howStep3Title')}</p>
-                <p className="text-white/70 text-[10px]">{t('dashboard.howStep3Desc')}</p>
-              </div>
-            </div>
+
+            <Link href="/dashboard/earnings">
+              <Button size="sm" className="w-full mt-3 bg-theme-primary hover:opacity-90 rounded-lg h-8 text-[11px] font-semibold">
+                {t('dashboard.thisMonth')}
+              </Button>
+            </Link>
           </div>
-          <Button onClick={copyLink} className="w-full mt-3 bg-white text-theme-primary hover:bg-white/90 rounded-lg h-8 text-[11px] font-semibold">
-            <Share2 className="h-3 w-3 mr-1" />
-            {t('dashboard.startSharingNow')}
-          </Button>
-        </div>
+        )}
+
       </div>
     </div>
   )
