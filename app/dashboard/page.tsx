@@ -251,9 +251,9 @@ export default function EnhancedDashboardPage() {
 
       {/* Main Grid: responsive columns */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr_1fr] gap-4 min-w-0">
-        {/* Column 1: My Referral Link & Your Earnings */}
-        <div className="space-y-6 min-w-0">
-          <div className="rounded-2xl p-5 shadow-xl overflow-hidden" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
+        {/* Column 1: My Referral Link */}
+        <div className="min-w-0">
+          <div className="rounded-2xl p-5 shadow-xl overflow-hidden h-full" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-bold text-white">{t('dashboard.myReferralLink')}</h2>
               <ChevronRight className="h-4 w-4 text-white/60" />
@@ -269,52 +269,6 @@ export default function EnhancedDashboardPage() {
                 <Copy className="h-4 w-4 mr-2" />
                 {t('dashboard.copyLink')}
               </Button>
-            </div>
-          </div>
-
-          <div className="bg-card backdrop-blur-sm rounded-2xl p-5 shadow-xl">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <h2 className="text-base font-bold text-foreground mb-1">{t('dashboard.yourEarnings')}:</h2>
-                <p className="text-3xl font-bold text-foreground">{formatCurrency(earningsStats.thisMonth)}</p>
-              </div>
-              <Link href="/dashboard/earnings" className="text-xs text-theme-primary hover:opacity-80 flex items-center gap-1">
-                {t('dashboard.thisMonth')} &gt;
-              </Link>
-            </div>
-            <p className="text-xs text-muted-foreground mb-4">{t('dashboard.thisMonth')}</p>
-
-            {chartData.length > 0 && (
-              <div className="h-40 mb-4">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData}>
-                    <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 10 }} />
-                    <Bar dataKey="amount" fill="url(#earningsGradient)" radius={[6, 6, 0, 0]} />
-                    <defs>
-                      <linearGradient id="earningsGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="var(--theme-primaryLight)" stopOpacity={1} />
-                        <stop offset="100%" stopColor="var(--theme-primary)" stopOpacity={0.8} />
-                      </linearGradient>
-                    </defs>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-
-            <div>
-              <h3 className="text-xs font-semibold text-foreground mb-2">{t('dashboard.commissionBreakdown')}</h3>
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-theme-primary" />
-                  <span className="text-xs font-semibold text-foreground">{formatCurrency(earningsStats.completedEarnings)}</span>
-                  <span className="text-xs text-muted-foreground">{t('dashboard.referrals')}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-theme-primaryLight" />
-                  <span className="text-xs font-semibold text-foreground">{formatCurrency(earningsStats.pendingEarnings)}</span>
-                  <span className="text-xs text-muted-foreground">{t('earnings.pending', 'Pending')}</span>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -384,9 +338,9 @@ export default function EnhancedDashboardPage() {
 
         {/* Column 3: How It Works */}
         <div className="min-w-0">
-          <div className="rounded-2xl p-5 shadow-xl" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
+          <div className="rounded-2xl p-5 shadow-xl h-full flex flex-col" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
             <h2 className="text-base font-bold text-white mb-4">{t('dashboard.howItWorks')}</h2>
-            <div className="space-y-4">
+            <div className="flex-1 flex flex-col justify-evenly">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">1</div>
                 <div>
@@ -409,13 +363,62 @@ export default function EnhancedDashboardPage() {
                 </div>
               </div>
             </div>
-            <Button onClick={copyLink} className="w-full mt-4 bg-white text-theme-primary hover:bg-white/90 rounded-lg h-10 text-sm font-semibold">
+            <Button onClick={copyLink} className="w-full mt-auto pt-4 bg-white text-theme-primary hover:bg-white/90 rounded-lg h-10 text-sm font-semibold">
               <Share2 className="h-4 w-4 mr-2" />
               {t('dashboard.startSharingNow')}
             </Button>
           </div>
         </div>
       </div>
+
+      {/* Your Earnings - below the grid */}
+      {user?.roles?.includes('referrer') && (
+        <div className="bg-card backdrop-blur-sm rounded-2xl p-5 shadow-xl">
+          <div className="mb-3">
+            <h2 className="text-base font-bold text-foreground mb-1">{t('dashboard.yourEarnings')}:</h2>
+            <p className="text-3xl font-bold text-foreground">{formatCurrency(earningsStats.thisMonth)}</p>
+          </div>
+          <p className="text-xs text-muted-foreground mb-4">{t('dashboard.thisMonth')}</p>
+
+          {chartData.length > 0 && (
+            <div className="h-40 mb-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData}>
+                  <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 10 }} />
+                  <Bar dataKey="amount" fill="url(#earningsGradient)" radius={[6, 6, 0, 0]} />
+                  <defs>
+                    <linearGradient id="earningsGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--theme-primaryLight)" stopOpacity={1} />
+                      <stop offset="100%" stopColor="var(--theme-primary)" stopOpacity={0.8} />
+                    </linearGradient>
+                  </defs>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
+          <div>
+            <h3 className="text-xs font-semibold text-foreground mb-2">{t('dashboard.commissionBreakdown')}</h3>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-full bg-theme-primary" />
+                <span className="text-xs font-semibold text-foreground">{formatCurrency(earningsStats.completedEarnings)}</span>
+                <span className="text-xs text-muted-foreground">{t('dashboard.referrals')}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-full bg-theme-primaryLight" />
+                <span className="text-xs font-semibold text-foreground">{formatCurrency(earningsStats.pendingEarnings)}</span>
+                <span className="text-xs text-muted-foreground">{t('earnings.pending', 'Pending')}</span>
+              </div>
+            </div>
+          </div>
+          <Link href="/dashboard/earnings">
+            <Button size="sm" className="w-full mt-4 bg-theme-primary hover:opacity-90 rounded-lg h-10 text-sm font-semibold">
+              {t('dashboard.thisMonth')}
+            </Button>
+          </Link>
+        </div>
+      )}
     </div>
   )
 
