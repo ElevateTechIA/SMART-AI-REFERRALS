@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '@/lib/utils'
 import type { Business, Offer } from '@/lib/types'
@@ -59,11 +59,21 @@ const INITIAL_COLORS = [
 interface BusinessGridProps {
   businesses: BusinessWithOffer[]
   userId: string
+  initialOfferId?: string | null
 }
 
-export function BusinessGrid({ businesses, userId }: BusinessGridProps) {
+export function BusinessGrid({ businesses, userId, initialOfferId }: BusinessGridProps) {
   const { t } = useTranslation()
   const [selectedBusiness, setSelectedBusiness] = useState<BusinessWithOffer | null>(null)
+  const [dismissedOffer, setDismissedOffer] = useState(false)
+
+  // Auto-select business when businesses load with initialOfferId
+  useEffect(() => {
+    if (initialOfferId && !dismissedOffer && !selectedBusiness && businesses.length > 0) {
+      const match = businesses.find((b) => b.id === initialOfferId)
+      if (match) setSelectedBusiness(match)
+    }
+  }, [initialOfferId, businesses, selectedBusiness, dismissedOffer])
 
   const placeholderCount = Math.max(0, 10 - businesses.length)
 
@@ -72,7 +82,7 @@ export function BusinessGrid({ businesses, userId }: BusinessGridProps) {
     return (
       <div className="space-y-4">
         <button
-          onClick={() => setSelectedBusiness(null)}
+          onClick={() => { setDismissedOffer(true); setSelectedBusiness(null) }}
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4 mr-1" />

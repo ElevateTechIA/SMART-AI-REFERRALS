@@ -34,7 +34,8 @@ interface ReferralsApiResponse {
 }
 
 function ReferralsContent() {
-  useSearchParams() // keep Suspense boundary working
+  const searchParams = useSearchParams()
+  const offerId = searchParams.get('offer')
 
   const { t } = useTranslation()
   const { user } = useAuth()
@@ -258,7 +259,7 @@ function ReferralsContent() {
             </Select>
           </div>
 
-          <BusinessGrid businesses={filteredBusinesses} userId={user!.id} />
+          <BusinessGrid businesses={filteredBusinesses} userId={user!.id} initialOfferId={offerId} />
         </div>
       )}
 

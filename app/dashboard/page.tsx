@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -93,6 +94,7 @@ export default function EnhancedDashboardPage() {
   const { t } = useTranslation()
   const { toast } = useToast()
   const { theme } = useTheme()
+  const router = useRouter()
   const [businesses, setBusinesses] = useState<BusinessWithOffer[]>([])
   const [referrals, setReferrals] = useState<Referral[]>([])
   const [earningsStats, setEarningsStats] = useState({
@@ -201,7 +203,6 @@ export default function EnhancedDashboardPage() {
   const renderBusinessCard = (biz: BusinessWithOffer, size: 'sm' | 'lg') => {
     const img = biz.offer?.image || biz.images?.[0]
     const commission = biz.offer?.referrerCommissionAmount || 0
-    const url = user ? generateReferralUrl(biz.id, user.id) : ''
     const h = size === 'lg' ? 'h-52' : 'h-[120px]'
     const textSize = size === 'lg' ? 'text-base' : 'text-sm'
     const subSize = size === 'lg' ? 'text-xs mb-3' : 'text-xs mb-2'
@@ -233,12 +234,9 @@ export default function EnhancedDashboardPage() {
           <Button
             size="sm"
             className={`${btnSize} bg-theme-primaryLight hover:opacity-90 rounded-lg text-xs font-semibold`}
-            onClick={() => {
-              navigator.clipboard.writeText(url)
-              toast({ title: t('cards.linkCopied') })
-            }}
+            onClick={() => router.push(`/dashboard/referrals?offer=${biz.id}`)}
           >
-            {t('dashboard.copyLink')}
+            {t('dashboard.viewOffer')}
           </Button>
         </div>
       </div>
@@ -278,10 +276,6 @@ export default function EnhancedDashboardPage() {
                 </div>
               </div>
             </div>
-            <Button onClick={copyLink} className="w-full mt-auto pt-4 bg-white text-theme-primary hover:bg-white/90 rounded-lg h-10 text-sm font-semibold">
-              <Share2 className="h-4 w-4 mr-2" />
-              {t('dashboard.startSharingNow')}
-            </Button>
           </div>
         </div>
 
@@ -300,8 +294,8 @@ export default function EnhancedDashboardPage() {
                 {appUrl.replace('https://', '')}
               </p>
               <Button onClick={copyLink} className="w-full mb-2 bg-theme-primary hover:opacity-90 rounded-lg h-11 text-sm font-semibold">
-                <Copy className="h-4 w-4 mr-2" />
-                {t('dashboard.copyLink')}
+                <Share2 className="h-4 w-4 mr-2" />
+                {t('dashboard.startSharingNow')}
               </Button>
             </div>
           </div>
@@ -324,7 +318,6 @@ export default function EnhancedDashboardPage() {
                 {businesses.slice(0, 5).map((biz) => {
                   const img = biz.offer?.image || biz.images?.[0]
                   const commission = biz.offer?.referrerCommissionAmount || 0
-                  const url = user ? generateReferralUrl(biz.id, user.id) : ''
                   return (
                     <div
                       key={biz.id}
@@ -351,13 +344,10 @@ export default function EnhancedDashboardPage() {
                       <Button
                         size="sm"
                         className="bg-theme-primaryLight hover:opacity-90 rounded-lg text-xs font-semibold h-8 px-2 lg:px-3 flex-shrink-0"
-                        onClick={() => {
-                          navigator.clipboard.writeText(url)
-                          toast({ title: t('cards.linkCopied') })
-                        }}
+                        onClick={() => router.push(`/dashboard/referrals?offer=${biz.id}`)}
                       >
-                        <Copy className="h-3 w-3 lg:mr-1" />
-                        <span className="hidden lg:inline">{t('dashboard.copyLink')}</span>
+                        <ChevronRight className="h-3 w-3 lg:mr-1" />
+                        <span className="hidden lg:inline">{t('dashboard.viewOffer')}</span>
                       </Button>
                     </div>
                   )
@@ -383,7 +373,7 @@ export default function EnhancedDashboardPage() {
           </div>
           <p className="text-xs text-muted-foreground mb-4">{t('dashboard.thisMonth')}</p>
 
-          {chartData.length > 0 && (
+          {chartData.length > 1 && (
             <div className="h-40 mb-4">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData}>
@@ -457,10 +447,6 @@ export default function EnhancedDashboardPage() {
               </div>
             </div>
           </div>
-          <Button onClick={copyLink} className="w-full mt-3 bg-white text-theme-primary hover:bg-white/90 rounded-lg h-8 text-[11px] font-semibold">
-            <Share2 className="h-3 w-3 mr-1" />
-            {t('dashboard.startSharingNow')}
-          </Button>
         </div>
 
         {/* My Promo Link - QR Code */}
@@ -474,8 +460,8 @@ export default function EnhancedDashboardPage() {
               {appUrl.replace('https://', '')}
             </p>
             <Button onClick={copyLink} className="w-full mb-1.5 bg-theme-primary hover:opacity-90 rounded-md h-8 text-[11px] font-medium">
-              <Copy className="h-3 w-3 mr-1" />
-              {t('dashboard.copyLink')}
+              <Share2 className="h-3 w-3 mr-1" />
+              {t('dashboard.startSharingNow')}
             </Button>
             <div className="flex gap-1.5 w-full">
               <button
@@ -530,7 +516,7 @@ export default function EnhancedDashboardPage() {
               <p className="text-[10px] text-muted-foreground">{t('dashboard.thisMonth')}</p>
             </div>
 
-            {chartData.length > 0 && (
+            {chartData.length > 1 && (
               <div className="h-24 mb-2">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData}>
