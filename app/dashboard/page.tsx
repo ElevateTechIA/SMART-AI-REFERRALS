@@ -312,9 +312,11 @@ export default function EnhancedDashboardPage() {
           <div className="rounded-2xl p-5 shadow-xl overflow-hidden" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-bold text-white">{t(user?.roles?.includes('business') && !user?.roles?.includes('referrer') ? 'dashboard.topPromotersWeek' : 'dashboard.topPartnersWeek', { count: Math.min(businesses.length, 5) })}</h2>
-              <Link href="/dashboard/referrals" className="text-white/60 hover:text-white">
-                <ChevronRight className="h-4 w-4" />
-              </Link>
+              {!(user?.roles?.includes('business') && !user?.roles?.includes('referrer')) && (
+                <Link href="/dashboard/referrals" className="text-white/60 hover:text-white">
+                  <ChevronRight className="h-4 w-4" />
+                </Link>
+              )}
             </div>
 
             {businesses.length > 0 ? (
@@ -496,12 +498,14 @@ export default function EnhancedDashboardPage() {
         <div className="rounded-xl p-2.5 shadow-lg" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-sm font-bold text-white">{t(user?.roles?.includes('business') && !user?.roles?.includes('referrer') ? 'dashboard.topPromotersWeek' : 'dashboard.topPartnersWeek', { count: Math.min(businesses.length, 5) })}</h2>
-            <Link
-              href="/dashboard/referrals"
-              className="text-[10px] text-white/90 hover:text-white flex items-center gap-0.5"
-            >
-              {t('dashboard.viewAll', 'View All')} <ChevronRight className="h-3 w-3" />
-            </Link>
+            {!(user?.roles?.includes('business') && !user?.roles?.includes('referrer')) && (
+              <Link
+                href="/dashboard/referrals"
+                className="text-[10px] text-white/90 hover:text-white flex items-center gap-0.5"
+              >
+                {t('dashboard.viewAll', 'View All')} <ChevronRight className="h-3 w-3" />
+              </Link>
+            )}
           </div>
           <div className="space-y-1.5">
             {businesses.length > 0 ? (
