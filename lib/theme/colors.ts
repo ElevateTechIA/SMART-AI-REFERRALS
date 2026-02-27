@@ -85,7 +85,7 @@ export const themes = {
 
       textPrimary: '#ffffff',
       textSecondary: '#bfdbfe',
-      textMuted: '#93c5fd',
+      textMuted: '#2d6ebf',
     }
   },
 
