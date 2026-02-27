@@ -96,6 +96,8 @@
   "dashboard": {
     "welcomeBack": "Welcome Back, {{name}}!",
     "trackReferEarn": "Track, Promote, Earn!",
+    "subtitlePromoter": "Turn your recommendations into income",
+    "subtitleBusiness": "Turn your clients into your best sales team",
     "myReferralLink": "My Promo Link",
     "yourEarnings": "Your Earnings",
     "totalEarnings": "Total Earnings",

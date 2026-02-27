@@ -96,6 +96,8 @@
   "dashboard": {
     "welcomeBack": "¡Bienvenido de nuevo, {{name}}!",
     "trackReferEarn": "¡Rastrea, Promueve, Gana!",
+    "subtitlePromoter": "Convierte tus recomendaciones en ingresos",
+    "subtitleBusiness": "Convierte a tus clientes en tu mejor equipo de ventas",
     "myReferralLink": "Mi Enlace de Promoción",
     "yourEarnings": "Tus Ganancias",
     "totalEarnings": "Ganancias Totales",

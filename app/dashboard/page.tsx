@@ -661,7 +661,11 @@ export default function EnhancedDashboardPage() {
           <h1 className="text-2xl md:text-4xl font-bold text-white mb-1">
             {t('dashboard.welcomeBack', { name: user?.name?.split(' ')[0] || '' })}
           </h1>
-          <p className="text-white/90 text-sm md:text-lg">{t('dashboard.trackReferEarn')}</p>
+          <p className="text-white/90 text-sm md:text-lg">
+            {user?.roles?.includes('business') && !user?.roles?.includes('referrer')
+              ? t('dashboard.subtitleBusiness')
+              : t('dashboard.subtitlePromoter')}
+          </p>
         </div>
       </div>
 
