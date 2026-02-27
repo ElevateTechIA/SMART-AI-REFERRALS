@@ -311,7 +311,7 @@ export default function EnhancedDashboardPage() {
         <div className="space-y-6 min-w-0">
           <div className="rounded-2xl p-5 shadow-xl overflow-hidden" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-bold text-white">{t('dashboard.topPartnersWeek', { count: Math.min(businesses.length, 5) })}</h2>
+              <h2 className="text-base font-bold text-white">{t(user?.roles?.includes('business') && !user?.roles?.includes('referrer') ? 'dashboard.topPromotersWeek' : 'dashboard.topPartnersWeek', { count: Math.min(businesses.length, 5) })}</h2>
               <Link href="/dashboard/referrals" className="text-white/60 hover:text-white">
                 <ChevronRight className="h-4 w-4" />
               </Link>
@@ -495,7 +495,7 @@ export default function EnhancedDashboardPage() {
         {/* Top Partners This Week */}
         <div className="rounded-xl p-2.5 shadow-lg" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm font-bold text-white">{t('dashboard.topPartnersWeek', { count: Math.min(businesses.length, 5) })}</h2>
+            <h2 className="text-sm font-bold text-white">{t(user?.roles?.includes('business') && !user?.roles?.includes('referrer') ? 'dashboard.topPromotersWeek' : 'dashboard.topPartnersWeek', { count: Math.min(businesses.length, 5) })}</h2>
             <Link
               href="/dashboard/referrals"
               className="text-[10px] text-white/90 hover:text-white flex items-center gap-0.5"
@@ -505,7 +505,7 @@ export default function EnhancedDashboardPage() {
           </div>
           <div className="space-y-1.5">
             {businesses.length > 0 ? (
-              businesses.slice(0, 2).map((biz) => renderBusinessCard(biz, 'sm'))
+              businesses.slice(0, 5).map((biz) => renderBusinessCard(biz, 'sm'))
             ) : (
               <div className="flex items-center justify-center bg-white/5 rounded-lg p-4">
                 <div className="text-center">
