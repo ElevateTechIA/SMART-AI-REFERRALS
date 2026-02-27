@@ -382,44 +382,37 @@ export default function EnhancedDashboardPage() {
           </div>
         </div>
 
-        {/* Column 3: Recent Conversions */}
+        {/* Column 3: How It Works */}
         <div className="min-w-0">
           <div className="rounded-2xl p-5 shadow-xl" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-bold text-white">{t('dashboard.recentConversions')}</h2>
-              <ChevronRight className="h-4 w-4 text-white/60" />
+            <h2 className="text-base font-bold text-white mb-4">{t('dashboard.howItWorks')}</h2>
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">1</div>
+                <div>
+                  <p className="text-white font-semibold text-sm">{t('dashboard.howStep1Title')}</p>
+                  <p className="text-white/70 text-xs">{t('dashboard.howStep1Desc')}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">2</div>
+                <div>
+                  <p className="text-white font-semibold text-sm">{t('dashboard.howStep2Title')}</p>
+                  <p className="text-white/70 text-xs">{t('dashboard.howStep2Desc')}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">3</div>
+                <div>
+                  <p className="text-white font-semibold text-sm">{t('dashboard.howStep3Title')}</p>
+                  <p className="text-white/70 text-xs">{t('dashboard.howStep3Desc')}</p>
+                </div>
+              </div>
             </div>
-
-            {recentTransactions.length > 0 ? (
-              <div className="space-y-3">
-                {recentTransactions.slice(0, 5).map((tx) => (
-                  <div key={tx.id} className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                    <div className="w-10 h-10 rounded-full bg-white/20 overflow-hidden flex-shrink-0">
-                      <img
-                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(tx.customer)}&background=random`}
-                        alt={tx.customer}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white font-semibold text-sm truncate">{tx.customer}</p>
-                      <p className="text-white/70 text-xs truncate">{tx.business}</p>
-                    </div>
-                    <Badge className={`text-white text-xs px-2 py-1 rounded-full ${
-                      tx.status === 'completed' ? 'bg-green-500' : tx.status === 'processing' ? 'bg-theme-primary' : 'bg-yellow-500'
-                    }`}>
-                      {formatCurrency(tx.amount)}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <Users className="h-10 w-10 text-white/30 mx-auto mb-3" />
-                <p className="text-white/60 text-sm">{t('dashboard.noConversions', 'No conversions yet')}</p>
-                <p className="text-white/40 text-xs mt-1">{t('dashboard.startSharing', 'Start sharing your referral links!')}</p>
-              </div>
-            )}
+            <Button onClick={copyLink} className="w-full mt-4 bg-white text-theme-primary hover:bg-white/90 rounded-lg h-10 text-sm font-semibold">
+              <Share2 className="h-4 w-4 mr-2" />
+              {t('dashboard.startSharingNow')}
+            </Button>
           </div>
         </div>
       </div>
@@ -489,46 +482,38 @@ export default function EnhancedDashboardPage() {
           </div>
         </div>
 
-        {/* Earnings Chart */}
-        <div className="bg-card backdrop-blur-sm rounded-xl p-2.5 shadow-lg">
-          <div className="mb-2">
-            <h2 className="text-sm font-bold text-foreground mb-0.5">{t('dashboard.yourEarnings')}:</h2>
-            <p className="text-xl font-bold text-foreground">{formatCurrency(earningsStats.thisMonth)}</p>
-            <p className="text-[10px] text-muted-foreground">{t('dashboard.thisMonth')}</p>
-          </div>
+        {/* Earnings Chart - hidden for now */}
 
-          {chartData.length > 0 && (
-            <div className="h-24 mb-2">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
-                  <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 8 }} />
-                  <Bar dataKey="amount" fill="url(#earningsGradient)" radius={[3, 3, 0, 0]} />
-                  <defs>
-                    <linearGradient id="earningsGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="var(--theme-primaryLight)" stopOpacity={1} />
-                      <stop offset="100%" stopColor="var(--theme-primary)" stopOpacity={0.8} />
-                    </linearGradient>
-                  </defs>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-
-          <div>
-            <h3 className="text-[10px] font-semibold text-foreground mb-1.5">{t('dashboard.commissionBreakdown')}</h3>
-            <div className="space-y-1">
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-theme-primary" />
-                <span className="text-[10px] font-medium text-foreground">{formatCurrency(earningsStats.completedEarnings)}</span>
-                <span className="text-[10px] text-muted-foreground">{t('dashboard.referrals')}</span>
+        {/* How It Works */}
+        <div className="rounded-xl p-2.5 shadow-lg" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
+          <h2 className="text-sm font-bold text-white mb-2">{t('dashboard.howItWorks')}</h2>
+          <div className="space-y-2.5">
+            <div className="flex items-start gap-2">
+              <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-[10px]">1</div>
+              <div>
+                <p className="text-white font-semibold text-xs">{t('dashboard.howStep1Title')}</p>
+                <p className="text-white/70 text-[10px]">{t('dashboard.howStep1Desc')}</p>
               </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-theme-primaryLight" />
-                <span className="text-[10px] font-medium text-foreground">{formatCurrency(earningsStats.pendingEarnings)}</span>
-                <span className="text-[10px] text-muted-foreground">{t('earnings.pending', 'Pending')}</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-[10px]">2</div>
+              <div>
+                <p className="text-white font-semibold text-xs">{t('dashboard.howStep2Title')}</p>
+                <p className="text-white/70 text-[10px]">{t('dashboard.howStep2Desc')}</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-[10px]">3</div>
+              <div>
+                <p className="text-white font-semibold text-xs">{t('dashboard.howStep3Title')}</p>
+                <p className="text-white/70 text-[10px]">{t('dashboard.howStep3Desc')}</p>
               </div>
             </div>
           </div>
+          <Button onClick={copyLink} className="w-full mt-3 bg-white text-theme-primary hover:bg-white/90 rounded-lg h-8 text-[11px] font-semibold">
+            <Share2 className="h-3 w-3 mr-1" />
+            {t('dashboard.startSharingNow')}
+          </Button>
         </div>
       </div>
     </div>
