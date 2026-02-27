@@ -407,7 +407,7 @@ export default function EnhancedDashboardPage() {
           </div>
           <Link href="/dashboard/earnings">
             <Button size="sm" className="w-full mt-4 bg-theme-primary hover:opacity-90 rounded-lg h-10 text-sm font-semibold">
-              {t('dashboard.thisMonth')}
+              {t('dashboard.earningsSummary')}
             </Button>
           </Link>
         </div>
@@ -551,7 +551,7 @@ export default function EnhancedDashboardPage() {
 
             <Link href="/dashboard/earnings">
               <Button size="sm" className="w-full mt-3 bg-theme-primary hover:opacity-90 rounded-lg h-8 text-[11px] font-semibold">
-                {t('dashboard.thisMonth')}
+                {t('dashboard.earningsSummary')}
               </Button>
             </Link>
           </div>
