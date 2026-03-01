@@ -9,7 +9,6 @@ import { cn } from '@/lib/utils'
 import {
   LayoutDashboard,
   Building2,
-  DollarSign,
   Share2,
   Gift,
   Shield,
@@ -68,12 +67,6 @@ export function BottomNav() {
       href: '/dashboard/business',
       icon: Building2,
       roles: ['business', 'admin'],
-    },
-    {
-      label: t('nav.earnings'),
-      href: '/dashboard/earnings',
-      icon: DollarSign,
-      roles: ['referrer', 'business', 'admin'],
     },
     {
       label: t('nav.myVisits'),

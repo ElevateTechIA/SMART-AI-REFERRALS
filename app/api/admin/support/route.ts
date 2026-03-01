@@ -31,8 +31,17 @@ export async function GET(request: NextRequest) {
         subject: data.subject,
         message: data.message,
         status: data.status,
+        read: data.read ?? false,
         adminReply: data.adminReply || null,
         repliedBy: data.repliedBy || null,
+        replies: (data.replies || []).map((r: Record<string, unknown>) => ({
+          ...r,
+          createdAt: r.createdAt && typeof (r.createdAt as { toDate?: () => Date }).toDate === 'function'
+            ? (r.createdAt as { toDate: () => Date }).toDate()
+            : r.createdAt || null,
+        })),
+        lastReplyAt: data.lastReplyAt?.toDate() || null,
+        lastReplyBy: data.lastReplyBy || null,
         createdAt: data.createdAt?.toDate() || null,
         updatedAt: data.updatedAt?.toDate() || null,
       }
@@ -48,7 +57,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// PUT — reply to a support ticket (admin only)
+// PUT — reply to / update a support ticket (admin only)
 export async function PUT(request: NextRequest) {
   try {
     const authResult = await verifyAdmin(request)
@@ -60,7 +69,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { ticketId, reply, status } = body
+    const { ticketId, reply, status, read } = body
 
     if (!ticketId) {
       return NextResponse.json(
@@ -84,9 +93,28 @@ export async function PUT(request: NextRequest) {
       updatedAt: FieldValue.serverTimestamp(),
     }
 
+    let newReply = null
+
     if (reply !== undefined) {
       const trimmedReply = String(reply).trim()
       if (trimmedReply.length > 0) {
+        // Get admin name
+        const adminDoc = await db.collection('users').doc(authResult.uid).get()
+        const adminName = adminDoc.data()?.name || 'Admin'
+
+        newReply = {
+          id: `reply_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+          message: trimmedReply,
+          senderRole: 'admin',
+          senderUserId: authResult.uid,
+          senderName: adminName,
+          createdAt: new Date(),
+        }
+
+        updateData.replies = FieldValue.arrayUnion(newReply)
+        updateData.lastReplyAt = FieldValue.serverTimestamp()
+        updateData.lastReplyBy = 'admin'
+        // Keep legacy field for backward compat
         updateData.adminReply = trimmedReply
         updateData.repliedBy = authResult.uid
       }
@@ -96,14 +124,20 @@ export async function PUT(request: NextRequest) {
       updateData.status = status
     }
 
+    if (typeof read === 'boolean') {
+      updateData.read = read
+    }
+
     await ticketRef.update(updateData)
 
     return NextResponse.json({
       success: true,
+      reply: newReply,
       ticket: {
         id: ticketId,
         ...ticketDoc.data(),
         ...updateData,
+        replies: undefined, // Don't send FieldValue in response
         updatedAt: new Date(),
       },
     })

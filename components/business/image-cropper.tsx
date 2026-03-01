@@ -21,6 +21,9 @@ interface ImageCropperProps {
   onClose: () => void
   onCropComplete: (croppedBlob: Blob) => void
   uploading: boolean
+  cropShape?: 'rect' | 'round'
+  title?: string
+  description?: string
 }
 
 function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<Blob> {
@@ -67,7 +70,7 @@ function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<Blob> {
   })
 }
 
-export function ImageCropper({ imageSrc, open, onClose, onCropComplete, uploading }: ImageCropperProps) {
+export function ImageCropper({ imageSrc, open, onClose, onCropComplete, uploading, cropShape = 'rect', title, description }: ImageCropperProps) {
   const { t } = useTranslation()
   const [crop, setCrop] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
@@ -105,8 +108,8 @@ export function ImageCropper({ imageSrc, open, onClose, onCropComplete, uploadin
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{t('businessSettings.cropLogo')}</DialogTitle>
-          <DialogDescription>{t('businessSettings.cropLogoDesc')}</DialogDescription>
+          <DialogTitle>{title || t('businessSettings.cropLogo')}</DialogTitle>
+          <DialogDescription>{description || t('businessSettings.cropLogoDesc')}</DialogDescription>
         </DialogHeader>
 
         <div className="relative w-full aspect-square bg-muted rounded-lg overflow-hidden">
@@ -119,7 +122,7 @@ export function ImageCropper({ imageSrc, open, onClose, onCropComplete, uploadin
               onCropChange={onCropChange}
               onZoomChange={onZoomChange}
               onCropComplete={onCropAreaComplete}
-              cropShape="rect"
+              cropShape={cropShape}
               showGrid={false}
             />
           )}

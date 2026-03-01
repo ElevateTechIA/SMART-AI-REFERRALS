@@ -25,6 +25,10 @@ import {
   Star,
   Pencil,
   ArrowLeft,
+  DollarSign,
+  TrendingUp,
+  Calendar,
+  Download,
 } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ReceiptDialog } from '@/components/receipt/receipt-dialog'
@@ -98,6 +102,29 @@ function generateFakeReviews(businessName: string): DisplayReview[] {
   })
 }
 
+interface Transaction {
+  id: string
+  date: string
+  business: string
+  customer: string
+  amount: number
+  status: 'completed' | 'pending' | 'processing'
+  type: 'referral' | 'bonus'
+}
+
+interface EarningsStats {
+  totalEarnings: number
+  pendingEarnings: number
+  completedEarnings: number
+  thisMonth: number
+}
+
+interface EarningsResponse {
+  success: boolean
+  stats: EarningsStats
+  transactions: Transaction[]
+}
+
 interface VisitsApiResponse {
   visits: (Visit & { business?: Business })[]
   rewards: Earning[]
@@ -120,6 +147,11 @@ export default function VisitsPage() {
   const [flippedCards, setFlippedCards] = useState<Record<string, boolean>>({})
   const [businessReviews, setBusinessReviews] = useState<Record<string, DisplayReview[]>>({})
   const [loadingReviews, setLoadingReviews] = useState<Record<string, boolean>>({})
+  const [earningsStats, setEarningsStats] = useState<EarningsStats>({
+    totalEarnings: 0, pendingEarnings: 0, completedEarnings: 0, thisMonth: 0,
+  })
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [selectedPeriod, setSelectedPeriod] = useState('all')
 
   useEffect(() => {
     const fetchData = async () => {
@@ -185,6 +217,23 @@ export default function VisitsPage() {
 
     fetchData()
   }, [user, toast, t])
+
+  // Fetch earnings data
+  useEffect(() => {
+    const fetchEarnings = async () => {
+      if (!user) return
+      try {
+        const result = await apiGet<EarningsResponse>(`/api/earnings?period=${selectedPeriod}`)
+        if (result.ok && result.data) {
+          setEarningsStats(result.data.stats)
+          setTransactions(result.data.transactions)
+        }
+      } catch (error) {
+        console.error('Error fetching earnings:', error)
+      }
+    }
+    fetchEarnings()
+  }, [user, selectedPeriod])
 
   // Generate QR codes for CREATED visits with check-in tokens
   useEffect(() => {
@@ -373,6 +422,112 @@ export default function VisitsPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* My Earnings Card */}
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="h-5 w-5 text-theme-primary" />
+                {t('earnings.title')}
+              </CardTitle>
+              <CardDescription>{t('earnings.subtitle')}</CardDescription>
+            </div>
+            <div className="flex gap-3">
+              <select
+                value={selectedPeriod}
+                onChange={(e) => setSelectedPeriod(e.target.value)}
+                className="px-3 py-1.5 border border-border rounded-lg bg-background text-foreground text-sm focus:ring-2 focus:ring-theme-primary"
+              >
+                <option value="all">{t('earnings.allTime')}</option>
+                <option value="month">{t('earnings.thisMonthOption')}</option>
+                <option value="year">{t('earnings.thisYear')}</option>
+              </select>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Earnings Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="rounded-xl p-4 border border-theme-cardBorder" style={{ background: 'var(--theme-cardBg)' }}>
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'color-mix(in srgb, var(--theme-primary) 20%, transparent)' }}>
+                  <DollarSign className="h-4 w-4 text-theme-primary" />
+                </div>
+              </div>
+              <p className="text-xl font-bold text-theme-textPrimary">{formatCurrency(earningsStats.totalEarnings)}</p>
+              <span className="text-xs text-theme-textSecondary">{t('earnings.totalEarnings')}</span>
+            </div>
+            <div className="rounded-xl p-4 border border-theme-cardBorder" style={{ background: 'var(--theme-cardBg)' }}>
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'color-mix(in srgb, #22c55e 20%, transparent)' }}>
+                  <TrendingUp className="h-4 w-4 text-green-400" />
+                </div>
+              </div>
+              <p className="text-xl font-bold text-theme-textPrimary">{formatCurrency(earningsStats.completedEarnings)}</p>
+              <span className="text-xs text-theme-textSecondary">{t('earnings.completed')}</span>
+            </div>
+            <div className="rounded-xl p-4 border border-theme-cardBorder" style={{ background: 'var(--theme-cardBg)' }}>
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'color-mix(in srgb, #eab308 20%, transparent)' }}>
+                  <Clock className="h-4 w-4 text-yellow-400" />
+                </div>
+              </div>
+              <p className="text-xl font-bold text-theme-textPrimary">{formatCurrency(earningsStats.pendingEarnings)}</p>
+              <span className="text-xs text-theme-textSecondary">{t('earnings.pending')}</span>
+            </div>
+            <div className="rounded-xl p-4 border border-theme-cardBorder" style={{ background: 'var(--theme-cardBg)' }}>
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'color-mix(in srgb, var(--theme-primary) 20%, transparent)' }}>
+                  <Calendar className="h-4 w-4 text-theme-primary" />
+                </div>
+              </div>
+              <p className="text-xl font-bold text-theme-textPrimary">{formatCurrency(earningsStats.thisMonth)}</p>
+              <span className="text-xs text-theme-textSecondary">{t('earnings.thisMonth')}</span>
+            </div>
+          </div>
+
+          {/* Transaction History */}
+          {transactions.length > 0 ? (
+            <div>
+              <h3 className="text-sm font-semibold text-theme-textPrimary mb-3">{t('earnings.transactionHistory')}</h3>
+              <div className="space-y-2">
+                {transactions.map((tx) => (
+                  <div key={tx.id} className="flex items-center justify-between py-3 border-b border-theme-cardBorder last:border-0">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: tx.status === 'completed' ? 'color-mix(in srgb, #22c55e 20%, transparent)' : tx.status === 'pending' ? 'color-mix(in srgb, #eab308 20%, transparent)' : 'color-mix(in srgb, var(--theme-primary) 20%, transparent)' }}>
+                        <DollarSign className={`h-4 w-4 ${tx.status === 'completed' ? 'text-green-400' : tx.status === 'pending' ? 'text-yellow-400' : 'text-theme-primary'}`} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-theme-textPrimary">{tx.business}</p>
+                        <p className="text-xs text-theme-textMuted">{new Date(tx.date).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-semibold text-theme-textPrimary">{formatCurrency(tx.amount)}</p>
+                      <Badge className={
+                        tx.status === 'completed' ? 'bg-green-500 text-white' :
+                        tx.status === 'pending' ? 'bg-yellow-500 text-white' :
+                        'bg-theme-primary text-white'
+                      }>
+                        {tx.status === 'completed' ? t('earnings.statusCompleted') :
+                         tx.status === 'pending' ? t('earnings.statusPending') :
+                         t('earnings.statusProcessing')}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-6">
+              <DollarSign className="h-10 w-10 text-theme-textMuted mx-auto mb-3" />
+              <p className="text-sm text-theme-textMuted">{t('earnings.noTransactions')}</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Pending Visits - Now showing CREATED visits from Firestore */}
       {stats.pending > 0 && (

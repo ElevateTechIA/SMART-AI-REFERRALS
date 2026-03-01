@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -14,7 +14,7 @@ import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { apiGet, apiPost, apiPut } from '@/lib/api-client'
 import type { Business, User, Visit, FraudFlag, Offer, ConsumerRewardType, Receipt, SupportTicket } from '@/lib/types'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatCurrency, formatDate, formatDateTime } from '@/lib/utils'
 import {
   Building2,
   Users,
@@ -66,7 +66,9 @@ export default function AdminDashboardPage() {
   const { user, refreshUser } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { t } = useTranslation()
+  const initialTab = searchParams.get('tab') || 'businesses'
 
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [businesses, setBusinesses] = useState<Business[]>([])
@@ -172,6 +174,10 @@ export default function AdminDashboardPage() {
                 ...t,
                 createdAt: t.createdAt ? new Date(t.createdAt) : new Date(),
                 updatedAt: t.updatedAt ? new Date(t.updatedAt) : new Date(),
+                replies: (t.replies || []).map((r) => ({
+                  ...r,
+                  createdAt: r.createdAt ? new Date(r.createdAt) : new Date(),
+                })),
               }))
             )
           }
@@ -381,7 +387,7 @@ export default function AdminDashboardPage() {
   const handleSupportReply = async (ticketId: string, reply: string, newStatus?: string) => {
     setReplyLoading(ticketId)
     try {
-      const body: Record<string, string> = { ticketId }
+      const body: Record<string, string | boolean> = { ticketId, read: true }
       if (reply.trim()) body.reply = reply.trim()
       if (newStatus) body.status = newStatus
 
@@ -395,16 +401,24 @@ export default function AdminDashboardPage() {
       }
 
       setSupportTickets((prev) =>
-        prev.map((t) =>
-          t.id === ticketId
-            ? {
-                ...t,
-                ...(reply.trim() ? { adminReply: reply.trim() } : {}),
-                ...(newStatus ? { status: newStatus as SupportTicket['status'] } : {}),
-                updatedAt: new Date(),
-              }
-            : t
-        )
+        prev.map((t) => {
+          if (t.id !== ticketId) return t
+          const updated = { ...t, read: true, updatedAt: new Date() }
+          if (newStatus) updated.status = newStatus as SupportTicket['status']
+          if (reply.trim()) {
+            const newReplyObj = {
+              id: `reply_${Date.now()}`,
+              message: reply.trim(),
+              senderRole: 'admin' as const,
+              senderUserId: user?.id || '',
+              senderName: user?.name || 'Admin',
+              createdAt: new Date(),
+            }
+            updated.replies = [...(t.replies || []), newReplyObj]
+            updated.adminReply = reply.trim()
+          }
+          return updated
+        })
       )
 
       setReplyText('')
@@ -420,6 +434,24 @@ export default function AdminDashboardPage() {
         description: errorMessage,
         variant: 'destructive',
       })
+    } finally {
+      setReplyLoading(null)
+    }
+  }
+
+  const handleToggleRead = async (ticketId: string, currentRead: boolean) => {
+    setReplyLoading(ticketId)
+    try {
+      const result = await apiPut<{ success: boolean; error?: string }>(
+        '/api/admin/support',
+        { ticketId, read: !currentRead }
+      )
+      if (!result.ok) throw new Error(result.error)
+      setSupportTickets((prev) =>
+        prev.map((t) => (t.id === ticketId ? { ...t, read: !currentRead } : t))
+      )
+    } catch {
+      toast({ title: t('common.error'), variant: 'destructive' })
     } finally {
       setReplyLoading(null)
     }
@@ -544,7 +576,7 @@ export default function AdminDashboardPage() {
       )}
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue="businesses">
+      <Tabs defaultValue={initialTab}>
         <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
           <TabsList className="w-max sm:w-auto">
             <TabsTrigger value="businesses">{t('admin.tabBusinesses')}</TabsTrigger>
@@ -1200,6 +1232,11 @@ export default function AdminDashboardPage() {
                               <Badge variant={ticket.status === 'resolved' ? 'success' : 'warning'}>
                                 {ticket.status}
                               </Badge>
+                              {!ticket.read && (
+                                <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
+                                  {t('admin.unread')}
+                                </Badge>
+                              )}
                             </div>
                             <p className="text-xs text-muted-foreground mt-0.5">
                               {ticket.userName} ({ticket.userEmail}) &bull; {formatDate(ticket.createdAt)}
@@ -1207,7 +1244,8 @@ export default function AdminDashboardPage() {
                             <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
                               {ticket.message}
                             </p>
-                            {ticket.adminReply && (
+                            {/* Legacy single reply (backward compat) */}
+                            {!ticket.replies?.length && ticket.adminReply && (
                               <div className="ml-4 mt-2 pl-3 border-l-2 border-primary/30 bg-muted/50 rounded-r-lg py-2 pr-3">
                                 <span className="text-[10px] font-semibold text-foreground">
                                   {t('admin.reply')}
@@ -1217,6 +1255,29 @@ export default function AdminDashboardPage() {
                                 </p>
                               </div>
                             )}
+                            {/* Conversation thread */}
+                            {ticket.replies?.map((reply) => (
+                              <div
+                                key={reply.id}
+                                className={`mt-2 pl-3 border-l-2 rounded-r-lg py-2 pr-3 ${
+                                  reply.senderRole === 'admin'
+                                    ? 'ml-4 border-primary/30 bg-muted/50'
+                                    : 'ml-0 border-yellow-400/40 bg-yellow-500/5'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] font-semibold text-foreground">
+                                    {reply.senderRole === 'admin' ? t('admin.reply') : reply.senderName}
+                                  </span>
+                                  <span className="text-[10px] text-muted-foreground">
+                                    {formatDateTime(reply.createdAt)}
+                                  </span>
+                                </div>
+                                <p className="text-sm text-muted-foreground leading-relaxed mt-0.5">
+                                  {reply.message}
+                                </p>
+                              </div>
+                            ))}
                           </div>
                           <div className="flex items-center gap-2 flex-shrink-0">
                             {ticket.status === 'open' ? (
@@ -1251,43 +1312,65 @@ export default function AdminDashboardPage() {
                             )}
                             <Button
                               size="sm"
-                              variant={isExpanded ? 'default' : 'outline'}
-                              onClick={() => {
-                                setExpandedTicket(isExpanded ? null : ticket.id)
-                                setReplyText(ticket.adminReply || '')
-                              }}
+                              variant="outline"
+                              onClick={() => handleToggleRead(ticket.id, ticket.read ?? false)}
+                              disabled={replyLoading === ticket.id}
                             >
-                              <Send className="h-4 w-4 mr-1" />
-                              {t('admin.reply')}
+                              {replyLoading === ticket.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                ticket.read ? t('admin.markUnread') : t('admin.markRead')
+                              )}
                             </Button>
+                            {ticket.status === 'open' && (
+                              <Button
+                                size="sm"
+                                variant={isExpanded ? 'default' : 'outline'}
+                                onClick={() => {
+                                  setExpandedTicket(isExpanded ? null : ticket.id)
+                                  setReplyText('')
+                                }}
+                              >
+                                <Send className="h-4 w-4 mr-1" />
+                                {t('admin.reply')}
+                              </Button>
+                            )}
                           </div>
                         </div>
 
-                        {isExpanded && (
+                        {isExpanded && ticket.status === 'open' && (
                           <div className="mt-3 ml-0 md:ml-4 p-3 rounded-lg bg-muted/50 border space-y-3">
                             <textarea
-                              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                               placeholder={t('admin.replyPlaceholder')}
                               value={replyText}
                               onChange={(e) => setReplyText(e.target.value)}
                             />
-                            <div className="flex justify-end">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleSupportReply(ticket.id, replyText)}
+                                disabled={!replyText.trim() || replyLoading === ticket.id}
+                              >
+                                {replyLoading === ticket.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                                ) : (
+                                  <Send className="h-4 w-4 mr-1" />
+                                )}
+                                {t('admin.sendReply')}
+                              </Button>
                               <Button
                                 size="sm"
                                 onClick={() => handleSupportReply(ticket.id, replyText, 'resolved')}
                                 disabled={!replyText.trim() || replyLoading === ticket.id}
                               >
                                 {replyLoading === ticket.id ? (
-                                  <>
-                                    <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                                    {t('admin.sendingReply')}
-                                  </>
+                                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
                                 ) : (
-                                  <>
-                                    <Send className="h-4 w-4 mr-1" />
-                                    {t('admin.sendReply')}
-                                  </>
+                                  <CheckCircle className="h-4 w-4 mr-1" />
                                 )}
+                                {t('admin.replyAndResolve')}
                               </Button>
                             </div>
                           </div>

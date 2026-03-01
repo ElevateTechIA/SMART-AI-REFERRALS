@@ -35,7 +35,6 @@ import {
   Monitor,
   Palette,
   Check,
-  DollarSign,
   HelpCircle,
 } from 'lucide-react'
 
@@ -105,12 +104,6 @@ export function DashboardNav() {
       href: '/dashboard/referrals',
       icon: Share2,
       roles: ['referrer', 'admin'],
-    },
-    {
-      label: t('nav.earnings'),
-      href: '/dashboard/earnings',
-      icon: DollarSign,
-      roles: ['referrer', 'business', 'admin'],
     },
     {
       label: t('nav.myVisits'),

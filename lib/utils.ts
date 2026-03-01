@@ -21,6 +21,16 @@ export function formatDate(date: Date | string): string {
   }).format(d)
 }
 
+export function formatDateTime(date: Date | string): string {
+  const d = typeof date === 'string' ? new Date(date) : date
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(d)
+}
+
 export function generateReferralUrl(businessId: string, referrerUserId?: string): string {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
   const url = `${baseUrl}/r/${businessId}`

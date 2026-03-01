@@ -30,20 +30,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
+  const hydrateUser = (id: string, data: Record<string, unknown>): User => ({
+    id,
+    email: data.email as string,
+    name: data.name as string,
+    secondaryEmail: (data.secondaryEmail as string) || undefined,
+    dateOfBirth: (data.dateOfBirth as string) || undefined,
+    state: (data.state as string) || undefined,
+    city: (data.city as string) || undefined,
+    zipcode: (data.zipcode as string) || undefined,
+    phone: (data.phone as string) || undefined,
+    photoURL: (data.photoURL as string) || undefined,
+    roles: (data.roles as UserRole[]) || ['referrer'],
+    referrerStatus: data.referrerStatus as User['referrerStatus'],
+    profileComplete: (data.profileComplete as boolean) || false,
+    bankInfo: data.bankInfo as User['bankInfo'],
+    createdAt: (data.createdAt as { toDate: () => Date })?.toDate() || new Date(),
+    updatedAt: (data.updatedAt as { toDate: () => Date })?.toDate() || new Date(),
+  })
+
   const fetchUserData = async (firebaseUser: FirebaseUser): Promise<User | null> => {
     const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid))
     if (userDoc.exists()) {
-      const data = userDoc.data()
-      return {
-        id: userDoc.id,
-        email: data.email,
-        name: data.name,
-        photoURL: data.photoURL,
-        roles: data.roles || ['referrer'],
-        referrerStatus: data.referrerStatus,
-        createdAt: data.createdAt?.toDate() || new Date(),
-        updatedAt: data.updatedAt?.toDate() || new Date(),
-      }
+      return hydrateUser(userDoc.id, userDoc.data())
     }
     return null
   }
@@ -67,6 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       name: name || firebaseUser.displayName || 'User',
       photoURL: firebaseUser.photoURL || null,
       roles: roles,
+      profileComplete: false,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     }
@@ -84,6 +94,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       photoURL: (userData.photoURL as string) || undefined,
       roles: userData.roles as UserRole[],
       referrerStatus: referrerStatus as User['referrerStatus'],
+      profileComplete: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     }
@@ -176,17 +187,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Use getDocFromServer to bypass Firestore client cache
         const userDoc = await getDocFromServer(doc(db, 'users', firebaseUser.uid))
         if (userDoc.exists()) {
-          const data = userDoc.data()
-          setUser({
-            id: userDoc.id,
-            email: data.email,
-            name: data.name,
-            photoURL: data.photoURL,
-            roles: data.roles || ['referrer'],
-            referrerStatus: data.referrerStatus,
-            createdAt: data.createdAt?.toDate() || new Date(),
-            updatedAt: data.updatedAt?.toDate() || new Date(),
-          })
+          setUser(hydrateUser(userDoc.id, userDoc.data()))
         }
       } catch (error) {
         console.error('Error refreshing user data:', error)

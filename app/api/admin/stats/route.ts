@@ -24,15 +24,17 @@ export async function GET(request: NextRequest) {
       conversionsSnapshot,
       chargesSnapshot,
       fraudFlagsSnapshot,
+      unreadSupportSnapshot,
     ] = await Promise.all([
       getAdminDb().collection('users').count().get(),
       getAdminDb().collection('businesses').count().get(),
       getAdminDb().collection('businesses').where('status', '==', 'pending').count().get(),
-      getAdminDb().collection('users').where('referrerStatus', '==', 'pending').count().get(),
+      getAdminDb().collection('users').where('referrerStatus', '==', 'pending').where('roles', 'array-contains', 'referrer').count().get(),
       getAdminDb().collection('visits').count().get(),
       getAdminDb().collection('visits').where('status', '==', 'CONVERTED').count().get(),
       getAdminDb().collection('charges').where('status', '==', 'PAID').get(),
       getAdminDb().collection('fraudFlags').where('resolved', '==', false).count().get(),
+      getAdminDb().collection('support_tickets').where('read', '==', false).count().get(),
     ])
 
     // Calculate total revenue (only platform's net cut from PAID charges)
@@ -53,6 +55,7 @@ export async function GET(request: NextRequest) {
         totalConversions: conversionsSnapshot.data().count,
         totalRevenue,
         unresolvedFraudFlags: fraudFlagsSnapshot.data().count,
+        unreadSupportTickets: unreadSupportSnapshot.data().count,
       },
     })
   } catch (error) {

@@ -4,14 +4,31 @@ export type UserRole = 'admin' | 'business' | 'referrer' | 'consumer'
 // Referrer Status
 export type ReferrerStatus = 'pending' | 'active' | 'suspended'
 
+// Bank Info (promoter payouts)
+export interface BankInfo {
+  bankName: string
+  accountHolderName: string
+  routingNumber: string
+  accountNumber: string
+  accountType: 'checking' | 'savings'
+}
+
 // User Profile
 export interface User {
   id: string
   email: string
   name: string
+  secondaryEmail?: string
+  dateOfBirth?: string // ISO YYYY-MM-DD
+  state?: string // US state abbreviation e.g. "CA"
+  city?: string
+  zipcode?: string
+  phone?: string
   photoURL?: string
   roles: UserRole[]
   referrerStatus?: ReferrerStatus
+  profileComplete?: boolean
+  bankInfo?: BankInfo
   createdAt: Date
   updatedAt: Date
 }
@@ -205,6 +222,15 @@ export interface Review {
 // Support Ticket
 export type SupportTicketStatus = 'open' | 'resolved'
 
+export interface TicketReply {
+  id: string
+  message: string
+  senderRole: 'user' | 'admin'
+  senderUserId: string
+  senderName: string
+  createdAt: Date
+}
+
 export interface SupportTicket {
   id: string
   userId: string
@@ -213,8 +239,12 @@ export interface SupportTicket {
   subject: string
   message: string
   status: SupportTicketStatus
+  read: boolean
   adminReply?: string
   repliedBy?: string
+  replies?: TicketReply[]
+  lastReplyAt?: Date
+  lastReplyBy?: 'user' | 'admin'
   createdAt: Date
   updatedAt: Date
 }

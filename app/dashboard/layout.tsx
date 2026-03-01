@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useAuth } from '@/lib/auth/context'
 import { DashboardNav } from '@/components/dashboard/nav'
 import { BottomNav } from '@/components/dashboard/bottom-nav'
@@ -14,12 +14,20 @@ export default function DashboardLayout({
 }) {
   const { user, loading } = useAuth()
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     if (!loading && !user) {
       router.push('/auth/login')
     }
   }, [user, loading, router])
+
+  // Redirect to settings if profile is incomplete
+  useEffect(() => {
+    if (!loading && user && !user.profileComplete && !pathname.startsWith('/dashboard/settings')) {
+      router.push('/dashboard/settings?complete=true')
+    }
+  }, [user, loading, router, pathname])
 
   if (loading) {
     return (
