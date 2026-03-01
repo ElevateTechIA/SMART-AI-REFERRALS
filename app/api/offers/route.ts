@@ -193,7 +193,7 @@ export async function POST(request: NextRequest) {
     const offerData: Record<string, unknown> = {
       businessId,
       pricePerNewCustomer: validatedPrice,
-      referrerCommissionAmount: validatedCommissionAmount || 0,
+      referrerCommissionAmount: validatedCommissionAmount || Math.round(validatedPrice * 0.1),
       referrerCommissionPercentage: validatedCommissionPercentage,
       consumerRewardType: rewardType,
       consumerRewardValue: validatedRewardValue || 0,
