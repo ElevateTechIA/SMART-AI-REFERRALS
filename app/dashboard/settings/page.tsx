@@ -170,15 +170,19 @@ export default function SettingsPage() {
       toast({ title: t('common.error'), description: t('validation.stateRequired'), variant: 'destructive' })
       return false
     }
-    if (!formData.city.trim() || formData.city.trim().length < 2) {
+    if (formData.city && formData.city.trim().length > 0 && formData.city.trim().length < 2) {
       toast({ title: t('common.error'), description: t('validation.cityRequired'), variant: 'destructive' })
       return false
     }
-    if (!/^\d{5}$/.test(formData.zipcode)) {
+    if (formData.zipcode && formData.zipcode.length > 0 && !/^\d{5}$/.test(formData.zipcode)) {
       toast({ title: t('common.error'), description: t('validation.invalidZipcode'), variant: 'destructive' })
       return false
     }
-    if (formData.phone && !phoneValid) {
+    if (!formData.phone.trim()) {
+      toast({ title: t('common.error'), description: t('validation.phoneRequired'), variant: 'destructive' })
+      return false
+    }
+    if (!phoneValid) {
       toast({ title: t('common.error'), description: t('validation.invalidPhone'), variant: 'destructive' })
       return false
     }
@@ -432,13 +436,12 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>{t('accountSettings.city')} *</Label>
+                  <Label>{t('accountSettings.city')}</Label>
                   <CityAutocomplete
                     value={formData.city}
                     onChange={(value) => setFormData({ ...formData, city: value })}
                     stateCode={formData.state}
                     placeholder={t('accountSettings.cityPlaceholder')}
-                    required
                   />
                 </div>
               </div>
@@ -446,7 +449,7 @@ export default function SettingsPage() {
               {/* Zipcode & Phone */}
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="zipcode">{t('accountSettings.zipcode')} *</Label>
+                  <Label htmlFor="zipcode">{t('accountSettings.zipcode')}</Label>
                   <Input
                     id="zipcode"
                     value={formData.zipcode}
@@ -455,14 +458,13 @@ export default function SettingsPage() {
                       setFormData({ ...formData, zipcode: val })
                     }}
                     placeholder={t('accountSettings.zipcodePlaceholder')}
-                    required
                     maxLength={5}
                     inputMode="numeric"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label>{t('accountSettings.phone')}</Label>
+                  <Label>{t('accountSettings.phone')} *</Label>
                   <PhoneInput
                     value={formData.phone}
                     onChange={(value) => setFormData({ ...formData, phone: value })}

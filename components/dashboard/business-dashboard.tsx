@@ -4,55 +4,29 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
-import { apiGet } from '@/lib/api-client'
-import { Loader2, Users } from 'lucide-react'
+import { apiPost } from '@/lib/api-client'
+import { Loader2 } from 'lucide-react'
 import QRCode from 'qrcode'
 import { ShareAppModal } from '@/components/share-app-modal'
+import { QRScanner } from '@/components/business/qr-scanner'
 import { useTheme } from '@/lib/theme/theme-provider'
 import { themes } from '@/lib/theme/colors'
 import { WelcomeBanner } from './shared/welcome-banner'
 import { PromoLinkCard } from './shared/promo-link-card'
-
-interface Promoter {
-  id: string
-  name: string
-  photoURL: string | null
-  createdAt: string | null
-}
 
 export function BusinessDashboard() {
   const { user } = useAuth()
   const { t } = useTranslation()
   const { toast } = useToast()
   const { theme } = useTheme()
-  const [promoters, setPromoters] = useState<Promoter[]>([])
   const [qrCode, setQrCode] = useState<string>('')
-  const [loading, setLoading] = useState(true)
   const [showShareModal, setShowShareModal] = useState(false)
 
   const appUrl = 'https://smart-ai-referrals.vercel.app/'
 
   useEffect(() => {
-    if (user) fetchDashboardData()
-  }, [user])
-
-  useEffect(() => {
     generateQRCode()
   }, [theme])
-
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true)
-      const result = await apiGet<{ promoters: Promoter[] }>('/api/promoters')
-      if (result.ok && result.data) {
-        setPromoters(result.data.promoters || [])
-      }
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const generateQRCode = async () => {
     try {
@@ -86,12 +60,18 @@ export function BusinessDashboard() {
 
   const shareApp = () => setShowShareModal(true)
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+  const handleScanConvert = async (scanResult: { visitId: string; token: string }) => {
+    const result = await apiPost<{ success: boolean; error?: string }>(
+      `/api/visits/${scanResult.visitId}/convert`,
+      { token: scanResult.token }
     )
+    if (!result.ok) {
+      throw new Error(result.error || 'Conversion failed')
+    }
+    toast({
+      title: t('businessDashboard.conversionConfirmed'),
+      description: t('businessDashboard.conversionConfirmedDesc'),
+    })
   }
 
   return (
@@ -103,7 +83,7 @@ export function BusinessDashboard() {
 
       {/* Desktop Content */}
       <div className="hidden md:block">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr_1.2fr] gap-4 min-w-0">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-w-0">
           {/* Column 1: How It Works (Business) */}
           <div className="min-w-0">
             <div className="rounded-2xl p-5 shadow-xl h-full flex flex-col" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
@@ -143,40 +123,6 @@ export function BusinessDashboard() {
               onShare={share}
               onShareApp={shareApp}
             />
-          </div>
-
-          {/* Column 3: Latest Promoters */}
-          <div className="min-w-0">
-            <div className="rounded-2xl p-5 shadow-xl overflow-hidden h-full flex flex-col" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
-              <h2 className="text-base font-bold text-white mb-4">{t('dashboard.latestPromoters')}</h2>
-
-              {promoters.length > 0 ? (
-                <div className="flex-1 flex flex-col justify-evenly">
-                  {promoters.map((promoter) => (
-                    <div
-                      key={promoter.id}
-                      className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-3"
-                    >
-                      <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-white/20 flex items-center justify-center">
-                        {promoter.photoURL ? (
-                          <img src={promoter.photoURL} alt={promoter.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="text-white font-bold text-sm">{promoter.name?.charAt(0)?.toUpperCase()}</span>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-white font-semibold text-sm truncate">{promoter.name}</h3>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex-1 flex flex-col items-center justify-center text-center">
-                  <Users className="h-10 w-10 text-white/40 mb-3" />
-                  <p className="text-white/60 text-sm">{t('admin.noPromoters')}</p>
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </div>
@@ -220,38 +166,12 @@ export function BusinessDashboard() {
             onShare={share}
             onShareApp={shareApp}
           />
-
-          {/* Latest Promoters */}
-          <div className="rounded-xl p-2.5 shadow-lg" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
-            <h2 className="text-sm font-bold text-white mb-2">{t('dashboard.latestPromoters')}</h2>
-            {promoters.length > 0 ? (
-              <div className="space-y-1.5">
-                {promoters.map((promoter) => (
-                  <div
-                    key={promoter.id}
-                    className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-lg p-2"
-                  >
-                    <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-white/20 flex items-center justify-center">
-                      {promoter.photoURL ? (
-                        <img src={promoter.photoURL} alt={promoter.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-white font-bold text-[10px]">{promoter.name?.charAt(0)?.toUpperCase()}</span>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-white font-semibold text-xs truncate">{promoter.name}</h3>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center text-center py-4">
-                <Users className="h-8 w-8 text-white/40 mb-2" />
-                <p className="text-white/50 text-[10px]">{t('admin.noPromoters')}</p>
-              </div>
-            )}
-          </div>
         </div>
+      </div>
+
+      {/* QR Scanner */}
+      <div className="mt-4">
+        <QRScanner onScanSuccess={handleScanConvert} />
       </div>
 
       <ShareAppModal

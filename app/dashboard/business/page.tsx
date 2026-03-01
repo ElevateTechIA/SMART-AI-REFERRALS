@@ -25,10 +25,8 @@ import {
   Plus,
   Copy,
   ExternalLink,
-  Camera,
   ReceiptText,
 } from 'lucide-react'
-import { QRScanner } from '@/components/business/qr-scanner'
 import { ReceiptDialog } from '@/components/receipt/receipt-dialog'
 import { ReceiptPreview } from '@/components/receipt/receipt-preview'
 import {
@@ -158,55 +156,6 @@ export default function BusinessDashboardPage() {
       .then(setPromoQr)
       .catch(console.error)
   }, [business, theme])
-
-  const handleScanConvert = async (scanResult: { visitId: string; token: string }) => {
-    try {
-      const result = await apiPost<{ success: boolean; error?: string }>(
-        `/api/visits/${scanResult.visitId}/convert`,
-        { token: scanResult.token }
-      )
-
-      if (!result.ok) {
-        throw new Error(result.error || 'Conversion failed')
-      }
-
-      // Update local visit state
-      setVisits((prev) =>
-        prev.map((v) =>
-          v.id === scanResult.visitId ? { ...v, status: 'CONVERTED' as const } : v
-        )
-      )
-
-      // Refetch charges to reflect the new charge
-      if (business) {
-        const chargesQuery = query(
-          collection(db, 'charges'),
-          where('businessId', '==', business.id)
-        )
-        const chargesSnapshot = await getDocs(chargesQuery)
-        const freshCharges: Charge[] = []
-        chargesSnapshot.forEach((d) => {
-          const data = d.data()
-          freshCharges.push({
-            id: d.id,
-            ...data,
-            createdAt: data.createdAt?.toDate(),
-            updatedAt: data.updatedAt?.toDate(),
-          } as Charge)
-        })
-        freshCharges.sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0))
-        setCharges(freshCharges)
-      }
-
-      toast({
-        title: t('businessDashboard.conversionConfirmed'),
-        description: t('businessDashboard.conversionConfirmedDesc'),
-      })
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Conversion failed'
-      throw new Error(errorMessage)
-    }
-  }
 
   const handleConfirmConversion = async (visitId: string) => {
     if (!user || !business) return
@@ -523,13 +472,9 @@ export default function BusinessDashboardPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="scanner">
+          <Tabs defaultValue="pending">
             <div className="overflow-x-auto -mx-1 px-1">
               <TabsList className="inline-flex w-auto min-w-full">
-                <TabsTrigger value="scanner" className="text-xs sm:text-sm">
-                  <Camera className="h-4 w-4 sm:mr-1" />
-                  <span className="hidden sm:inline">{t('businessDashboard.scanner')}</span>
-                </TabsTrigger>
                 <TabsTrigger value="pending" className="text-xs sm:text-sm">
                   {t('businessDashboard.tabPending', { count: stats.pending })}
                 </TabsTrigger>
@@ -541,10 +486,6 @@ export default function BusinessDashboardPage() {
                 </TabsTrigger>
               </TabsList>
             </div>
-
-            <TabsContent value="scanner" className="mt-4">
-              <QRScanner onScanSuccess={handleScanConvert} />
-            </TabsContent>
 
             <TabsContent value="pending" className="mt-4">
               <VisitsList
