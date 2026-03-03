@@ -380,11 +380,18 @@ export default function OfferConfigPage() {
               {t('businessOffer.paymentSummary')}
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
             <div className="flex justify-between">
               <span className="text-muted-foreground">{t('businessOffer.pricePerCustomerSummary')}</span>
               <span className="font-bold text-primary">{formatCurrency(formData.pricePerNewCustomer)}</span>
             </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">{t('businessOffer.promoterCommissionSummary')} (10%)</span>
+              <span className="font-semibold">{formatCurrency(Math.round(formData.pricePerNewCustomer * 0.1 * 100) / 100)}</span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {t('businessOffer.autoCommissionNote')}
+            </p>
           </CardContent>
         </Card>
 

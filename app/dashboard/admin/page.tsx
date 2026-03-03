@@ -286,7 +286,7 @@ export default function AdminDashboardPage() {
     const offer = offers.get(businessId)
     if (offer) {
       setCommissionForm({
-        referrerCommissionAmount: offer.referrerCommissionAmount || 0,
+        referrerCommissionAmount: offer.referrerCommissionAmount || Math.round(offer.pricePerNewCustomer * 0.1 * 100) / 100,
         consumerRewardType: offer.consumerRewardType || 'none',
         consumerRewardValue: offer.consumerRewardValue || 0,
       })
@@ -751,6 +751,9 @@ export default function AdminDashboardPage() {
                                     setCommissionForm({ ...commissionForm, referrerCommissionAmount: Number(e.target.value) })
                                   }
                                 />
+                                <p className="text-xs text-muted-foreground">
+                                  10% = ${Math.round(offer.pricePerNewCustomer * 0.1 * 100) / 100}
+                                </p>
                               </div>
 
                               <div className="space-y-2">

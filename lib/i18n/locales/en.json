@@ -470,7 +470,8 @@
     "promoDescriptionHint": "Describe what the customer gets. This will be shown on the referral page.",
     "saveOffer": "Save Offer",
     "offerSaved": "Offer Saved",
-    "offerSavedDesc": "Your promo offer has been updated."
+    "offerSavedDesc": "Your promo offer has been updated.",
+    "autoCommissionNote": "Promoter commission is automatically calculated as 10% of the price per customer."
   },
   "businessSettings": {
     "title": "Business Settings",

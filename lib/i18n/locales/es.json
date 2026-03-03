@@ -470,7 +470,8 @@
     "promoDescriptionHint": "Describe lo que recibe el cliente. Esto se mostrará en la página de referidos.",
     "saveOffer": "Guardar Oferta",
     "offerSaved": "Oferta Guardada",
-    "offerSavedDesc": "Tu oferta de promoción ha sido actualizada."
+    "offerSavedDesc": "Tu oferta de promoción ha sido actualizada.",
+    "autoCommissionNote": "La comisión del promotor se calcula automáticamente como el 10% del precio por cliente."
   },
   "businessSettings": {
     "title": "Configuración del Negocio",
