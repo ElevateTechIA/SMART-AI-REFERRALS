@@ -1,7 +1,7 @@
 const withSerwist = require('@serwist/next').default({
   swSrc: 'app/sw.ts',
   swDest: 'public/sw.js',
-  disable: process.env.NODE_ENV === 'development',
+  disable: true, // PWA disabled — re-enable when PWA is set up
 })
 
 /** @type {import('next').NextConfig} */

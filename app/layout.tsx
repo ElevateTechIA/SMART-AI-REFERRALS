@@ -5,9 +5,10 @@ import { AuthProvider } from '@/lib/auth/context'
 import { ThemeProvider } from '@/lib/theme/theme-provider'
 import { I18nProvider } from '@/lib/i18n/provider'
 import { Toaster } from '@/components/ui/toaster'
-import { OfflineIndicator } from '@/components/pwa/offline-indicator'
-import { SyncManager } from '@/components/pwa/sync-manager'
-import { InstallPrompt } from '@/components/pwa/install-prompt'
+// PWA components disabled — re-enable when PWA is set up
+// import { OfflineIndicator } from '@/components/pwa/offline-indicator'
+// import { SyncManager } from '@/components/pwa/sync-manager'
+// import { InstallPrompt } from '@/components/pwa/install-prompt'
 import { themes, defaultTheme } from '@/lib/theme/colors'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -68,15 +69,26 @@ export default function RootLayout({
             `,
           }}
         />
+        {/* Unregister any stale service workers — PWA disabled for now */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                  registrations.forEach(function(registration) {
+                    registration.unregister();
+                  });
+                });
+              }
+            `,
+          }}
+        />
       </head>
       <body className={inter.className}>
         <I18nProvider>
           <ThemeProvider>
             <AuthProvider>
-              <OfflineIndicator />
               {children}
-              <SyncManager />
-              <InstallPrompt />
               <Toaster />
             </AuthProvider>
           </ThemeProvider>
