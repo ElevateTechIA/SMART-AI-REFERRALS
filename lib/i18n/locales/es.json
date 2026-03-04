@@ -318,7 +318,9 @@
     "statusCompleted": "Completado",
     "statusPending": "Pendiente",
     "statusProcessing": "Procesando",
-    "failedToLoad": "Error al cargar datos de ganancias"
+    "failedToLoad": "Error al cargar datos de ganancias",
+    "typeReferral": "Comisión",
+    "typeReward": "Recompensa"
   },
   "visits": {
     "title": "Mis Visitas",

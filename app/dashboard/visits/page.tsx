@@ -130,6 +130,7 @@ interface Transaction {
   amount: number
   status: 'completed' | 'pending' | 'processing'
   type: 'referral' | 'bonus'
+  earningType?: string
 }
 
 interface EarningsStats {
@@ -521,7 +522,11 @@ export default function VisitsPage() {
                       </div>
                       <div>
                         <p className="text-sm font-medium text-theme-textPrimary">{tx.business}</p>
-                        <p className="text-xs text-theme-textMuted">{new Date(tx.date).toLocaleDateString()}</p>
+                        <p className="text-xs text-theme-textMuted">
+                          {new Date(tx.date).toLocaleDateString()}
+                          {' · '}
+                          {tx.type === 'referral' ? t('earnings.typeReferral') : t('earnings.typeReward')}
+                        </p>
                       </div>
                     </div>
                     <div className="text-right">

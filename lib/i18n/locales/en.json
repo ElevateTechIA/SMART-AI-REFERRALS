@@ -318,7 +318,9 @@
     "statusCompleted": "Completed",
     "statusPending": "Pending",
     "statusProcessing": "Processing",
-    "failedToLoad": "Failed to load earnings data"
+    "failedToLoad": "Failed to load earnings data",
+    "typeReferral": "Commission",
+    "typeReward": "Reward"
   },
   "visits": {
     "title": "My Visits",
