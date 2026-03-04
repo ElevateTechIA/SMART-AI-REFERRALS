@@ -140,7 +140,7 @@ export async function GET(request: NextRequest) {
           updatedAt: data.updatedAt?.toDate() || null,
         }
       })
-      .filter((e) => e.type === 'REFERRER_COMMISSION')
+      .filter((e) => e.type === 'REFERRER_COMMISSION' || e.type === 'CONSUMER_REWARD')
       .sort((a, b) => {
         if (!a.createdAt || !b.createdAt) return 0
         return b.createdAt.getTime() - a.createdAt.getTime()
