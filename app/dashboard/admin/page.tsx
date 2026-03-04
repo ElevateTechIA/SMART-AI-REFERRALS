@@ -54,12 +54,19 @@ interface AdminDataResponse {
 
 interface AdminStats {
   totalUsers: number
+  roleCounts: {
+    admins: number
+    businesses: number
+    promoters: number
+  }
   totalBusinesses: number
   pendingBusinesses: number
   pendingReferrers: number
   totalVisits: number
   totalConversions: number
   totalRevenue: number
+  totalPaid: number
+  totalOwed: number
   unresolvedFraudFlags: number
 }
 
@@ -550,6 +557,17 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalUsers}</div>
+              <div className="mt-2 space-y-0.5">
+                <p className="text-xs text-muted-foreground">
+                  {t('roles.admin')}: {stats.roleCounts.admins}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {t('roles.business')}: {stats.roleCounts.businesses}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {t('roles.promoter')}: {stats.roleCounts.promoters}
+                </p>
+              </div>
             </CardContent>
           </Card>
           <Card>
@@ -583,6 +601,23 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</div>
+              <div className="mt-2 space-y-1">
+                {stats.totalOwed > 0 ? (
+                  <>
+                    <p className="text-xs text-red-600 font-medium">
+                      {t('admin.totalOwed')}: {formatCurrency(stats.totalOwed)}
+                    </p>
+                    <p className="text-xs text-green-600">
+                      {t('admin.totalPaid')}: {formatCurrency(stats.totalPaid)}
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-xs text-green-600 flex items-center gap-1">
+                    <CheckCircle className="h-3 w-3" />
+                    {stats.totalRevenue > 0 ? t('admin.allPaid') : ''}
+                  </p>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -637,10 +672,7 @@ export default function AdminDashboardPage() {
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="settings">
-              <Settings className="h-4 w-4 mr-1" />
-              {t('admin.tabSettings')}
-            </TabsTrigger>
+            {/* Settings tab hidden — commission split defaults to 30/30/40 */}
           </TabsList>
         </div>
 

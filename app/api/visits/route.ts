@@ -84,18 +84,23 @@ export async function POST(request: NextRequest) {
     const plainToken = generateCheckInToken()
     const tokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
 
-    // Use transaction for atomic fraud check and visit creation
+    // Check if consumer already has a visit to this business (prevent duplicates)
+    const existingVisitsQuery = await getAdminDb()
+      .collection('visits')
+      .where('businessId', '==', businessId)
+      .where('consumerUserId', '==', consumerUserId)
+      .limit(1)
+      .get()
+
+    if (!existingVisitsQuery.empty) {
+      return NextResponse.json(
+        { error: 'You have already visited this business' },
+        { status: 409 }
+      )
+    }
+
+    // Use transaction for atomic visit creation
     const result = await getAdminDb().runTransaction(async (transaction) => {
-      // Check if consumer already has a visit to this business (anti-fraud)
-      const existingVisitsQuery = await getAdminDb()
-        .collection('visits')
-        .where('businessId', '==', businessId)
-        .where('consumerUserId', '==', consumerUserId)
-        .limit(1)
-        .get()
-
-      const isNewCustomer = existingVisitsQuery.empty
-
       // Create visit record
       const visitRef = getAdminDb().collection('visits').doc()
       const visitData = {
@@ -105,7 +110,7 @@ export async function POST(request: NextRequest) {
         referrerUserId: referrerUserId || null,
         attributionType,
         status: 'CREATED',
-        isNewCustomer,
+        isNewCustomer: true,
         userAgent,
         ipAddress,
         checkInToken: plainToken, // Store plain token (protected by Firestore rules)
@@ -116,19 +121,6 @@ export async function POST(request: NextRequest) {
       }
 
       transaction.set(visitRef, visitData)
-
-      // If not a new customer, create fraud flag atomically
-      if (!isNewCustomer) {
-        const fraudRef = getAdminDb().collection('fraudFlags').doc()
-        transaction.set(fraudRef, {
-          visitId: visitRef.id,
-          consumerUserId,
-          businessId,
-          reason: 'Repeat visit from same consumer',
-          createdAt: FieldValue.serverTimestamp(),
-          resolved: false,
-        })
-      }
 
       // Ensure visiting user has the referrer (promoter) role
       const userRef = getAdminDb().collection('users').doc(consumerUserId)
@@ -156,7 +148,7 @@ export async function POST(request: NextRequest) {
         referrerUserId: referrerUserId || null,
         attributionType,
         status: 'CREATED',
-        isNewCustomer,
+        isNewCustomer: true,
         checkInToken: plainToken, // Plain token sent only once!
         checkInTokenExpiry: tokenExpiry,
       }

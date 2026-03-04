@@ -37,6 +37,7 @@ import {
 } from '@/components/ui/dialog'
 import { useTranslation } from 'react-i18next'
 import QRCode from 'qrcode'
+import { QRScanner, type ScanResult } from '@/components/business/qr-scanner'
 import { useTheme } from '@/lib/theme/theme-provider'
 import { themes } from '@/lib/theme/colors'
 
@@ -214,6 +215,46 @@ export default function BusinessDashboardPage() {
     } finally {
       setConverting(null)
     }
+  }
+
+  const handleQRScan = async (scanResult: ScanResult) => {
+    const result = await apiPost<{ success: boolean; error?: string }>(
+      `/api/visits/${scanResult.visitId}/convert`,
+      { token: scanResult.token }
+    )
+    if (!result.ok) {
+      throw new Error(result.error || 'Failed to confirm conversion')
+    }
+    // Update local visit state
+    setVisits((prev) =>
+      prev.map((v) =>
+        v.id === scanResult.visitId ? { ...v, status: 'CONVERTED' as const } : v
+      )
+    )
+    // Refetch charges
+    if (business) {
+      const chargesQuery = query(
+        collection(db, 'charges'),
+        where('businessId', '==', business.id)
+      )
+      const chargesSnapshot = await getDocs(chargesQuery)
+      const freshCharges: Charge[] = []
+      chargesSnapshot.forEach((d) => {
+        const data = d.data()
+        freshCharges.push({
+          id: d.id,
+          ...data,
+          createdAt: data.createdAt?.toDate(),
+          updatedAt: data.updatedAt?.toDate(),
+        } as Charge)
+      })
+      freshCharges.sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0))
+      setCharges(freshCharges)
+    }
+    toast({
+      title: t('businessDashboard.conversionConfirmed'),
+      description: t('businessDashboard.conversionConfirmedDesc'),
+    })
   }
 
   const copyReferralLink = () => {
@@ -462,6 +503,9 @@ export default function BusinessDashboardPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* QR Scanner */}
+      <QRScanner onScanSuccess={handleQRScan} />
 
       {/* Visits & Conversions */}
       <Card>

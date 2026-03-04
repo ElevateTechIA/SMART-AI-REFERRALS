@@ -128,6 +128,15 @@ function ReferralPageContent() {
       )
 
       if (!result.ok) {
+        // If already visited, treat as success (not an error for the user)
+        if (result.status === 409) {
+          setVisitCreated(true)
+          toast({
+            title: t('referralPage.alreadyVisited'),
+            description: t('referralPage.alreadyVisitedDesc'),
+          })
+          return
+        }
         throw new Error(result.error || 'Failed to create visit')
       }
 

@@ -209,6 +209,9 @@
     "conversions": "Conversions",
     "ofVisits": "of {{count}} visits",
     "totalRevenue": "Total Revenue",
+    "totalPaid": "Paid",
+    "totalOwed": "Owed",
+    "allPaid": "All paid",
     "fraudAlerts": "Fraud Alerts ({{count}})",
     "fraudAlertsDesc": "Unresolved potential fraud flags require attention",
     "unresolved": "Unresolved",
@@ -620,6 +623,8 @@
     "signedInDesc": "Now let's record your visit.",
     "visitSuccess": "Success!",
     "visitSuccessDesc": "Your visit has been recorded. Enjoy your experience!",
+    "alreadyVisited": "Already visited",
+    "alreadyVisitedDesc": "You have already registered a visit to this business.",
     "failedLoadBusiness": "Failed to load business information.",
     "points": "{{value}} Points",
     "percentOff": "{{value}}% Off"

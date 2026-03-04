@@ -25,12 +25,40 @@ export async function GET(request: NextRequest) {
 
     const visits = []
 
+    // Batch-fetch businesses and offers to avoid N+1 queries
+    const businessIds = Array.from(new Set(visitsSnapshot.docs.map((d) => d.data().businessId)))
+    const businessRefs = businessIds.map((id) => db.collection('businesses').doc(id))
+    const offerRefs = businessIds.map((id) => db.collection('offers').doc(id))
+
+    const [businessDocs, offerDocs] = await Promise.all([
+      businessRefs.length > 0 ? db.getAll(...businessRefs) : Promise.resolve([]),
+      offerRefs.length > 0 ? db.getAll(...offerRefs) : Promise.resolve([]),
+    ])
+
+    const businessMap = new Map<string, FirebaseFirestore.DocumentData>()
+    for (const doc of businessDocs) {
+      if (doc.exists) businessMap.set(doc.id, { id: doc.id, ...doc.data() })
+    }
+    const offerMap = new Map<string, FirebaseFirestore.DocumentData>()
+    for (const doc of offerDocs) {
+      if (doc.exists && doc.data()?.active) offerMap.set(doc.id, { id: doc.id, ...doc.data() })
+    }
+
+    // Batch-fetch owner emails
+    const ownerUserIds = Array.from(new Set(
+      Array.from(businessMap.values()).map((b) => b.ownerUserId).filter(Boolean)
+    ))
+    const ownerRefs = ownerUserIds.map((id: string) => db.collection('users').doc(id))
+    const ownerDocs = ownerRefs.length > 0 ? await db.getAll(...ownerRefs) : []
+    const ownerEmailMap = new Map<string, string | null>()
+    for (const doc of ownerDocs) {
+      ownerEmailMap.set(doc.id, doc.exists ? doc.data()?.email || null : null)
+    }
+
     for (const visitDoc of visitsSnapshot.docs) {
       const data = visitDoc.data()
-
-      // Fetch business details
-      const businessDoc = await db.collection('businesses').doc(data.businessId).get()
-      const businessData = businessDoc.exists ? businessDoc.data() : null
+      const businessData = businessMap.get(data.businessId)
+      const offerData = offerMap.get(data.businessId)
 
       visits.push({
         id: visitDoc.id,
@@ -48,13 +76,23 @@ export async function GET(request: NextRequest) {
         checkedInAt: data.checkedInAt?.toDate() || null,
         business: businessData
           ? {
-              id: businessDoc.id,
+              id: businessData.id,
               name: businessData.name,
               category: businessData.category,
+              description: businessData.description || '',
               address: businessData.address,
               phone: businessData.phone,
               website: businessData.website,
+              email: businessData.ownerUserId ? ownerEmailMap.get(businessData.ownerUserId) || null : null,
+              images: businessData.images || [],
               status: businessData.status,
+            }
+          : null,
+        offer: offerData
+          ? {
+              consumerRewardValue: offerData.consumerRewardValue || 0,
+              consumerRewardType: offerData.consumerRewardType || 'none',
+              referrerCommissionAmount: offerData.referrerCommissionAmount || 0,
             }
           : null,
       })

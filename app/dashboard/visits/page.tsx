@@ -29,11 +29,31 @@ import {
   TrendingUp,
   Calendar,
   Download,
+  Phone,
+  Mail,
+  Globe,
 } from 'lucide-react'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+
 import { ReceiptDialog } from '@/components/receipt/receipt-dialog'
 import { ReviewDialog } from '@/components/review-dialog'
 import { generateCheckInQRImage, getDaysRemaining } from '@/lib/qr-checkin'
+
+const GRADIENTS = [
+  'from-rose-500 via-pink-500 to-teal-500',
+  'from-purple-600 via-violet-500 to-cyan-400',
+  'from-emerald-600 via-teal-500 to-blue-400',
+  'from-orange-500 via-amber-500 to-yellow-400',
+  'from-blue-600 via-indigo-500 to-purple-400',
+  'from-pink-500 via-rose-400 to-orange-400',
+]
+
+function getGradientForBusiness(name: string): string {
+  let hash = 0
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  return GRADIENTS[Math.abs(hash) % GRADIENTS.length]
+}
 
 function getFakeReviewCount(name: string): number {
   let hash = 0
@@ -558,70 +578,103 @@ export default function VisitsPage() {
                 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
                 : 0
 
+              const businessName = visit.business?.name || t('common.unknown')
+              const coverImage = visit.business?.images?.[0] || null
+              const gradient = getGradientForBusiness(businessName)
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const consumerReward = (visit as any).offer?.consumerRewardValue || 0
+
               return (
                 <div key={visit.id} className="perspective-1000">
                   <div className={`relative preserve-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
                     {/* ===== FRONT FACE ===== */}
                     <div className="backface-hidden">
-                      <Card className="border-primary bg-primary/5">
-                        <CardHeader>
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex items-start gap-4">
-                              <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                <Building2 className="h-6 w-6 text-primary" />
-                              </div>
-                              <div>
-                                <CardTitle className="text-xl">
-                                  {visit.business?.name || t('common.unknown')}
-                                </CardTitle>
-                                <CardDescription className="mt-1">
-                                  {visit.business?.category}
-                                </CardDescription>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  {t('visits.createdOn', { date: formatDate(visit.createdAt) })}
-                                </p>
+                      <div className="rounded-3xl overflow-hidden shadow-xl border border-theme-cardBorder" style={{ background: 'var(--theme-cardBg)' }}>
+                        {/* Banner */}
+                        <div className="relative h-40 sm:h-48">
+                          {coverImage ? (
+                            <img
+                              src={coverImage}
+                              alt={businessName}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className={`w-full h-full bg-gradient-to-br ${gradient}`}>
+                              <div className="absolute inset-0 flex items-center justify-center opacity-20">
+                                <Building2 className="h-24 w-24 text-white" />
                               </div>
                             </div>
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+                          {/* Business name & category */}
+                          <div className="absolute bottom-4 left-5 right-5">
+                            <h3 className="text-white font-extrabold text-xl sm:text-2xl drop-shadow-lg truncate tracking-wide uppercase">
+                              {businessName}
+                            </h3>
+                            <p className="text-white/80 text-sm drop-shadow font-medium">
+                              {visit.business?.category}
+                            </p>
+                          </div>
+
+                          {/* Reward badge */}
+                          {consumerReward > 0 && (
+                            <div className="absolute top-4 right-4">
+                              <div className="bg-green-900/80 border border-green-700 rounded-xl px-3.5 py-1.5 flex items-center gap-1.5 shadow-lg backdrop-blur-sm">
+                                <Gift className="h-3.5 w-3.5 text-green-400" />
+                                <span className="text-sm font-bold text-green-300">
+                                  {t('cards.earn', { amount: formatCurrency(consumerReward) })}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Status badge */}
+                          <div className="absolute top-4 left-4">
                             <Badge
                               variant={visit.status === 'CHECKED_IN' ? 'default' : 'secondary'}
+                              className="shadow-lg"
                             >
                               {visit.status === 'CHECKED_IN' ? t('visits.checkInDone') : t('visits.pendingStatus')}
                             </Badge>
                           </div>
-                        </CardHeader>
+                        </div>
 
+                        {/* QR Code section */}
                         {visit.status === 'CREATED' && qrImage && visit.checkInToken && (
-                          <CardContent className="space-y-4">
-                            <div className="flex flex-col items-center gap-4">
-                              <div className="text-center">
-                                <p className="text-sm font-semibold mb-2">
-                                  {t('visits.checkInQR')}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                  {t('visits.showQRToStaff')}
-                                </p>
-                              </div>
+                          <>
+                            <div className="pt-5 pb-2 text-center">
+                              <h4 className="text-lg font-bold text-theme-textPrimary">
+                                {t('visits.checkInQR')}
+                              </h4>
+                              <p className="text-xs text-theme-textSecondary mt-1">
+                                {t('visits.showQRToStaff')}
+                              </p>
+                            </div>
 
-                              <div className="flex justify-center">
-                                <img
-                                  src={qrImage}
-                                  alt="Check-in QR Code"
-                                  className="rounded-lg border-2 border-primary w-64 h-64"
-                                />
+                            <div className="flex justify-center px-4 pb-3">
+                              <div className="bg-white rounded-2xl p-3 shadow-md border border-white/20">
+                                <img src={qrImage} alt="Check-in QR Code" className="w-44 h-44 sm:w-52 sm:h-52" />
                               </div>
+                            </div>
 
-                              <Alert className="w-full">
-                                <Clock className="h-4 w-4" />
-                                <AlertDescription>
+                            {/* Expiry notice */}
+                            <div className="px-5 pb-3">
+                              <div className="flex items-center gap-2 rounded-xl px-4 py-2.5" style={{ background: 'color-mix(in srgb, var(--theme-primary) 15%, transparent)' }}>
+                                <Clock className="h-4 w-4 text-theme-textMuted flex-shrink-0" />
+                                <span className="text-sm text-theme-textSecondary">
                                   {t('visits.qrExpires', { days: daysRemaining, dayWord: daysRemaining === 1 ? t('visits.day') : t('visits.days') })}
-                                </AlertDescription>
-                              </Alert>
+                                </span>
+                              </div>
+                            </div>
 
-                              <div className="rounded-lg p-4 w-full" style={{ background: 'color-mix(in srgb, var(--theme-primary) 10%, transparent)' }}>
+                            {/* Instructions */}
+                            <div className="px-5 pb-4">
+                              <div className="rounded-xl p-4" style={{ background: 'color-mix(in srgb, var(--theme-primary) 10%, transparent)' }}>
                                 <p className="text-sm font-semibold mb-2 text-theme-textPrimary">
                                   {t('visits.instructions')}
                                 </p>
-                                <div className="text-xs text-theme-textPrimary space-y-1">
+                                <div className="text-xs text-theme-textSecondary space-y-1">
                                   <p>{t('visits.instruction1')}</p>
                                   <p>{t('visits.instruction2')}</p>
                                   <p>{t('visits.instruction3')}</p>
@@ -629,21 +682,21 @@ export default function VisitsPage() {
                                 </div>
                               </div>
                             </div>
-                          </CardContent>
+                          </>
                         )}
 
                         {visit.status === 'CHECKED_IN' && (
-                          <CardContent className="space-y-3">
-                            <Alert className="border-green-500 bg-green-50">
-                              <CheckCircle className="h-4 w-4 text-green-600" />
-                              <AlertDescription className="text-green-900">
+                          <div className="px-5 py-4 space-y-3">
+                            <div className="flex items-center gap-2 rounded-xl px-4 py-2.5" style={{ background: 'color-mix(in srgb, var(--theme-success) 15%, transparent)' }}>
+                              <CheckCircle className="h-4 w-4" style={{ color: 'var(--theme-success)' }} />
+                              <span className="text-sm text-theme-textPrimary">
                                 {t('visits.checkInComplete')}
-                              </AlertDescription>
-                            </Alert>
+                              </span>
+                            </div>
 
                             {/* Review display / button for checked-in visits */}
                             {userReviews[visit.businessId] ? (
-                              <div className="p-3 bg-muted/50 rounded-lg">
+                              <div className="p-3 rounded-lg" style={{ background: 'color-mix(in srgb, var(--theme-primary) 8%, transparent)' }}>
                                 <div className="flex items-center gap-2">
                                   <button
                                     onClick={() => flipToReviews(visit.id, visit.businessId, visit.business?.name || '')}
@@ -655,20 +708,21 @@ export default function VisitsPage() {
                                         className={`h-3.5 w-3.5 ${
                                           i < userReviews[visit.businessId].rating
                                             ? 'fill-amber-400 text-amber-400'
-                                            : 'fill-muted text-muted-foreground/30'
+                                            : 'text-theme-textMuted'
                                         }`}
                                       />
                                     ))}
                                   </button>
                                   <button
                                     onClick={() => openReviewDialog(visit.businessId, visit.business?.name || '')}
-                                    className="text-xs text-primary hover:underline ml-auto flex items-center gap-1"
+                                    className="text-xs hover:underline ml-auto flex items-center gap-1"
+                                    style={{ color: 'var(--theme-primary)' }}
                                   >
                                     <Pencil className="h-3 w-3" />
                                     {t('review.editReview')}
                                   </button>
                                 </div>
-                                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                                <p className="text-xs text-theme-textSecondary mt-1 leading-relaxed">
                                   {userReviews[visit.businessId].text}
                                 </p>
                               </div>
@@ -677,7 +731,7 @@ export default function VisitsPage() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className="gap-2"
+                                  className="gap-2 rounded-xl border-theme-cardBorder text-theme-textPrimary"
                                   onClick={() => openReviewDialog(visit.businessId, visit.business?.name || '')}
                                 >
                                   <Star className="h-4 w-4" />
@@ -692,19 +746,58 @@ export default function VisitsPage() {
                                       <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
                                     ))}
                                   </div>
-                                  <span className="text-xs font-medium text-muted-foreground">
+                                  <span className="text-xs font-medium text-theme-textMuted">
                                     ({getFakeReviewCount(visit.business?.name || '')})
                                   </span>
                                 </button>
                               </div>
                             )}
-                          </CardContent>
+                          </div>
+                        )}
+
+                        {/* Business info */}
+                        {(visit.business?.address || visit.business?.phone || visit.business?.email || visit.business?.website) && (
+                          <div className="px-5 pb-4 pt-1 border-t border-theme-cardBorder space-y-2">
+                            {visit.business?.description && (
+                              <p className="text-xs text-theme-textSecondary pt-3">{visit.business.description}</p>
+                            )}
+                            {visit.business?.address && (
+                              <div className="flex items-start gap-2 text-xs text-theme-textSecondary">
+                                <MapPin className="h-3.5 w-3.5 text-theme-textMuted mt-0.5 flex-shrink-0" />
+                                <span>{visit.business.address}</span>
+                              </div>
+                            )}
+                            {visit.business?.phone && (
+                              <div className="flex items-center gap-2 text-xs text-theme-textSecondary">
+                                <Phone className="h-3.5 w-3.5 text-theme-textMuted flex-shrink-0" />
+                                <a href={`tel:${visit.business.phone}`} className="hover:underline">
+                                  {visit.business.phone}
+                                </a>
+                              </div>
+                            )}
+                            {visit.business?.email && (
+                              <div className="flex items-center gap-2 text-xs text-theme-textSecondary">
+                                <Mail className="h-3.5 w-3.5 text-theme-textMuted flex-shrink-0" />
+                                <a href={`mailto:${visit.business.email}`} className="hover:underline truncate">
+                                  {visit.business.email}
+                                </a>
+                              </div>
+                            )}
+                            {visit.business?.website && (
+                              <div className="flex items-center gap-2 text-xs text-theme-textSecondary">
+                                <Globe className="h-3.5 w-3.5 text-theme-textMuted flex-shrink-0" />
+                                <a href={visit.business.website} target="_blank" rel="noopener noreferrer" className="hover:underline truncate">
+                                  {visit.business.website.replace(/^https?:\/\//, '')}
+                                </a>
+                              </div>
+                            )}
+                          </div>
                         )}
 
                         {/* Receipt upload button */}
-                        <CardContent className="pt-0 flex justify-center">
+                        <div className="px-5 pb-5 flex justify-center">
                           {visitReceipts[visit.id] ? (
-                            <div className="flex items-center gap-2 text-green-600 text-sm">
+                            <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--theme-success)' }}>
                               <ReceiptText className="h-4 w-4" />
                               <span>{t('receipt.receiptAttached')}</span>
                             </div>
@@ -712,15 +805,15 @@ export default function VisitsPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="gap-2"
+                              className="gap-2 rounded-xl border-theme-cardBorder text-theme-textPrimary"
                               onClick={() => setReceiptDialogVisitId(visit.id)}
                             >
                               <ReceiptText className="h-4 w-4" />
                               {t('receipt.uploadReceipt')}
                             </Button>
                           )}
-                        </CardContent>
-                      </Card>
+                        </div>
+                      </div>
                     </div>
 
                     {/* ===== BACK FACE (Reviews) ===== */}
