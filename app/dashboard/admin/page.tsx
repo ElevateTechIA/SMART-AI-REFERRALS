@@ -15,6 +15,7 @@ import { useToast } from '@/components/ui/use-toast'
 import { apiGet, apiPost, apiPut } from '@/lib/api-client'
 import type { Business, User, Visit, FraudFlag, Offer, ConsumerRewardType, Receipt, SupportTicket } from '@/lib/types'
 import { formatCurrency, formatDate, formatDateTime } from '@/lib/utils'
+import { DEFAULT_COMMISSION_SPLIT, type CommissionSplit } from '@/lib/commission-config'
 import {
   Building2,
   Users,
@@ -93,6 +94,9 @@ export default function AdminDashboardPage() {
   const [expandedTicket, setExpandedTicket] = useState<string | null>(null)
   const [replyText, setReplyText] = useState('')
   const [replyLoading, setReplyLoading] = useState<string | null>(null)
+  const [commissionSplit, setCommissionSplit] = useState<CommissionSplit>(DEFAULT_COMMISSION_SPLIT)
+  const [splitForm, setSplitForm] = useState<CommissionSplit>(DEFAULT_COMMISSION_SPLIT)
+  const [splitSaving, setSplitSaving] = useState(false)
 
   useEffect(() => {
     // Check if user is admin
@@ -189,6 +193,12 @@ export default function AdminDashboardPage() {
           description: t('admin.failedToLoad'),
           variant: 'destructive',
         })
+        // Fetch commission split config
+        const splitResult = await apiGet<{ success: boolean; data: CommissionSplit }>('/api/admin/config/commission')
+        if (splitResult.ok && splitResult.data?.success) {
+          setCommissionSplit(splitResult.data.data)
+          setSplitForm(splitResult.data.data)
+        }
       } finally {
         setLoading(false)
       }
@@ -333,6 +343,42 @@ export default function AdminDashboardPage() {
       })
     } finally {
       setCommissionSaving(false)
+    }
+  }
+
+  const handleSaveSplit = async () => {
+    const total = splitForm.promoterPercent + splitForm.consumerPercent + splitForm.platformPercent
+    if (total !== 100) {
+      toast({
+        title: t('common.error'),
+        description: t('admin.splitMustSum100', { total }),
+        variant: 'destructive',
+      })
+      return
+    }
+    setSplitSaving(true)
+    try {
+      const result = await apiPut<{ success: boolean; error?: string }>(
+        '/api/admin/config/commission',
+        splitForm
+      )
+      if (!result.ok) {
+        throw new Error(result.error || 'Failed to save')
+      }
+      setCommissionSplit(splitForm)
+      toast({
+        title: t('common.success'),
+        description: t('admin.splitSaved'),
+      })
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save'
+      toast({
+        title: t('common.error'),
+        description: errorMessage,
+        variant: 'destructive',
+      })
+    } finally {
+      setSplitSaving(false)
     }
   }
 
@@ -591,6 +637,10 @@ export default function AdminDashboardPage() {
                 </Badge>
               )}
             </TabsTrigger>
+            <TabsTrigger value="settings">
+              <Settings className="h-4 w-4 mr-1" />
+              {t('admin.tabSettings')}
+            </TabsTrigger>
           </TabsList>
         </div>
 
@@ -752,7 +802,7 @@ export default function AdminDashboardPage() {
                                   }
                                 />
                                 <p className="text-xs text-muted-foreground">
-                                  10% = ${Math.round(offer.pricePerNewCustomer * 0.1 * 100) / 100}
+                                  {commissionSplit.promoterPercent}% = ${Math.floor(offer.pricePerNewCustomer * commissionSplit.promoterPercent / 100)}
                                 </p>
                               </div>
 
@@ -1383,6 +1433,97 @@ export default function AdminDashboardPage() {
                   })}
                 </div>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="settings" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="h-5 w-5" />
+                {t('admin.commissionSplitTitle')}
+              </CardTitle>
+              <CardDescription>
+                {t('admin.commissionSplitDesc')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>{t('admin.promoterPercent')}</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value={splitForm.promoterPercent}
+                    onChange={(e) =>
+                      setSplitForm({ ...splitForm, promoterPercent: Number(e.target.value) })
+                    }
+                  />
+                  <p className="text-xs text-muted-foreground">{t('admin.promoterPercentDesc')}</p>
+                </div>
+                <div className="space-y-2">
+                  <Label>{t('admin.consumerPercent')}</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value={splitForm.consumerPercent}
+                    onChange={(e) =>
+                      setSplitForm({ ...splitForm, consumerPercent: Number(e.target.value) })
+                    }
+                  />
+                  <p className="text-xs text-muted-foreground">{t('admin.consumerPercentDesc')}</p>
+                </div>
+                <div className="space-y-2">
+                  <Label>{t('admin.platformPercent')}</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value={splitForm.platformPercent}
+                    onChange={(e) =>
+                      setSplitForm({ ...splitForm, platformPercent: Number(e.target.value) })
+                    }
+                  />
+                  <p className="text-xs text-muted-foreground">{t('admin.platformPercentDesc')}</p>
+                </div>
+              </div>
+
+              {splitForm.promoterPercent + splitForm.consumerPercent + splitForm.platformPercent !== 100 && (
+                <p className="text-sm text-destructive font-medium">
+                  {t('admin.splitMustSum100', { total: splitForm.promoterPercent + splitForm.consumerPercent + splitForm.platformPercent })}
+                </p>
+              )}
+
+              <div className="rounded-lg bg-muted/50 p-4 space-y-2">
+                <p className="text-sm font-medium">{t('admin.splitPreview')}</p>
+                <p className="text-sm text-muted-foreground">
+                  {t('admin.splitPreviewExample', {
+                    promoter: Math.floor(100 * splitForm.promoterPercent / 100),
+                    consumer: Math.floor(100 * splitForm.consumerPercent / 100),
+                    platform: 100 - Math.floor(100 * splitForm.promoterPercent / 100) - Math.floor(100 * splitForm.consumerPercent / 100),
+                  })}
+                </p>
+              </div>
+
+              <div className="flex justify-end">
+                <Button
+                  onClick={handleSaveSplit}
+                  disabled={splitSaving || splitForm.promoterPercent + splitForm.consumerPercent + splitForm.platformPercent !== 100}
+                >
+                  {splitSaving ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                  ) : (
+                    <CheckCircle className="h-4 w-4 mr-1" />
+                  )}
+                  {t('admin.saveSplit')}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

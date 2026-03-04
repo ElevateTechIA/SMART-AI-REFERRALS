@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminDb, verifyAdmin } from '@/lib/firebase/admin'
 import { FieldValue } from 'firebase-admin/firestore'
+import { getCommissionSplit } from '@/lib/commission-config.server'
 
 export const dynamic = 'force-dynamic'
-
-const VALID_REWARD_TYPES = ['none', 'cash'] as const
 
 export async function PUT(
   request: NextRequest,
@@ -20,12 +19,6 @@ export async function PUT(
     }
 
     const { offerId } = params
-    const body = await request.json()
-    const {
-      referrerCommissionAmount,
-      consumerRewardType,
-      consumerRewardValue,
-    } = body
 
     // Verify offer exists
     const offerRef = getAdminDb().collection('offers').doc(offerId)
@@ -39,47 +32,18 @@ export async function PUT(
     }
 
     const offerData = offerDoc.data()!
+    const price = offerData.pricePerNewCustomer
 
-    // Validate commission amount
-    const commission = Number(referrerCommissionAmount)
-    if (isNaN(commission) || commission < 0 || commission > offerData.pricePerNewCustomer) {
-      return NextResponse.json(
-        { error: 'Commission must be between 0 and the price per customer' },
-        { status: 400 }
-      )
-    }
-
-    // Validate reward type
-    const rewardType = consumerRewardType || 'none'
-    if (!VALID_REWARD_TYPES.includes(rewardType)) {
-      return NextResponse.json(
-        { error: 'Invalid consumer reward type' },
-        { status: 400 }
-      )
-    }
-
-    // Validate reward value
-    const rewardValue = Number(consumerRewardValue) || 0
-    if (rewardType !== 'none' && (isNaN(rewardValue) || rewardValue < 0 || rewardValue > offerData.pricePerNewCustomer)) {
-      return NextResponse.json(
-        { error: 'Reward value must be between 0 and the price per customer' },
-        { status: 400 }
-      )
-    }
-
-    // Validate that referrer commission + consumer reward (cash only) don't exceed price
-    const effectiveReward = rewardType === 'cash' ? rewardValue : 0
-    if (commission + effectiveReward > offerData.pricePerNewCustomer) {
-      return NextResponse.json(
-        { error: `Referrer commission ($${commission}) + consumer cash reward ($${effectiveReward}) cannot exceed the price per customer ($${offerData.pricePerNewCustomer})` },
-        { status: 400 }
-      )
-    }
+    // Fetch commission split config from Firestore (whole dollars, no cents)
+    const commissionSplit = await getCommissionSplit()
+    const referrerAmount = Math.floor(price * commissionSplit.promoterPercent / 100)
+    const consumerAmount = Math.floor(price * commissionSplit.consumerPercent / 100)
 
     await offerRef.update({
-      referrerCommissionAmount: Math.round(commission * 100) / 100,
-      consumerRewardType: rewardType,
-      consumerRewardValue: rewardType === 'none' ? 0 : Math.round(rewardValue * 100) / 100,
+      referrerCommissionAmount: referrerAmount,
+      referrerCommissionPercentage: commissionSplit.promoterPercent,
+      consumerRewardType: 'cash',
+      consumerRewardValue: consumerAmount,
       updatedAt: FieldValue.serverTimestamp(),
     })
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminDb, verifyAuth } from '@/lib/firebase/admin'
 import { FieldValue } from 'firebase-admin/firestore'
+import { getCommissionSplit } from '@/lib/commission-config.server'
 import type { Offer } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
@@ -189,14 +190,17 @@ export async function POST(request: NextRequest) {
       ? promotionDescription.trim().slice(0, 500)
       : ''
 
+    // Fetch commission split config from Firestore
+    const commissionSplit = await getCommissionSplit()
+
     // Build offer data
     const offerData: Record<string, unknown> = {
       businessId,
       pricePerNewCustomer: validatedPrice,
-      referrerCommissionAmount: validatedCommissionAmount || Math.round(validatedPrice * 0.1 * 100) / 100,
-      referrerCommissionPercentage: validatedCommissionPercentage,
-      consumerRewardType: rewardType,
-      consumerRewardValue: validatedRewardValue || 0,
+      referrerCommissionAmount: validatedCommissionAmount || Math.floor(validatedPrice * commissionSplit.promoterPercent / 100),
+      referrerCommissionPercentage: validatedCommissionPercentage || commissionSplit.promoterPercent,
+      consumerRewardType: 'cash' as const,
+      consumerRewardValue: validatedRewardValue || Math.floor(validatedPrice * commissionSplit.consumerPercent / 100),
       promotionType: promoType,
       promotionValue: validatedPromoValue,
       promotionDescription: promoDescription,

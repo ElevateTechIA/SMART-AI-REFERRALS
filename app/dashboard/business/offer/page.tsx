@@ -13,9 +13,10 @@ import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { db } from '@/lib/firebase/client'
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore'
-import { apiPost, apiUpload } from '@/lib/api-client'
+import { apiGet, apiPost, apiUpload } from '@/lib/api-client'
 import type { Business, PromotionType } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
+import { DEFAULT_COMMISSION_SPLIT, type CommissionSplit } from '@/lib/commission-config'
 import { Loader2, DollarSign, Building2, ImagePlus, Gift } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
@@ -30,6 +31,7 @@ export default function OfferConfigPage() {
   const [uploading, setUploading] = useState(false)
   const [business, setBusiness] = useState<Business | null>(null)
   const [offerImage, setOfferImage] = useState<string | null>(null)
+  const [splitConfig, setSplitConfig] = useState<CommissionSplit>(DEFAULT_COMMISSION_SPLIT)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [formData, setFormData] = useState({
     pricePerNewCustomer: 100,
@@ -82,6 +84,11 @@ export default function OfferConfigPage() {
           if (offerData.image) {
             setOfferImage(offerData.image)
           }
+        }
+        // Fetch commission split config
+        const splitResult = await apiGet<{ success: boolean; data: CommissionSplit }>('/api/config/commission')
+        if (splitResult.ok && splitResult.data?.success) {
+          setSplitConfig(splitResult.data.data)
         }
       } catch (error) {
         console.error('Error fetching data:', error)
@@ -386,8 +393,16 @@ export default function OfferConfigPage() {
               <span className="font-bold text-primary">{formatCurrency(formData.pricePerNewCustomer)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">{t('businessOffer.promoterCommissionSummary')} (10%)</span>
-              <span className="font-semibold">{formatCurrency(Math.round(formData.pricePerNewCustomer * 0.1 * 100) / 100)}</span>
+              <span className="text-muted-foreground">{t('businessOffer.promoterCommissionSummary')} ({splitConfig.promoterPercent}%)</span>
+              <span className="font-semibold">{formatCurrency(Math.floor(formData.pricePerNewCustomer * splitConfig.promoterPercent / 100))}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">{t('businessOffer.consumerRewardSummary')} ({splitConfig.consumerPercent}%)</span>
+              <span className="font-semibold">{formatCurrency(Math.floor(formData.pricePerNewCustomer * splitConfig.consumerPercent / 100))}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">{t('businessOffer.platformFeeSummary')} ({splitConfig.platformPercent}%)</span>
+              <span className="font-semibold">{formatCurrency(formData.pricePerNewCustomer - Math.floor(formData.pricePerNewCustomer * splitConfig.promoterPercent / 100) - Math.floor(formData.pricePerNewCustomer * splitConfig.consumerPercent / 100))}</span>
             </div>
             <p className="text-xs text-muted-foreground">
               {t('businessOffer.autoCommissionNote')}

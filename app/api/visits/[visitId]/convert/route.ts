@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAdminDb, verifyAuth } from '@/lib/firebase/admin'
 import { FieldValue } from 'firebase-admin/firestore'
 import { isTokenExpired } from '@/lib/qr-checkin'
+import { getCommissionSplit } from '@/lib/commission-config.server'
+import { calculateSplit } from '@/lib/commission-config'
 import type { Offer } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
@@ -175,6 +177,9 @@ export async function POST(
       }
     }
 
+    // Fetch commission split config from Firestore
+    const commissionSplit = await getCommissionSplit()
+
     // Use transaction to update all records atomically
     await getAdminDb().runTransaction(async (transaction) => {
       // Update visit status (and mark token used if direct conversion from CREATED)
@@ -190,16 +195,14 @@ export async function POST(
       })
 
       const pricePerCustomer = offer.pricePerNewCustomer || 100
+      const split = calculateSplit(pricePerCustomer, commissionSplit)
       let referrerAmount = 0
-      let consumerRewardAmount = 0
-      let platformAmount = pricePerCustomer
+      let consumerRewardAmount = split.consumerAmount
+      let platformAmount = split.platformAmount
 
-      // Calculate referrer commission
+      // Calculate referrer commission from config split
       if (visit.referrerUserId && visit.attributionType === 'REFERRER') {
-        referrerAmount = offer.referrerCommissionAmount || 0
-        if (!referrerAmount && offer.referrerCommissionPercentage) {
-          referrerAmount = (pricePerCustomer * offer.referrerCommissionPercentage) / 100
-        }
+        referrerAmount = split.promoterAmount
 
         // Create earning for referrer
         if (referrerAmount > 0) {
@@ -216,8 +219,6 @@ export async function POST(
             updatedAt: FieldValue.serverTimestamp(),
           })
 
-          platformAmount -= referrerAmount
-
           // Update referrer role if needed
           if (referrerNeedsRoleUpdate) {
             const referrerRef = getAdminDb().collection('users').doc(visit.referrerUserId)
@@ -227,13 +228,13 @@ export async function POST(
             })
           }
         }
+      } else {
+        // No referrer: promoter share goes to platform
+        platformAmount += split.promoterAmount
       }
 
-      // Calculate consumer reward (only cash rewards create earnings and reduce platform cut)
-      if (offer.consumerRewardType === 'cash' && offer.consumerRewardValue > 0) {
-        consumerRewardAmount = offer.consumerRewardValue
-
-        // Create earning for consumer (only for cash rewards)
+      // Consumer always gets their cash reward share
+      if (consumerRewardAmount > 0) {
         const consumerEarningRef = getAdminDb().collection('earnings').doc()
         transaction.set(consumerEarningRef, {
           userId: visit.consumerUserId,
@@ -246,12 +247,7 @@ export async function POST(
           createdAt: FieldValue.serverTimestamp(),
           updatedAt: FieldValue.serverTimestamp(),
         })
-
-        platformAmount -= consumerRewardAmount
       }
-
-      // Safety: ensure platform amount is never negative
-      platformAmount = Math.max(0, platformAmount)
 
       // Create charge for business
       const chargeRef = getAdminDb().collection('charges').doc()
