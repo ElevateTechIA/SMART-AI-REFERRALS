@@ -28,6 +28,8 @@ export async function GET(request: NextRequest) {
       adminsSnapshot,
       businessUsersSnapshot,
       referrerUsersSnapshot,
+      activeBusinessesSnapshot,
+      suspendedBusinessesSnapshot,
     ] = await Promise.all([
       getAdminDb().collection('users').count().get(),
       getAdminDb().collection('businesses').count().get(),
@@ -41,6 +43,8 @@ export async function GET(request: NextRequest) {
       getAdminDb().collection('users').where('roles', 'array-contains', 'admin').count().get(),
       getAdminDb().collection('users').where('roles', 'array-contains', 'business').count().get(),
       getAdminDb().collection('users').where('roles', 'array-contains', 'referrer').count().get(),
+      getAdminDb().collection('businesses').where('status', '==', 'active').count().get(),
+      getAdminDb().collection('businesses').where('status', '==', 'suspended').count().get(),
     ])
 
     // Calculate revenue breakdown from all charges
@@ -68,6 +72,11 @@ export async function GET(request: NextRequest) {
           promoters: referrerUsersSnapshot.data().count,
         },
         totalBusinesses: businessesSnapshot.data().count,
+        businessCounts: {
+          active: activeBusinessesSnapshot.data().count,
+          pending: pendingBusinessesSnapshot.data().count,
+          suspended: suspendedBusinessesSnapshot.data().count,
+        },
         pendingBusinesses: pendingBusinessesSnapshot.data().count,
         pendingReferrers: pendingReferrersSnapshot.data().count,
         totalVisits: visitsSnapshot.data().count,

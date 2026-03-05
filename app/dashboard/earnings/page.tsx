@@ -38,6 +38,9 @@ interface EarningsStats {
   pendingEarnings: number
   completedEarnings: number
   thisMonth: number
+  totalCount: number
+  pendingCount: number
+  completedCount: number
 }
 
 interface EarningsResponse {
@@ -57,6 +60,9 @@ export default function EarningsPage() {
     pendingEarnings: 0,
     completedEarnings: 0,
     thisMonth: 0,
+    totalCount: 0,
+    pendingCount: 0,
+    completedCount: 0,
   })
   const [transactions, setTransactions] = useState<Transaction[]>([])
 
@@ -139,6 +145,11 @@ export default function EarningsPage() {
             <p className="text-3xl font-bold text-foreground">
               {formatCurrency(stats.totalEarnings)}
             </p>
+            {stats.totalCount > 0 && (
+              <p className="text-xs text-muted-foreground mt-1">
+                {t('earnings.transactionCount', { count: stats.totalCount })}
+              </p>
+            )}
           </div>
 
           <div className="bg-card backdrop-blur-sm rounded-xl p-6 shadow-xl">
@@ -151,6 +162,11 @@ export default function EarningsPage() {
             <p className="text-3xl font-bold text-foreground">
               {formatCurrency(stats.completedEarnings)}
             </p>
+            {stats.completedCount > 0 && (
+              <p className="text-xs text-muted-foreground mt-1">
+                {t('earnings.transactionCount', { count: stats.completedCount })}
+              </p>
+            )}
           </div>
 
           <div className="bg-card backdrop-blur-sm rounded-xl p-6 shadow-xl">
@@ -163,6 +179,11 @@ export default function EarningsPage() {
             <p className="text-3xl font-bold text-foreground">
               {formatCurrency(stats.pendingEarnings)}
             </p>
+            {stats.pendingCount > 0 && (
+              <p className="text-xs text-muted-foreground mt-1">
+                {t('earnings.transactionCount', { count: stats.pendingCount })}
+              </p>
+            )}
           </div>
 
           <div className="bg-card backdrop-blur-sm rounded-xl p-6 shadow-xl">

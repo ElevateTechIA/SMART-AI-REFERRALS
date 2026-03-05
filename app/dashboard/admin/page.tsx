@@ -60,6 +60,11 @@ interface AdminStats {
     promoters: number
   }
   totalBusinesses: number
+  businessCounts: {
+    active: number
+    pending: number
+    suspended: number
+  }
   pendingBusinesses: number
   pendingReferrers: number
   totalVisits: number
@@ -577,9 +582,21 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalBusinesses}</div>
-              <p className="text-xs text-muted-foreground">
-                {t('admin.pendingApproval', { count: stats.pendingBusinesses })}
-              </p>
+              <div className="mt-2 space-y-0.5">
+                <p className="text-xs text-green-600">
+                  {t('common.active')}: {stats.businessCounts.active}
+                </p>
+                {stats.businessCounts.pending > 0 && (
+                  <p className="text-xs text-yellow-600 font-medium">
+                    {t('common.pending')}: {stats.businessCounts.pending}
+                  </p>
+                )}
+                {stats.businessCounts.suspended > 0 && (
+                  <p className="text-xs text-red-600">
+                    {t('common.suspended')}: {stats.businessCounts.suspended}
+                  </p>
+                )}
+              </div>
             </CardContent>
           </Card>
           <Card>
@@ -589,9 +606,16 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalConversions}</div>
-              <p className="text-xs text-muted-foreground">
-                {t('admin.ofVisits', { count: stats.totalVisits })}
-              </p>
+              <div className="mt-2 space-y-0.5">
+                <p className="text-xs text-muted-foreground">
+                  {t('admin.ofVisits', { count: stats.totalVisits })}
+                </p>
+                {stats.totalVisits > 0 && (
+                  <p className="text-xs font-medium text-muted-foreground">
+                    {t('admin.conversionRate')}: {Math.round((stats.totalConversions / stats.totalVisits) * 100)}%
+                  </p>
+                )}
+              </div>
             </CardContent>
           </Card>
           <Card>

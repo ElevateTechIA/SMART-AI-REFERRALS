@@ -43,6 +43,9 @@ export async function GET(request: NextRequest) {
     let pendingEarnings = 0
     let completedEarnings = 0
     let thisMonthEarnings = 0
+    let totalCount = 0
+    let pendingCount = 0
+    let completedCount = 0
 
     const startOfMonth = new Date()
     startOfMonth.setDate(1)
@@ -63,11 +66,14 @@ export async function GET(request: NextRequest) {
 
       // Calculate stats
       totalEarnings += amount
+      totalCount++
 
       if (data.status === 'PENDING') {
         pendingEarnings += amount
+        pendingCount++
       } else if (data.status === 'APPROVED' || data.status === 'PAID') {
         completedEarnings += amount
+        completedCount++
       }
 
       // This month earnings
@@ -155,6 +161,9 @@ export async function GET(request: NextRequest) {
         pendingEarnings: Math.round(pendingEarnings * 100) / 100,
         completedEarnings: Math.round(completedEarnings * 100) / 100,
         thisMonth: Math.round(thisMonthEarnings * 100) / 100,
+        totalCount,
+        pendingCount,
+        completedCount,
       },
       transactions,
     })

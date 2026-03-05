@@ -293,9 +293,12 @@ export default function BusinessDashboardPage() {
     )
   }
 
+  const convertedVisits = visits.filter((v) => v.status === 'CONVERTED')
   const stats = {
     totalVisits: visits.length,
-    conversions: visits.filter((v) => v.status === 'CONVERTED').length,
+    conversions: convertedVisits.length,
+    newCustomers: convertedVisits.filter((v) => v.isNewCustomer).length,
+    repeatCustomers: convertedVisits.filter((v) => !v.isNewCustomer).length,
     pending: visits.filter((v) => v.status === 'CREATED' || v.status === 'CHECKED_IN').length,
     totalOwed: charges.filter((c) => c.status === 'OWED').reduce((sum, c) => sum + c.amount, 0),
     totalPaid: charges.filter((c) => c.status === 'PAID').reduce((sum, c) => sum + c.amount, 0),
@@ -352,11 +355,23 @@ export default function BusinessDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.conversions}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.totalVisits > 0
-                ? t('businessDashboard.conversionRate', { rate: Math.round((stats.conversions / stats.totalVisits) * 100) })
-                : t('businessDashboard.noVisitsYet')}
-            </p>
+            <div className="mt-2 space-y-0.5">
+              <p className="text-xs text-muted-foreground">
+                {stats.totalVisits > 0
+                  ? t('businessDashboard.conversionRate', { rate: Math.round((stats.conversions / stats.totalVisits) * 100) })
+                  : t('businessDashboard.noVisitsYet')}
+              </p>
+              {stats.conversions > 0 && (
+                <>
+                  <p className="text-xs text-green-600">
+                    {t('businessDashboard.newCustomers')}: {stats.newCustomers}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {t('businessDashboard.repeatCustomers')}: {stats.repeatCustomers}
+                  </p>
+                </>
+              )}
+            </div>
           </CardContent>
         </Card>
         <Card>
