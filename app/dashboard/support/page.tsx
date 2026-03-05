@@ -1,12 +1,14 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { apiGet, apiPost, apiPut } from '@/lib/api-client'
@@ -14,15 +16,33 @@ import type { SupportTicket, TicketReply } from '@/lib/types'
 import { formatDate, formatDateTime } from '@/lib/utils'
 import { HelpCircle, Send, Loader2, MessageSquare, CheckCircle, Shield } from 'lucide-react'
 
-export default function SupportPage() {
+type SubjectOption = 'recommend' | 'bug' | 'other'
+
+function SupportContent() {
   const { user } = useAuth()
   const { toast } = useToast()
   const { t } = useTranslation()
+  const searchParams = useSearchParams()
   const [tickets, setTickets] = useState<SupportTicket[]>([])
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
-  const [subject, setSubject] = useState('')
+  const [subjectOption, setSubjectOption] = useState<SubjectOption>('other')
+  const [customSubject, setCustomSubject] = useState('')
   const [message, setMessage] = useState('')
+
+  // Read subject from URL query param
+  useEffect(() => {
+    const param = searchParams.get('subject')
+    if (param === 'recommend' || param === 'bug') {
+      setSubjectOption(param)
+    }
+  }, [searchParams])
+
+  const subject = subjectOption === 'recommend'
+    ? t('support.subjectRecommend')
+    : subjectOption === 'bug'
+    ? t('support.subjectBug')
+    : customSubject
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [replyMessage, setReplyMessage] = useState('')
   const [replySending, setReplySending] = useState(false)
@@ -72,7 +92,8 @@ export default function SupportPage() {
           updatedAt: new Date(),
         }
         setTickets((prev) => [newTicket, ...prev])
-        setSubject('')
+        setSubjectOption('other')
+        setCustomSubject('')
         setMessage('')
         toast({
           title: t('support.messageSent'),
@@ -158,15 +179,26 @@ export default function SupportPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="subject">{t('support.subject')}</Label>
-              <Input
-                id="subject"
-                placeholder={t('support.subjectPlaceholder')}
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                maxLength={200}
-                required
-              />
+              <Label>{t('support.subject')}</Label>
+              <Select value={subjectOption} onValueChange={(v) => setSubjectOption(v as SubjectOption)}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t('support.optionOther')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recommend">{t('support.optionRecommend')}</SelectItem>
+                  <SelectItem value="bug">{t('support.optionBug')}</SelectItem>
+                  <SelectItem value="other">{t('support.optionOther')}</SelectItem>
+                </SelectContent>
+              </Select>
+              {subjectOption === 'other' && (
+                <Input
+                  placeholder={t('support.subjectPlaceholder')}
+                  value={customSubject}
+                  onChange={(e) => setCustomSubject(e.target.value)}
+                  maxLength={200}
+                  required
+                />
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="message">{t('support.message')}</Label>
@@ -180,7 +212,7 @@ export default function SupportPage() {
                 required
               />
             </div>
-            <Button type="submit" disabled={sending || !subject.trim() || !message.trim()}>
+            <Button type="submit" disabled={sending || !subject.trim() || !message.trim() || (subjectOption === 'other' && !customSubject.trim())}>
               {sending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -366,5 +398,17 @@ export default function SupportPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function SupportPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    }>
+      <SupportContent />
+    </Suspense>
   )
 }

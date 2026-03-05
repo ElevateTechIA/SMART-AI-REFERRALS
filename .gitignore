@@ -42,6 +42,9 @@ firebase-debug.log
 public/sw.js
 public/sw.js.map
 
+# Docs
+/docs/
+
 # IDE
 .idea/
 .vscode/

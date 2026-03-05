@@ -356,6 +356,7 @@
     "shareEarnMore": "Comparte y Gana Más",
     "shareEarnMoreDesc": "¿Te gustó un negocio? ¡Compártelo con amigos y gana comisiones cuando visiten!",
     "getPromoLinks": "Obtener Enlaces de Promoción",
+    "recommendBusiness": "Recomendar un Negocio",
     "visitHistory": "Historial de Visitas",
     "visitHistoryDesc": "Todas tus visitas y su estado",
     "noVisitsYet": "Aún No Hay Visitas",
@@ -835,7 +836,12 @@
     "replySent": "Respuesta Enviada",
     "replySentDesc": "Tu respuesta ha sido agregada a la conversación.",
     "you": "Tú",
-    "ticketClosed": "Este ticket está resuelto."
+    "ticketClosed": "Este ticket está resuelto.",
+    "optionRecommend": "Recomendar un Negocio",
+    "optionBug": "Reportar un Error",
+    "optionOther": "Otro",
+    "subjectRecommend": "Recomendación de Negocio",
+    "subjectBug": "Reporte de Error"
   },
   "pwa": {
     "offlineMode": "Estás sin conexión. Los cambios se sincronizarán cuando te reconectes.",

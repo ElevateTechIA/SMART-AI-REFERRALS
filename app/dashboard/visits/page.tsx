@@ -32,6 +32,7 @@ import {
   Phone,
   Mail,
   Globe,
+  MessageSquare,
 } from 'lucide-react'
 
 import { ReceiptDialog } from '@/components/receipt/receipt-dialog'
@@ -392,12 +393,20 @@ export default function VisitsPage() {
             {t('visits.subtitle')}
           </p>
         </div>
-        <Link href="/dashboard/referrals">
-          <Button className="gap-2">
-            <Share2 className="h-4 w-4" />
-            {t('visits.startPromoting')}
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/dashboard/support?subject=recommend">
+            <Button variant="outline" className="gap-2">
+              <MessageSquare className="h-4 w-4" />
+              {t('visits.recommendBusiness')}
+            </Button>
+          </Link>
+          <Link href="/dashboard/referrals">
+            <Button className="gap-2">
+              <Share2 className="h-4 w-4" />
+              {t('visits.startPromoting')}
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -954,10 +963,16 @@ export default function VisitsPage() {
             {t('visits.shareEarnMoreDesc')}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-wrap gap-3">
           <Link href="/dashboard/referrals">
             <Button className="gap-2">
               {t('visits.getPromoLinks')} <ArrowRight className="h-4 w-4" />
+            </Button>
+          </Link>
+          <Link href="/dashboard/support?subject=recommend">
+            <Button variant="outline" className="gap-2">
+              <MessageSquare className="h-4 w-4" />
+              {t('visits.recommendBusiness')}
             </Button>
           </Link>
         </CardContent>

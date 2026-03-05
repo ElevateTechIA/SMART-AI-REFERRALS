@@ -356,6 +356,7 @@
     "shareEarnMore": "Share & Earn More",
     "shareEarnMoreDesc": "Loved a business? Share it with friends and earn commissions when they visit!",
     "getPromoLinks": "Get Promo Links",
+    "recommendBusiness": "Recommend a Business",
     "visitHistory": "Visit History",
     "visitHistoryDesc": "All your visits and their status",
     "noVisitsYet": "No Visits Yet",
@@ -835,7 +836,12 @@
     "replySent": "Reply Sent",
     "replySentDesc": "Your reply has been added to the conversation.",
     "you": "You",
-    "ticketClosed": "This ticket is resolved."
+    "ticketClosed": "This ticket is resolved.",
+    "optionRecommend": "Recommend a Business",
+    "optionBug": "Report a Bug",
+    "optionOther": "Other",
+    "subjectRecommend": "Business Recommendation",
+    "subjectBug": "Bug Report"
   },
   "pwa": {
     "offlineMode": "You are offline. Changes will sync when you reconnect.",
