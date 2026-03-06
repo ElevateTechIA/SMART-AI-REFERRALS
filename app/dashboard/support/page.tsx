@@ -26,17 +26,12 @@ function SupportContent() {
   const [tickets, setTickets] = useState<SupportTicket[]>([])
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
-  const [subjectOption, setSubjectOption] = useState<SubjectOption>('other')
+  const initialSubject = searchParams.get('subject')
+  const [subjectOption, setSubjectOption] = useState<SubjectOption>(
+    initialSubject === 'recommend' || initialSubject === 'bug' ? initialSubject : 'other'
+  )
   const [customSubject, setCustomSubject] = useState('')
   const [message, setMessage] = useState('')
-
-  // Read subject from URL query param
-  useEffect(() => {
-    const param = searchParams.get('subject')
-    if (param === 'recommend' || param === 'bug') {
-      setSubjectOption(param)
-    }
-  }, [searchParams])
 
   const subject = subjectOption === 'recommend'
     ? t('support.subjectRecommend')

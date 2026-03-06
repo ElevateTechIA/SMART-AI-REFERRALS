@@ -2,11 +2,13 @@
 
 import { useEffect, useState, useMemo, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
@@ -24,6 +26,7 @@ import {
   Clock,
   ShieldAlert,
   Search,
+  MessageSquare,
 } from 'lucide-react'
 
 interface ReferralsApiResponse {
@@ -233,6 +236,12 @@ function ReferralsContent() {
               <QrCode className="h-5 w-5" />
               {t('promotions.storesForYou')}
             </h2>
+            <Link href="/dashboard/support?subject=recommend">
+              <Button variant="outline" size="sm" className="gap-2">
+                <MessageSquare className="h-4 w-4" />
+                {t('visits.recommendBusiness')}
+              </Button>
+            </Link>
           </div>
 
           {/* Search & Category Filter */}
