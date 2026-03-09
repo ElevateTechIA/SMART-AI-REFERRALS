@@ -345,6 +345,7 @@
     "checkInQR": "Código QR de Check-In",
     "showQRToStaff": "Muestra este código al personal del negocio",
     "qrExpires": "El QR expira en {{days}} {{dayWord}}",
+    "qrExpired": "El código QR ha expirado",
     "day": "día",
     "days": "días",
     "instructions": "Instrucciones:",

@@ -666,10 +666,12 @@ export default function VisitsPage() {
 
                             {/* Expiry notice */}
                             <div className="px-5 pb-3">
-                              <div className="flex items-center gap-2 rounded-xl px-4 py-2.5" style={{ background: 'color-mix(in srgb, var(--theme-primary) 15%, transparent)' }}>
-                                <Clock className="h-4 w-4 text-theme-textMuted flex-shrink-0" />
-                                <span className="text-sm text-theme-textSecondary">
-                                  {t('visits.qrExpires', { days: daysRemaining, dayWord: daysRemaining === 1 ? t('visits.day') : t('visits.days') })}
+                              <div className={`flex items-center gap-2 rounded-xl px-4 py-2.5 ${daysRemaining <= 0 ? 'bg-destructive/15' : ''}`} style={daysRemaining > 0 ? { background: 'color-mix(in srgb, var(--theme-primary) 15%, transparent)' } : undefined}>
+                                <Clock className={`h-4 w-4 flex-shrink-0 ${daysRemaining <= 0 ? 'text-destructive' : 'text-theme-textMuted'}`} />
+                                <span className={`text-sm ${daysRemaining <= 0 ? 'text-destructive' : 'text-theme-textSecondary'}`}>
+                                  {daysRemaining <= 0
+                                    ? t('visits.qrExpired')
+                                    : t('visits.qrExpires', { days: daysRemaining, dayWord: daysRemaining === 1 ? t('visits.day') : t('visits.days') })}
                                 </span>
                               </div>
                             </div>
