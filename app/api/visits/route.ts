@@ -53,6 +53,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Prevent business owner from visiting their own business
+    const businessOwnerUserId = businessDoc.data()?.ownerUserId
+    if (businessOwnerUserId === consumerUserId) {
+      return NextResponse.json(
+        { error: 'Business owners cannot create visits to their own business' },
+        { status: 400 }
+      )
+    }
+
     // Verify referrer is approved before allowing referral attribution
     if (referrerUserId) {
       const referrerDoc = await getAdminDb().collection('users').doc(referrerUserId).get()
@@ -84,23 +93,20 @@ export async function POST(request: NextRequest) {
     const plainToken = generateCheckInToken()
     const tokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
 
-    // Check if consumer already has a visit to this business (prevent duplicates)
-    const existingVisitsQuery = await getAdminDb()
-      .collection('visits')
-      .where('businessId', '==', businessId)
-      .where('consumerUserId', '==', consumerUserId)
-      .limit(1)
-      .get()
-
-    if (!existingVisitsQuery.empty) {
-      return NextResponse.json(
-        { error: 'You have already visited this business' },
-        { status: 409 }
-      )
-    }
-
-    // Use transaction for atomic visit creation
+    // Use transaction for atomic visit creation (duplicate check inside to prevent race conditions)
     const result = await getAdminDb().runTransaction(async (transaction) => {
+      // Check if consumer already has a visit to this business (inside transaction to prevent races)
+      const existingVisitsQuery = await getAdminDb()
+        .collection('visits')
+        .where('businessId', '==', businessId)
+        .where('consumerUserId', '==', consumerUserId)
+        .limit(1)
+        .get()
+
+      if (!existingVisitsQuery.empty) {
+        throw new Error('DUPLICATE_VISIT')
+      }
+
       // Create visit record
       const visitRef = getAdminDb().collection('visits').doc()
       const visitData = {
@@ -159,6 +165,12 @@ export async function POST(request: NextRequest) {
       data: result,
     })
   } catch (error) {
+    if (error instanceof Error && error.message === 'DUPLICATE_VISIT') {
+      return NextResponse.json(
+        { error: 'You have already visited this business' },
+        { status: 409 }
+      )
+    }
     console.error('Error creating visit:', error)
     return NextResponse.json(
       { error: 'Failed to create visit' },

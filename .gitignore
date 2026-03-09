@@ -45,6 +45,9 @@ public/sw.js.map
 # Docs
 /docs/
 
+# MCP
+.mcp.json
+
 # IDE
 .idea/
 .vscode/

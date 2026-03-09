@@ -28,38 +28,48 @@ export async function GET(request: NextRequest) {
 
     const snapshot = await query.limit(limit).get()
 
-    const earnings = []
+    // Batch fetch all unique users and businesses to avoid N+1 queries
+    const userIds = new Set<string>()
+    const businessIds = new Set<string>()
     for (const doc of snapshot.docs) {
       const data = doc.data()
+      if (data.userId) userIds.add(data.userId)
+      if (data.businessId) businessIds.add(data.businessId)
+    }
 
-      // Get user info
-      let userName = 'Unknown'
-      if (data.userId) {
-        try {
-          const userDoc = await db.collection('users').doc(data.userId).get()
-          if (userDoc.exists) {
-            userName = userDoc.data()?.name || userDoc.data()?.email || userName
-          }
-        } catch { /* ignore */ }
+    const userMap = new Map<string, string>()
+    const businessMap = new Map<string, string>()
+
+    // Firestore getAll supports up to 100 refs at once
+    if (userIds.size > 0) {
+      const userRefs = Array.from(userIds).map(id => db.collection('users').doc(id))
+      const userDocs = await db.getAll(...userRefs)
+      for (const doc of userDocs) {
+        if (doc.exists) {
+          const data = doc.data()!
+          userMap.set(doc.id, data.name || data.email || 'Unknown')
+        }
       }
+    }
 
-      // Get business info
-      let businessName = 'Unknown'
-      if (data.businessId) {
-        try {
-          const businessDoc = await db.collection('businesses').doc(data.businessId).get()
-          if (businessDoc.exists) {
-            businessName = businessDoc.data()?.name || businessName
-          }
-        } catch { /* ignore */ }
+    if (businessIds.size > 0) {
+      const bizRefs = Array.from(businessIds).map(id => db.collection('businesses').doc(id))
+      const bizDocs = await db.getAll(...bizRefs)
+      for (const doc of bizDocs) {
+        if (doc.exists) {
+          businessMap.set(doc.id, doc.data()!.name || 'Unknown')
+        }
       }
+    }
 
-      earnings.push({
+    const earnings = snapshot.docs.map(doc => {
+      const data = doc.data()
+      return {
         id: doc.id,
         userId: data.userId,
-        userName,
+        userName: userMap.get(data.userId) || 'Unknown',
         businessId: data.businessId,
-        businessName,
+        businessName: businessMap.get(data.businessId) || 'Unknown',
         visitId: data.visitId,
         offerId: data.offerId,
         amount: data.amount || 0,
@@ -68,8 +78,8 @@ export async function GET(request: NextRequest) {
         createdAt: data.createdAt?.toDate()?.toISOString() || null,
         approvedAt: data.approvedAt?.toDate()?.toISOString() || null,
         paidAt: data.paidAt?.toDate()?.toISOString() || null,
-      })
-    }
+      }
+    })
 
     return NextResponse.json({
       success: true,

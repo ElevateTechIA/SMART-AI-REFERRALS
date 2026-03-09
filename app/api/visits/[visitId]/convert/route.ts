@@ -82,7 +82,7 @@ export async function POST(
       )
     }
 
-    // Check if already converted
+    // Pre-flight checks (non-atomic, fast-fail for obvious issues)
     if (visit.status === 'CONVERTED') {
       return NextResponse.json(
         { error: 'Visit has already been converted' },
@@ -97,7 +97,14 @@ export async function POST(
       )
     }
 
-    // Direct conversion from CREATED with QR token
+    if (visit.status !== 'CREATED' && visit.status !== 'CHECKED_IN') {
+      return NextResponse.json(
+        { error: 'Visit cannot be converted from current status' },
+        { status: 400 }
+      )
+    }
+
+    // Token validation for direct conversion from CREATED
     if (visit.status === 'CREATED' && visit.checkInToken) {
       if (!token) {
         return NextResponse.json(
@@ -124,14 +131,6 @@ export async function POST(
           { status: 400 }
         )
       }
-    }
-
-    // Allow conversion from CREATED (with token above) or CHECKED_IN (legacy)
-    if (visit.status !== 'CREATED' && visit.status !== 'CHECKED_IN') {
-      return NextResponse.json(
-        { error: 'Visit cannot be converted from current status' },
-        { status: 400 }
-      )
     }
 
     // Check if it's a new customer (anti-fraud)
@@ -182,6 +181,19 @@ export async function POST(
 
     // Use transaction to update all records atomically
     await getAdminDb().runTransaction(async (transaction) => {
+      // Re-read visit inside transaction to prevent race conditions (double conversion)
+      const freshVisitDoc = await transaction.get(visitRef)
+      if (!freshVisitDoc.exists) {
+        throw new Error('VISIT_NOT_FOUND')
+      }
+      const freshVisit = freshVisitDoc.data()!
+      if (freshVisit.status === 'CONVERTED') {
+        throw new Error('ALREADY_CONVERTED')
+      }
+      if (freshVisit.status !== 'CREATED' && freshVisit.status !== 'CHECKED_IN') {
+        throw new Error('INVALID_STATUS')
+      }
+
       // Update visit status (and mark token used if direct conversion from CREATED)
       transaction.update(visitRef, {
         status: 'CONVERTED',
@@ -270,6 +282,26 @@ export async function POST(
       message: 'Conversion confirmed successfully',
     })
   } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === 'ALREADY_CONVERTED') {
+        return NextResponse.json(
+          { error: 'Visit has already been converted' },
+          { status: 400 }
+        )
+      }
+      if (error.message === 'INVALID_STATUS') {
+        return NextResponse.json(
+          { error: 'Visit cannot be converted from current status' },
+          { status: 400 }
+        )
+      }
+      if (error.message === 'VISIT_NOT_FOUND') {
+        return NextResponse.json(
+          { error: 'Visit not found' },
+          { status: 404 }
+        )
+      }
+    }
     console.error('Error confirming conversion:', error)
     return NextResponse.json(
       { error: 'Failed to confirm conversion' },

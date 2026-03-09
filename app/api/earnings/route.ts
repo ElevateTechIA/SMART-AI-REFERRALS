@@ -19,7 +19,8 @@ export async function GET(request: NextRequest) {
 
     // Get query parameters
     const { searchParams } = new URL(request.url)
-    const period = searchParams.get('period') || 'all' // all, month, year
+    const periodParam = searchParams.get('period') || 'all'
+    const period = ['all', 'month', 'year'].includes(periodParam) ? periodParam : 'all'
 
     // Fetch all earnings for the user (date filtering done in JS to avoid composite index)
     const earningsSnapshot = await db.collection('earnings')
