@@ -231,18 +231,19 @@ function ReferralsContent() {
       {/* Stores Grid */}
       {isReferrerApproved && (
         <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <QrCode className="h-5 w-5" />
-              {t('promotions.storesForYou')}
-            </h2>
-            <Link href="/dashboard/support?subject=recommend">
-              <Button variant="outline" size="sm" className="gap-2">
-                <MessageSquare className="h-4 w-4" />
+          <Link href="/dashboard/support?subject=recommend" className="block mb-4">
+            <div className="flex items-center gap-3 px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 transition-colors cursor-pointer">
+              <MessageSquare className="h-5 w-5 text-blue-600 flex-shrink-0" />
+              <p className="text-sm font-medium text-blue-700">
                 {t('visits.recommendBusiness')}
-              </Button>
-            </Link>
-          </div>
+              </p>
+            </div>
+          </Link>
+
+          <h2 className="text-lg font-semibold flex items-center gap-2 mb-3">
+            <QrCode className="h-5 w-5" />
+            {t('promotions.storesForYou')}
+          </h2>
 
           {/* Search & Category Filter */}
           <div className="flex flex-col sm:flex-row gap-2 mb-4">
