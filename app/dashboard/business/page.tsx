@@ -300,8 +300,6 @@ export default function BusinessDashboardPage() {
     newCustomers: convertedVisits.filter((v) => v.isNewCustomer).length,
     repeatCustomers: convertedVisits.filter((v) => !v.isNewCustomer).length,
     pending: visits.filter((v) => v.status === 'CREATED' || v.status === 'CHECKED_IN').length,
-    totalOwed: charges.filter((c) => c.status === 'OWED').reduce((sum, c) => sum + c.amount, 0),
-    totalPaid: charges.filter((c) => c.status === 'PAID').reduce((sum, c) => sum + c.amount, 0),
   }
 
   return (
@@ -374,26 +372,7 @@ export default function BusinessDashboardPage() {
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('businessDashboard.amountOwed')}</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalOwed)}</div>
-            <p className="text-xs text-muted-foreground">{t('businessDashboard.toPlatform')}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('businessDashboard.totalPaid')}</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalPaid)}</div>
-            <p className="text-xs text-muted-foreground">{t('businessDashboard.allTime')}</p>
-          </CardContent>
-        </Card>
+
       </div>
 
       {/* Offer Settings */}
