@@ -46,28 +46,30 @@ function BusinessRegisterContent() {
   }
 
   return (
-    <AuthPageLayout showSignInLink={true}>
-      <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm shadow-2xl">
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <Building2 className="w-12 h-12 text-theme-primary" />
+    <AuthPageLayout showSignInLink={true} loginHref="/auth/login?from=business">
+      <Card className="w-full max-w-md bg-white border border-gray-200 shadow-xl rounded-3xl">
+        <CardHeader className="text-center pt-8 pb-4">
+          <div className="flex justify-center mb-5">
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-green-100">
+              <Building2 className="w-8 h-8 text-green-600" />
+            </div>
           </div>
-          <CardTitle className="text-2xl">{t('auth.growYourBusiness')}</CardTitle>
-          <CardDescription className="text-base">
+          <CardTitle className="text-2xl font-bold text-gray-900">{t('auth.growYourBusiness')}</CardTitle>
+          <CardDescription className="text-base text-gray-500 mt-2">
             {t('auth.createBusinessAccountDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent className="px-8 pb-6">
           <GoogleAuthButton onClick={handleGoogleSignUp} loading={loading} />
         </CardContent>
-        <CardFooter className="flex flex-col gap-2">
+        <CardFooter className="flex flex-col gap-3 pb-8 bg-gray-50/50">
           <p className="text-sm text-gray-700 text-center font-medium">
             {t('auth.haveAccount')}{' '}
-            <Link href="/auth/login" className="text-theme-primary hover:opacity-80 font-semibold hover:underline">
+            <Link href="/auth/login?from=business" className="text-theme-primary hover:opacity-80 font-semibold hover:underline">
               {t('auth.signIn')}
             </Link>
           </p>
-          <p className="text-xs text-gray-600 text-center">
+          <p className="text-xs text-gray-400 text-center">
             {t('auth.termsAgreement')}
           </p>
         </CardFooter>
@@ -79,21 +81,8 @@ function BusinessRegisterContent() {
 export default function BusinessRegisterPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen relative overflow-hidden">
-        <div
-          className="absolute inset-0 z-0"
-          style={{
-            backgroundImage: 'url(/dashboard/assets/landing-background.png)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-          }}
-        >
-          <div className="absolute inset-0 auth-overlay"></div>
-        </div>
-        <div className="relative z-10 min-h-screen flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-white" />
-        </div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-theme-primary" />
       </div>
     }>
       <BusinessRegisterContent />

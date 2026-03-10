@@ -33,8 +33,8 @@ function getInitialMode(): Mode {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeName>(getInitialTheme)
-  const [mode, setModeState] = useState<Mode>(getInitialMode)
+  const [theme, setThemeState] = useState<ThemeName>(defaultTheme)
+  const [mode, setModeState] = useState<Mode>('system')
   const [resolvedMode, setResolvedMode] = useState<'light' | 'dark'>('light')
 
   const resolveSystemMode = useCallback((): 'light' | 'dark' => {
