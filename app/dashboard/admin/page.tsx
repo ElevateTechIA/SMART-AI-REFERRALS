@@ -1350,9 +1350,10 @@ export default function AdminDashboardPage() {
                             <p className="text-xs text-muted-foreground mt-0.5">
                               {ticket.userName} ({ticket.userEmail}) &bull; {formatDate(ticket.createdAt)}
                             </p>
-                            <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                              {ticket.message}
-                            </p>
+                            <div className="text-sm mt-2 leading-relaxed whitespace-pre-line"
+                              style={{ color: 'var(--theme-textSecondary)' }}
+                              dangerouslySetInnerHTML={{ __html: ticket.message.replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--theme-textPrimary)">$1</strong>') }}
+                            />
                             {/* Legacy single reply (backward compat) */}
                             {!ticket.replies?.length && ticket.adminReply && (
                               <div className="ml-4 mt-2 pl-3 border-l-2 border-primary/30 bg-muted/50 rounded-r-lg py-2 pr-3">

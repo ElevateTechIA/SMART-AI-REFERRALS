@@ -26,7 +26,7 @@ import {
   Clock,
   ShieldAlert,
   Search,
-  MessageSquare,
+  Plus,
 } from 'lucide-react'
 
 interface ReferralsApiResponse {
@@ -231,12 +231,34 @@ function ReferralsContent() {
       {/* Stores Grid */}
       {isReferrerApproved && (
         <div>
-          <Link href="/dashboard/support?subject=recommend" className="block mb-4">
-            <div className="flex items-center gap-3 px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 transition-colors cursor-pointer">
-              <MessageSquare className="h-5 w-5 text-blue-600 flex-shrink-0" />
-              <p className="text-sm font-medium text-blue-700">
-                {t('visits.recommendBusiness')}
-              </p>
+          <Link href="/dashboard/support?subject=recommend" className="block mb-4 px-px">
+            <div className="relative rounded-2xl p-5 sm:p-6 transition-all hover:shadow-xl group animate-border-glow"
+              style={{ background: 'var(--theme-cardBg)' }}>
+              {/* Subtle glow */}
+              <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
+                <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-15 blur-3xl" style={{ background: 'var(--theme-primary)' }} />
+              </div>
+              <div className="relative flex items-center gap-4 sm:gap-5">
+                <div className="relative flex-shrink-0">
+                  <div className="absolute inset-0 rounded-full blur-lg opacity-20 animate-pulse [animation-duration:3s]" style={{ background: 'var(--theme-primary)' }} />
+                  <img src="/icons/money.png" alt="" className="relative w-14 h-14 sm:w-[4.5rem] sm:h-[4.5rem] drop-shadow-lg" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-theme-textPrimary font-bold text-base sm:text-xl leading-tight">
+                    {t('visits.recommendBusinessTitle')}
+                  </h3>
+                  <p className="text-theme-textSecondary text-xs sm:text-sm mt-1">
+                    {t('visits.recommendBusinessDesc')}
+                  </p>
+                </div>
+                <div className="flex-shrink-0">
+                  <span className="inline-flex items-center gap-1.5 px-3 sm:px-5 py-2 sm:py-2.5 text-white text-xs sm:text-sm font-semibold rounded-xl transition-opacity group-hover:opacity-90"
+                    style={{ background: 'var(--theme-primary)' }}>
+                    <Plus className="h-4 w-4" />
+                    <span className="hidden sm:inline">{t('visits.recommendBusinessCta')}</span>
+                  </span>
+                </div>
+              </div>
             </div>
           </Link>
 

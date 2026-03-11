@@ -65,7 +65,7 @@ export function ElivBrand({ size, responsive, className, dark = true }: ElivBran
               height: m.icon,
               paddingTop: m.pt,
             }}
-            className={dark ? 'text-gray-900' : 'text-white'}
+            className={dark ? 'text-theme-textPrimary' : 'text-white'}
           >
             ELIV
           </span>
@@ -93,7 +93,7 @@ export function ElivBrand({ size, responsive, className, dark = true }: ElivBran
               height: d.icon,
               paddingTop: d.pt,
             }}
-            className={dark ? 'text-gray-900' : 'text-white'}
+            className={dark ? 'text-theme-textPrimary' : 'text-white'}
           >
             ELIV
           </span>
@@ -126,7 +126,7 @@ export function ElivBrand({ size, responsive, className, dark = true }: ElivBran
           height: s,
           paddingTop: s * 0.1,
         }}
-        className={dark ? 'text-gray-900' : 'text-white'}
+        className={dark ? 'text-theme-textPrimary' : 'text-white'}
       >
         ELIV
       </span>

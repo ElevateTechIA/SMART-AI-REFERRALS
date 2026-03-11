@@ -14,9 +14,31 @@ import { useToast } from '@/components/ui/use-toast'
 import { apiGet, apiPost, apiPut } from '@/lib/api-client'
 import type { SupportTicket, TicketReply } from '@/lib/types'
 import { formatDate, formatDateTime } from '@/lib/utils'
-import { HelpCircle, Send, Loader2, MessageSquare, CheckCircle, Shield } from 'lucide-react'
+import { HelpCircle, Send, Loader2, MessageSquare, CheckCircle, Shield, Store } from 'lucide-react'
 
 type SubjectOption = 'recommend' | 'bug' | 'other'
+
+interface RecommendFormData {
+  businessName: string
+  city: string
+  address: string
+  phone: string
+  contactName: string
+  website: string
+  knowsOwner: boolean | null
+  notes: string
+}
+
+const emptyRecommendForm: RecommendFormData = {
+  businessName: '',
+  city: '',
+  address: '',
+  phone: '',
+  contactName: '',
+  website: '',
+  knowsOwner: null,
+  notes: '',
+}
 
 function SupportContent() {
   const { user } = useAuth()
@@ -32,6 +54,7 @@ function SupportContent() {
   )
   const [customSubject, setCustomSubject] = useState('')
   const [message, setMessage] = useState('')
+  const [recommendForm, setRecommendForm] = useState<RecommendFormData>(emptyRecommendForm)
 
   const subject = subjectOption === 'recommend'
     ? t('support.subjectRecommend')
@@ -71,13 +94,32 @@ function SupportContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!subject.trim() || !message.trim()) return
+
+    let finalSubject = subject
+    let finalMessage = message
+
+    if (subjectOption === 'recommend') {
+      if (!recommendForm.businessName.trim() || !recommendForm.city.trim()) return
+      finalSubject = t('support.subjectRecommend')
+      finalMessage = [
+        `**${t('support.recommend.businessName')}:** ${recommendForm.businessName.trim()}`,
+        `**${t('support.recommend.city')}:** ${recommendForm.city.trim()}`,
+        recommendForm.address && `**${t('support.recommend.address')}:** ${recommendForm.address.trim()}`,
+        recommendForm.phone && `**${t('support.recommend.phone')}:** ${recommendForm.phone.trim()}`,
+        recommendForm.contactName && `**${t('support.recommend.contactName')}:** ${recommendForm.contactName.trim()}`,
+        recommendForm.website && `**${t('support.recommend.website')}:** ${recommendForm.website.trim()}`,
+        `**${t('support.recommend.knowsOwner')}:** ${recommendForm.knowsOwner === true ? t('support.recommend.yes') : recommendForm.knowsOwner === false ? t('support.recommend.no') : '—'}`,
+        recommendForm.notes && `**${t('support.recommend.additionalNotes')}:** ${recommendForm.notes.trim()}`,
+      ].filter(Boolean).join('\n')
+    } else {
+      if (!finalSubject.trim() || !finalMessage.trim()) return
+    }
 
     setSending(true)
     try {
       const result = await apiPost<{ success: boolean; ticket: SupportTicket }>(
         '/api/support',
-        { subject: subject.trim(), message: message.trim() }
+        { subject: finalSubject.trim(), message: finalMessage.trim() }
       )
 
       if (result.ok && result.data?.ticket) {
@@ -90,9 +132,10 @@ function SupportContent() {
         setSubjectOption('other')
         setCustomSubject('')
         setMessage('')
+        setRecommendForm(emptyRecommendForm)
         toast({
-          title: t('support.messageSent'),
-          description: t('support.messageSentDesc'),
+          title: subjectOption === 'recommend' ? t('support.recommend.sent') : t('support.messageSent'),
+          description: subjectOption === 'recommend' ? t('support.recommend.sentDesc') : t('support.messageSentDesc'),
         })
       } else {
         throw new Error(result.error)
@@ -167,9 +210,12 @@ function SupportContent() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Send className="h-5 w-5" />
-            {t('support.send')}
+            {subjectOption === 'recommend' ? <Store className="h-5 w-5" /> : <Send className="h-5 w-5" />}
+            {subjectOption === 'recommend' ? t('support.recommend.title') : t('support.send')}
           </CardTitle>
+          {subjectOption === 'recommend' && (
+            <CardDescription>{t('support.recommend.subtitle')}</CardDescription>
+          )}
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -185,29 +231,139 @@ function SupportContent() {
                   <SelectItem value="other">{t('support.optionOther')}</SelectItem>
                 </SelectContent>
               </Select>
-              {subjectOption === 'other' && (
-                <Input
-                  placeholder={t('support.subjectPlaceholder')}
-                  value={customSubject}
-                  onChange={(e) => setCustomSubject(e.target.value)}
-                  maxLength={200}
-                  required
-                />
-              )}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="message">{t('support.message')}</Label>
-              <textarea
-                id="message"
-                className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                placeholder={t('support.messagePlaceholder')}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                maxLength={2000}
-                required
-              />
-            </div>
-            <Button type="submit" disabled={sending || !subject.trim() || !message.trim() || (subjectOption === 'other' && !customSubject.trim())}>
+
+            {subjectOption === 'recommend' ? (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>{t('support.recommend.businessName')} *</Label>
+                    <Input
+                      placeholder={t('support.recommend.businessNamePlaceholder')}
+                      value={recommendForm.businessName}
+                      onChange={(e) => setRecommendForm((p) => ({ ...p, businessName: e.target.value }))}
+                      maxLength={100}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('support.recommend.city')} *</Label>
+                    <Input
+                      placeholder={t('support.recommend.cityPlaceholder')}
+                      value={recommendForm.city}
+                      onChange={(e) => setRecommendForm((p) => ({ ...p, city: e.target.value }))}
+                      maxLength={100}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>{t('support.recommend.address')}</Label>
+                  <Input
+                    placeholder={t('support.recommend.addressPlaceholder')}
+                    value={recommendForm.address}
+                    onChange={(e) => setRecommendForm((p) => ({ ...p, address: e.target.value }))}
+                    maxLength={200}
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>{t('support.recommend.phone')}</Label>
+                    <Input
+                      placeholder={t('support.recommend.phonePlaceholder')}
+                      value={recommendForm.phone}
+                      onChange={(e) => setRecommendForm((p) => ({ ...p, phone: e.target.value }))}
+                      maxLength={20}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('support.recommend.contactName')}</Label>
+                    <Input
+                      placeholder={t('support.recommend.contactNamePlaceholder')}
+                      value={recommendForm.contactName}
+                      onChange={(e) => setRecommendForm((p) => ({ ...p, contactName: e.target.value }))}
+                      maxLength={100}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>{t('support.recommend.website')}</Label>
+                  <Input
+                    placeholder={t('support.recommend.websitePlaceholder')}
+                    value={recommendForm.website}
+                    onChange={(e) => setRecommendForm((p) => ({ ...p, website: e.target.value }))}
+                    maxLength={200}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>{t('support.recommend.knowsOwner')}</Label>
+                  <div className="flex gap-3">
+                    <Button
+                      type="button"
+                      variant={recommendForm.knowsOwner === true ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setRecommendForm((p) => ({ ...p, knowsOwner: true }))}
+                    >
+                      {t('support.recommend.yes')}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={recommendForm.knowsOwner === false ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setRecommendForm((p) => ({ ...p, knowsOwner: false }))}
+                    >
+                      {t('support.recommend.no')}
+                    </Button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>{t('support.recommend.additionalNotes')}</Label>
+                  <textarea
+                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    placeholder={t('support.recommend.additionalNotesPlaceholder')}
+                    value={recommendForm.notes}
+                    onChange={(e) => setRecommendForm((p) => ({ ...p, notes: e.target.value }))}
+                    maxLength={500}
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                {subjectOption === 'other' && (
+                  <div className="space-y-2">
+                    <Input
+                      placeholder={t('support.subjectPlaceholder')}
+                      value={customSubject}
+                      onChange={(e) => setCustomSubject(e.target.value)}
+                      maxLength={200}
+                      required
+                    />
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <Label htmlFor="message">{t('support.message')}</Label>
+                  <textarea
+                    id="message"
+                    className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    placeholder={t('support.messagePlaceholder')}
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    maxLength={2000}
+                    required
+                  />
+                </div>
+              </>
+            )}
+
+            <Button
+              type="submit"
+              disabled={
+                sending ||
+                (subjectOption === 'recommend'
+                  ? !recommendForm.businessName.trim() || !recommendForm.city.trim()
+                  : !subject.trim() || !message.trim() || (subjectOption === 'other' && !customSubject.trim()))
+              }
+            >
               {sending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -216,7 +372,7 @@ function SupportContent() {
               ) : (
                 <>
                   <Send className="h-4 w-4 mr-2" />
-                  {t('support.send')}
+                  {subjectOption === 'recommend' ? t('support.recommend.submit') : t('support.send')}
                 </>
               )}
             </Button>
@@ -274,10 +430,11 @@ function SupportContent() {
                       </span>
                     </div>
                     <div className="flex-1">
-                      <p className="text-xs font-medium text-foreground">{t('support.you')}</p>
-                      <p className="text-sm text-muted-foreground leading-relaxed mt-0.5">
-                        {ticket.message}
-                      </p>
+                      <p className="text-xs font-medium" style={{ color: 'var(--theme-textPrimary)' }}>{t('support.you')}</p>
+                      <div className="text-sm leading-relaxed mt-0.5 whitespace-pre-line"
+                        style={{ color: 'var(--theme-textSecondary)' }}
+                        dangerouslySetInnerHTML={{ __html: ticket.message.replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--theme-textPrimary)">$1</strong>') }}
+                      />
                     </div>
                   </div>
 
