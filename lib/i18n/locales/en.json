@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Smart AI Referrals"
+    "name": "Eliv"
   },
   "common": {
     "loading": "Loading...",
@@ -90,7 +90,7 @@
     "signInToAccount": "Sign in to your account to continue",
     "failedSignInGoogle": "Failed to sign in with Google",
     "accountCreated": "Account created",
-    "welcomeToApp": "Welcome to Smart AI Referrals!",
+    "welcomeToApp": "Welcome to Eliv!",
     "failedSignUpGoogle": "Failed to sign up with Google"
   },
   "dashboard": {
@@ -677,7 +677,7 @@
     "startEarningFree": "Start Earning Free",
     "listYourBusiness": "List Your Business",
     "noCardRequired": "No credit card required · Takes less than 1 minute",
-    "choosePathTitle": "How Do You Want to Use Smart AI Referrals?",
+    "choosePathTitle": "How Do You Want to Use Eliv?",
     "choosePathSubtitle": "Whether you want to earn money or grow your business, we've got you covered.",
     "promoterCardTitle": "I Want to Earn Money",
     "promoterCardDesc": "Share businesses you trust with friends and earn a commission every time they visit.",
@@ -703,7 +703,7 @@
     "proofPaid": "$15K+",
     "proofPaidLabel": "Paid in commissions",
     "finalCtaTitle": "Ready to Get Started?",
-    "finalCtaSubtitle": "Join hundreds of promoters and businesses already growing with Smart AI Referrals.",
+    "finalCtaSubtitle": "Join hundreds of promoters and businesses already growing with Eliv.",
     "notJustWebsite": "This Is Not Just a Website.",
     "notJustWebsiteHighlight": "It's an App.",
     "appDescription": "Track promotions. See conversions. Withdraw earnings.",
@@ -711,9 +711,9 @@
     "previewDashboard": "Preview the Dashboard →",
     "builtForEveryone": "Built For Everyone.",
     "builtDescription": "Track promotions. See conversions. Withdraw earnings. All in one dashboard.",
-    "allRightsReserved": "© 2026 Smart AI Referrals. All rights reserved.",
+    "allRightsReserved": "© 2026 Eliv. All rights reserved.",
     "shareTheApp": "Share the App",
-    "scanQR": "Scan this QR code to visit Smart AI Referrals",
+    "scanQR": "Scan this QR code to visit Eliv",
     "orVisit": "Or visit",
     "copyLink": "Copy Link",
     "share": "Share",
@@ -811,7 +811,7 @@
     "title": "Registration Assistant",
     "referrerRegistration": "Promoter Registration",
     "businessRegistration": "Business Registration",
-    "greeting": "Hi! I'm here to help you get started with Smart AI Referrals. Would you like to earn money by promoting local businesses, or are you a business owner looking to get more customers?",
+    "greeting": "Hi! I'm here to help you get started with Eliv. Would you like to earn money by promoting local businesses, or are you a business owner looking to get more customers?",
     "chooseType": "Are you here to earn money as a promoter, or do you want to get new customers for your business?",
     "askName": "Perfect! Let's start with your name. What should I call you?",
     "askEmail": "Nice to meet you! What's your email address?",

@@ -21,13 +21,13 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'Smart AI Referrals',
+  title: 'Eliv',
   description: 'Earn money by promoting local businesses',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'SmartRef',
+    title: 'Eliv',
   },
   other: {
     'mobile-web-app-capable': 'yes',

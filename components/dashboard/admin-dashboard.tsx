@@ -101,7 +101,7 @@ export function AdminDashboard() {
   const share = async () => {
     if (navigator.share) {
       try {
-        await navigator.share({ title: 'Smart AI Referrals', url: appUrl })
+        await navigator.share({ title: 'Eliv', url: appUrl })
       } catch (error) {
         if ((error as Error).name !== 'AbortError') {
           console.error('Error sharing:', error)

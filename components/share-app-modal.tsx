@@ -66,7 +66,7 @@ export function ShareAppModal({ isOpen, onClose }: ShareAppModalProps) {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Smart AI Referrals',
+          title: 'Eliv',
           text: t('share.appDescription', 'Turn your network into real income!'),
           url: appUrl,
         })

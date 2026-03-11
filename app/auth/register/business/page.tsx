@@ -30,7 +30,7 @@ function BusinessRegisterContent() {
       await signInWithGoogle('business')
       toast({
         title: 'Account created',
-        description: 'Welcome to Smart AI Referrals!',
+        description: 'Welcome to Eliv!',
       })
       router.push('/dashboard/business/setup')
     } catch (error: unknown) {

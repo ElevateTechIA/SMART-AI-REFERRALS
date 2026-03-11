@@ -15,13 +15,13 @@ import { apiPost } from '@/lib/api-client'
 import type { Business, Offer } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
 import { useTranslation } from 'react-i18next'
+import { ElivBrand } from '@/components/eliv-logo'
 import {
   MapPin,
   Phone,
   Globe,
   Gift,
   Loader2,
-  QrCode,
   CheckCircle,
   ArrowRight,
 } from 'lucide-react'
@@ -249,10 +249,7 @@ function ReferralPageContent() {
       <header className="bg-white border-b sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center gap-2">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <QrCode className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold">Smart AI Referrals</span>
+            <ElivBrand responsive="sm/md" />
           </Link>
         </div>
       </header>

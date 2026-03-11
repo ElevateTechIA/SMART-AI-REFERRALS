@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Eugusto';
+  src: url('/fonts/Eugusto.woff2') format('woff2'),
+       url('/fonts/Eugusto.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   :root {
     /* Clean white background */

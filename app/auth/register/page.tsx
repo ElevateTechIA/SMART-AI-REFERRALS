@@ -37,7 +37,7 @@ function RegisterContent() {
       await signInWithGoogle('referrer')
       toast({
         title: 'Account created',
-        description: 'Welcome to Smart AI Referrals!',
+        description: 'Welcome to Eliv!',
       })
       router.push('/dashboard')
     } catch (error: unknown) {

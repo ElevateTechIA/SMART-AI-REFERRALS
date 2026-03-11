@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Smart AI Referrals"
+    "name": "Eliv"
   },
   "common": {
     "loading": "Cargando...",
@@ -90,7 +90,7 @@
     "signInToAccount": "Inicia sesión en tu cuenta para continuar",
     "failedSignInGoogle": "Error al iniciar sesión con Google",
     "accountCreated": "Cuenta creada",
-    "welcomeToApp": "¡Bienvenido a Smart AI Referrals!",
+    "welcomeToApp": "¡Bienvenido a Eliv!",
     "failedSignUpGoogle": "Error al registrarse con Google"
   },
   "dashboard": {
@@ -677,7 +677,7 @@
     "startEarningFree": "Empieza a Ganar Gratis",
     "listYourBusiness": "Registra Tu Negocio",
     "noCardRequired": "No se requiere tarjeta de crédito · Toma menos de 1 minuto",
-    "choosePathTitle": "¿Cómo Quieres Usar Smart AI Referrals?",
+    "choosePathTitle": "¿Cómo Quieres Usar Eliv?",
     "choosePathSubtitle": "Ya sea que quieras ganar dinero o hacer crecer tu negocio, te tenemos cubierto.",
     "promoterCardTitle": "Quiero Ganar Dinero",
     "promoterCardDesc": "Comparte negocios en los que confías con amigos y gana comisión cada vez que visitan.",
@@ -703,7 +703,7 @@
     "proofPaid": "$15K+",
     "proofPaidLabel": "Pagados en comisiones",
     "finalCtaTitle": "¿Listo Para Empezar?",
-    "finalCtaSubtitle": "Únete a cientos de promotores y negocios que ya están creciendo con Smart AI Referrals.",
+    "finalCtaSubtitle": "Únete a cientos de promotores y negocios que ya están creciendo con Eliv.",
     "notJustWebsite": "Esto No Es Solo un Sitio Web.",
     "notJustWebsiteHighlight": "Es una Aplicación.",
     "appDescription": "Rastrea promociones. Ve conversiones. Retira ganancias.",
@@ -711,9 +711,9 @@
     "previewDashboard": "Vista Previa del Panel →",
     "builtForEveryone": "Hecho Para Todos.",
     "builtDescription": "Rastrea promociones. Ve conversiones. Retira ganancias. Todo en un solo panel.",
-    "allRightsReserved": "© 2026 Smart AI Referrals. Todos los derechos reservados.",
+    "allRightsReserved": "© 2026 Eliv. Todos los derechos reservados.",
     "shareTheApp": "Comparte la App",
-    "scanQR": "Escanea este código QR para visitar Smart AI Referrals",
+    "scanQR": "Escanea este código QR para visitar Eliv",
     "orVisit": "O visita",
     "copyLink": "Copiar Enlace",
     "share": "Compartir",
@@ -811,7 +811,7 @@
     "title": "Asistente de Registro",
     "referrerRegistration": "Registro de Promotor",
     "businessRegistration": "Registro de Negocio",
-    "greeting": "¡Hola! Estoy aquí para ayudarte a comenzar con Smart AI Referrals. ¿Te gustaría ganar dinero promoviendo negocios locales, o eres dueño de un negocio buscando conseguir más clientes?",
+    "greeting": "¡Hola! Estoy aquí para ayudarte a comenzar con Eliv. ¿Te gustaría ganar dinero promoviendo negocios locales, o eres dueño de un negocio buscando conseguir más clientes?",
     "chooseType": "¿Estás aquí para ganar dinero como promotor, o quieres conseguir nuevos clientes para tu negocio?",
     "askName": "¡Perfecto! Empecemos con tu nombre. ¿Cómo te llamas?",
     "askEmail": "¡Mucho gusto! ¿Cuál es tu correo electrónico?",

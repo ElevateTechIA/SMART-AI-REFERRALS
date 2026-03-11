@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Store, Share2, DollarSign, BadgeCheck, QrCode, Wallet } from 'lucide-react'
 import { LanguageSwitcher } from '@/components/language-switcher'
+import { ElivBrand } from '@/components/eliv-logo'
 import { RegisterShareModal } from '@/components/register-share-modal'
 
 export default function PromotersLandingPage() {
@@ -25,15 +26,7 @@ export default function PromotersLandingPage() {
         <nav className="px-6 py-6 border-b border-gray-100">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <div className="w-12 h-12 bg-theme-primary rounded-lg flex items-center justify-center p-2">
-                <svg className="w-full h-full text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                </svg>
-              </div>
-              <div className="flex flex-col justify-center">
-                <span className="text-gray-900 font-bold text-lg leading-tight">SMART AI</span>
-                <span className="text-gray-900 font-bold text-lg leading-tight">REFERRALS</span>
-              </div>
+              <ElivBrand responsive="md/lg" />
             </Link>
 
             <div className="flex items-center gap-2">
@@ -81,7 +74,7 @@ export default function PromotersLandingPage() {
               <div className="relative w-full max-w-[280px] sm:max-w-[320px] lg:max-w-[360px]">
                 <Image
                   src="/dashboard/assets/mobile-smart-ref.png"
-                  alt="Smart AI Referrals App"
+                  alt="Eliv App"
                   width={400}
                   height={800}
                   className="w-full h-auto rounded-[2.5rem] shadow-2xl"

@@ -13,7 +13,7 @@ export function buildSystemPrompt(
     ? 'Responde siempre en español de manera amigable y profesional.'
     : 'Always respond in English in a friendly and professional manner.'
 
-  return `You are a helpful registration assistant for Smart AI Referrals, a platform that connects businesses with promoters who bring new customers.
+  return `You are a helpful registration assistant for Eliv, a platform that connects businesses with promoters who bring new customers.
 
 ${langInstructions}
 
@@ -77,8 +77,8 @@ IMPORTANT:
 // Prompt templates for each state
 export const STATE_PROMPTS: Record<RegistrationState, { en: string; es: string }> = {
   idle: {
-    en: "Hi! I'm here to help you get started with Smart AI Referrals. Would you like to earn money by promoting local businesses, or are you a business owner looking to get more customers?",
-    es: "¡Hola! Estoy aquí para ayudarte a comenzar con Smart AI Referrals. ¿Te gustaría ganar dinero promoviendo negocios locales, o eres dueño de un negocio buscando conseguir más clientes?",
+    en: "Hi! I'm here to help you get started with Eliv. Would you like to earn money by promoting local businesses, or are you a business owner looking to get more customers?",
+    es: "¡Hola! Estoy aquí para ayudarte a comenzar con Eliv. ¿Te gustaría ganar dinero promoviendo negocios locales, o eres dueño de un negocio buscando conseguir más clientes?",
   },
   choose_type: {
     en: "Great! Are you here to earn money as a promoter, or do you want to get new customers for your business?",
