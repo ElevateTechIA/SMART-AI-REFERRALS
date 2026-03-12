@@ -81,7 +81,7 @@ export function ChatInput({
           disabled={disabled || !message.trim()}
           className={cn(
             'flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center',
-            'bg-theme-primary text-white transition-all',
+            'bg-theme-primary text-gray-900 transition-all',
             'hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:ring-offset-2',
             (disabled || !message.trim()) && 'opacity-50 cursor-not-allowed'
           )}

@@ -318,7 +318,7 @@ export function RegistrationChatbot({
     return (
       <button
         onClick={() => setIsMinimized(false)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-theme-primary text-white rounded-full shadow-lg flex items-center justify-center hover:opacity-90 transition-all hover:scale-105 z-50"
+        className="fixed bottom-6 right-6 w-14 h-14 bg-theme-primary text-gray-900 rounded-full shadow-lg flex items-center justify-center hover:opacity-90 transition-all hover:scale-105 z-50"
       >
         <MessageCircle className="w-6 h-6" />
       </button>

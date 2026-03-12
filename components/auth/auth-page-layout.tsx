@@ -24,12 +24,12 @@ export function AuthPageLayout({ children, showSignInLink = false, loginHref = '
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <ElivBrand responsive="md/lg" />
+              <ElivBrand responsive="md/lg" forceDark />
             </Link>
 
             {/* Language Switcher & Sign In Button */}
             <div className="flex items-center gap-2">
-              <LanguageSwitcher />
+              <LanguageSwitcher forceDark />
               {showSignInLink && (
                 <Link href={loginHref}>
                   <Button variant="ghost" className="text-gray-700 hover:bg-gray-100">

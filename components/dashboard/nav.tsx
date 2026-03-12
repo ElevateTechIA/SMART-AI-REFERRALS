@@ -144,7 +144,7 @@ export function DashboardNav() {
                       size="sm"
                       className={cn(
                         'gap-2',
-                        isActive && 'bg-theme-primary text-white shadow-md hover:bg-theme-primary/90'
+                        isActive && 'bg-theme-primary text-gray-900 shadow-md hover:bg-theme-primary/90'
                       )}
                     >
                       <Icon className="w-4 h-4" />
@@ -219,7 +219,7 @@ export function DashboardNav() {
           >
             <Avatar className="h-9 w-9 ring-2 ring-theme-primary/30">
               <AvatarImage src={user?.photoURL} alt={user?.name} />
-              <AvatarFallback className="text-sm bg-theme-primary text-white">
+              <AvatarFallback className="text-sm bg-theme-primary text-gray-900">
                 {user?.name?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
@@ -322,7 +322,7 @@ export function DashboardNav() {
                     className={cn(
                       'flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors',
                       mode === value
-                        ? 'bg-theme-primary text-white'
+                        ? 'bg-theme-primary text-gray-900'
                         : 'bg-theme-primary/10 text-theme-textMuted hover:bg-theme-primary/20'
                     )}
                   >
@@ -333,7 +333,7 @@ export function DashboardNav() {
               </div>
 
               {/* Color themes */}
-              <div className="mt-3 grid grid-cols-5 gap-2">
+              <div className="mt-3 grid grid-cols-6 gap-2">
                 {Object.entries(availableThemes).map(([key, themeData]) => (
                   <button
                     key={key}
@@ -370,7 +370,7 @@ export function DashboardNav() {
                     className={cn(
                       'flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold transition-all',
                       i18n.language === lang.code
-                        ? 'bg-theme-primary text-white shadow-lg'
+                        ? 'bg-theme-primary text-gray-900 shadow-lg'
                         : 'bg-theme-primary/10 text-theme-textMuted hover:bg-theme-primary/20'
                     )}
                   >

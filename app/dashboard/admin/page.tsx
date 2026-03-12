@@ -14,6 +14,20 @@ import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { apiGet, apiPost, apiPut } from '@/lib/api-client'
 import type { Business, User, Visit, FraudFlag, Offer, ConsumerRewardType, Receipt, SupportTicket } from '@/lib/types'
+
+/** Safely render **bold** markdown as React elements (no dangerouslySetInnerHTML) */
+function SafeBoldText({ text, boldColor, textColor }: { text: string; boldColor: string; textColor: string }) {
+  const parts = text.split(/(\*\*.+?\*\*)/g)
+  return (
+    <span style={{ color: textColor }}>
+      {parts.map((part, i) => {
+        const match = part.match(/^\*\*(.+?)\*\*$/)
+        if (match) return <strong key={i} style={{ color: boldColor }}>{match[1]}</strong>
+        return <span key={i}>{part}</span>
+      })}
+    </span>
+  )
+}
 import { formatCurrency, formatDate, formatDateTime } from '@/lib/utils'
 import { DEFAULT_COMMISSION_SPLIT, type CommissionSplit } from '@/lib/commission-config'
 import {
@@ -1350,10 +1364,9 @@ export default function AdminDashboardPage() {
                             <p className="text-xs text-muted-foreground mt-0.5">
                               {ticket.userName} ({ticket.userEmail}) &bull; {formatDate(ticket.createdAt)}
                             </p>
-                            <div className="text-sm mt-2 leading-relaxed whitespace-pre-line"
-                              style={{ color: 'var(--theme-textSecondary)' }}
-                              dangerouslySetInnerHTML={{ __html: ticket.message.replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--theme-textPrimary)">$1</strong>') }}
-                            />
+                            <div className="text-sm mt-2 leading-relaxed whitespace-pre-line">
+                              <SafeBoldText text={ticket.message} boldColor="var(--theme-textPrimary)" textColor="var(--theme-textSecondary)" />
+                            </div>
                             {/* Legacy single reply (backward compat) */}
                             {!ticket.replies?.length && ticket.adminReply && (
                               <div className="ml-4 mt-2 pl-3 border-l-2 border-primary/30 bg-muted/50 rounded-r-lg py-2 pr-3">

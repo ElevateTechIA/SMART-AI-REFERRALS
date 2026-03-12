@@ -100,7 +100,7 @@ export default function EarningsPage() {
     const statusConfig = {
       completed: { label: t('earnings.statusCompleted'), className: 'bg-green-500 text-white' },
       pending: { label: t('earnings.statusPending'), className: 'bg-yellow-500 text-white' },
-      processing: { label: t('earnings.statusProcessing'), className: 'bg-theme-primary text-white' },
+      processing: { label: t('earnings.statusProcessing'), className: 'bg-theme-primary text-gray-900' },
     }
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending
     return <Badge className={config.className}>{config.label}</Badge>
@@ -216,7 +216,7 @@ export default function EarningsPage() {
                   <option value="month">{t('earnings.thisMonthOption')}</option>
                   <option value="year">{t('earnings.thisYear')}</option>
                 </select>
-                <Button className="bg-theme-primary hover:opacity-90 text-white rounded-lg">
+                <Button className="bg-theme-primary hover:opacity-90 text-gray-900 rounded-lg">
                   <Download className="h-4 w-4 mr-2" />
                   {t('common.export')}
                 </Button>

@@ -18,15 +18,18 @@ export default function BusinessLandingPage() {
     <div className="min-h-screen bg-white relative overflow-hidden">
       {/* Content */}
       <div className="relative z-10">
+        {/* Brand gradient bar */}
+        <div className="eliv-gradient-bar h-1" />
+
         {/* Navigation */}
-        <nav className="px-6 py-6 border-b border-gray-100">
+        <nav className="px-6 py-6">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <ElivBrand responsive="md/lg" />
+              <ElivBrand responsive="md/lg" forceDark />
             </Link>
 
             <div className="flex items-center gap-2">
-              <LanguageSwitcher />
+              <LanguageSwitcher forceDark />
               <Link href="/promotores">
                 <Button variant="ghost" className="text-gray-700 hover:bg-gray-100 hidden sm:inline-flex">
                   {t('promotersLanding.cta')}

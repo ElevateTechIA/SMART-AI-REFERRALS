@@ -22,15 +22,18 @@ export default function PromotersLandingPage() {
     <div className="min-h-screen bg-white relative overflow-hidden">
       {/* Content */}
       <div className="relative z-10">
+        {/* Brand gradient bar */}
+        <div className="eliv-gradient-bar h-1" />
+
         {/* Navigation */}
-        <nav className="px-6 py-6 border-b border-gray-100">
+        <nav className="px-6 py-6">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <ElivBrand responsive="md/lg" />
+              <ElivBrand responsive="md/lg" forceDark />
             </Link>
 
             <div className="flex items-center gap-2">
-              <LanguageSwitcher />
+              <LanguageSwitcher forceDark />
               <Link href="/negocios">
                 <Button variant="ghost" className="text-gray-700 hover:bg-gray-100 hidden sm:inline-flex">
                   {t('businessLanding.cta')}
@@ -52,7 +55,7 @@ export default function PromotersLandingPage() {
               <div>
                 <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
                   {t('promotersLanding.heroTitle')}{' '}
-                  <span className="text-theme-primary">{t('promotersLanding.heroTitleHighlight')}</span>
+                  <span className="text-theme-accent">{t('promotersLanding.heroTitleHighlight')}</span>
                 </h1>
                 <p className="text-xl md:text-2xl text-gray-600 leading-relaxed">
                   {t('promotersLanding.heroSubtitle')}
@@ -63,7 +66,7 @@ export default function PromotersLandingPage() {
                 <Button
                   size="lg"
                   onClick={() => setShowModal(true)}
-                  className="bg-theme-primary hover:opacity-90 text-white px-8 py-6 text-lg font-semibold rounded-xl shadow-lg w-full sm:w-auto"
+                  className="bg-theme-primary hover:opacity-90 text-gray-900 px-8 py-6 text-lg font-semibold rounded-xl shadow-lg w-full sm:w-auto"
                 >
                   {t('promotersLanding.cta')}
                 </Button>
@@ -208,7 +211,7 @@ export default function PromotersLandingPage() {
             <Button
               size="lg"
               onClick={() => setShowModal(true)}
-              className="bg-theme-primary hover:opacity-90 text-white px-10 py-6 text-lg font-semibold rounded-xl shadow-lg"
+              className="bg-theme-primary hover:opacity-90 text-gray-900 px-10 py-6 text-lg font-semibold rounded-xl shadow-lg"
             >
               {t('promotersLanding.ctaFinal')}
             </Button>

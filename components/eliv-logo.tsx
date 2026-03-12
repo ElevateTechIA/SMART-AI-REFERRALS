@@ -32,9 +32,12 @@ interface ElivBrandProps {
   responsive?: `${BrandSize}/${BrandSize}`
   className?: string
   dark?: boolean
+  /** Force dark text for light backgrounds (overrides dark prop) */
+  forceDark?: boolean
 }
 
-export function ElivBrand({ size, responsive, className, dark = true }: ElivBrandProps) {
+export function ElivBrand({ size, responsive, className, dark = true, forceDark = false }: ElivBrandProps) {
+  const textClass = forceDark ? 'text-gray-900' : dark ? 'text-theme-textPrimary' : 'text-white'
   if (responsive) {
     const [mobile, desktop] = responsive.split('/') as [BrandSize, BrandSize]
     const m = sizeConfig[mobile]
@@ -65,7 +68,7 @@ export function ElivBrand({ size, responsive, className, dark = true }: ElivBran
               height: m.icon,
               paddingTop: m.pt,
             }}
-            className={dark ? 'text-theme-textPrimary' : 'text-white'}
+            className={textClass}
           >
             ELIV
           </span>
@@ -93,7 +96,7 @@ export function ElivBrand({ size, responsive, className, dark = true }: ElivBran
               height: d.icon,
               paddingTop: d.pt,
             }}
-            className={dark ? 'text-theme-textPrimary' : 'text-white'}
+            className={textClass}
           >
             ELIV
           </span>
@@ -126,7 +129,7 @@ export function ElivBrand({ size, responsive, className, dark = true }: ElivBran
           height: s,
           paddingTop: s * 0.1,
         }}
-        className={dark ? 'text-theme-textPrimary' : 'text-white'}
+        className={textClass}
       >
         ELIV
       </span>

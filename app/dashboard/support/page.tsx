@@ -13,6 +13,20 @@ import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { apiGet, apiPost, apiPut } from '@/lib/api-client'
 import type { SupportTicket, TicketReply } from '@/lib/types'
+
+/** Safely render **bold** markdown as React elements (no dangerouslySetInnerHTML) */
+function SafeBoldText({ text, boldColor, textColor }: { text: string; boldColor: string; textColor: string }) {
+  const parts = text.split(/(\*\*.+?\*\*)/g)
+  return (
+    <span style={{ color: textColor }}>
+      {parts.map((part, i) => {
+        const match = part.match(/^\*\*(.+?)\*\*$/)
+        if (match) return <strong key={i} style={{ color: boldColor }}>{match[1]}</strong>
+        return <span key={i}>{part}</span>
+      })}
+    </span>
+  )
+}
 import { formatDate, formatDateTime } from '@/lib/utils'
 import { HelpCircle, Send, Loader2, MessageSquare, CheckCircle, Shield, Store } from 'lucide-react'
 
@@ -389,7 +403,7 @@ function SupportContent() {
           </CardTitle>
           <CardDescription>
             {tickets.length > 0
-              ? `${tickets.length} ${tickets.length === 1 ? 'message' : 'messages'}`
+              ? t('support.messageCount', { count: tickets.length })
               : ''}
           </CardDescription>
         </CardHeader>
@@ -431,10 +445,9 @@ function SupportContent() {
                     </div>
                     <div className="flex-1">
                       <p className="text-xs font-medium" style={{ color: 'var(--theme-textPrimary)' }}>{t('support.you')}</p>
-                      <div className="text-sm leading-relaxed mt-0.5 whitespace-pre-line"
-                        style={{ color: 'var(--theme-textSecondary)' }}
-                        dangerouslySetInnerHTML={{ __html: ticket.message.replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--theme-textPrimary)">$1</strong>') }}
-                      />
+                      <div className="text-sm leading-relaxed mt-0.5 whitespace-pre-line">
+                        <SafeBoldText text={ticket.message} boldColor="var(--theme-textPrimary)" textColor="var(--theme-textSecondary)" />
+                      </div>
                     </div>
                   </div>
 

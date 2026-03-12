@@ -54,7 +54,7 @@ export function InstallPrompt() {
           {t('pwa.installDesc', 'Add to your home screen for quick access')}
         </p>
       </div>
-      <Button size="sm" onClick={handleInstall} className="bg-theme-primary hover:opacity-90 text-white">
+      <Button size="sm" onClick={handleInstall} className="bg-theme-primary hover:opacity-90 text-gray-900">
         <Download className="h-4 w-4" />
       </Button>
       <button onClick={handleDismiss} className="text-muted-foreground hover:text-foreground">

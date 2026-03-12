@@ -165,6 +165,50 @@ export const themes = {
     }
   },
 
+  eliv: {
+    name: 'ELiv Brand',
+    colors: {
+      // Trust Link navy gradient (dashboard backgrounds)
+      gradientFrom: '#0F1B3D',
+      gradientVia: '#1E3A6E',
+      gradientTo: '#2B4F8C',
+
+      // Reward Spark chartreuse as primary (buttons, CTAs, highlights)
+      primary: '#B8C820',
+      primaryLight: '#C8D630',
+      primaryDark: '#9AB01A',
+
+      // Trust Link navy as secondary (text, headers, cards)
+      secondary: '#1E3A6E',
+      secondaryLight: '#2B4F8C',
+
+      // Growth Loop green as accent
+      accent: '#6BC24A',
+      accentHover: '#5AAF3A',
+
+      success: '#6BC24A',
+      warning: '#C8D630',
+      error: '#EF4444',
+
+      // Cards with navy glassmorphism
+      cardBg: 'rgba(30, 58, 110, 0.4)',
+      cardBgHover: 'rgba(30, 58, 110, 0.6)',
+      cardBorder: 'rgba(43, 79, 140, 0.3)',
+
+      // Light tint surfaces - Community Light cream
+      primaryBg: '#F5F1E3',
+      primaryBgHover: '#EDE8D6',
+      primaryBorder: 'rgba(30, 58, 110, 0.15)',
+      overlayFrom: 'rgba(15, 27, 61, 0.4)',
+      overlayTo: 'rgba(15, 27, 61, 0.5)',
+
+      // White text for dark navy backgrounds
+      textPrimary: '#ffffff',
+      textSecondary: '#C8D6E5',
+      textMuted: '#8DA4BF',
+    }
+  },
+
   cleanBlue: {
     name: 'Clean Blue',
     colors: {
@@ -208,7 +252,7 @@ export const themes = {
 }
 
 // Default theme
-export const defaultTheme = 'cleanBlue'
+export const defaultTheme = 'eliv'
 
 // Get current theme
 export function getTheme(themeName: keyof typeof themes = defaultTheme) {

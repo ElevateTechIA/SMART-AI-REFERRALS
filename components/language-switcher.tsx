@@ -15,7 +15,7 @@ const languages = [
   { code: 'es', name: 'Español', flag: '🇪🇸' },
 ]
 
-export function LanguageSwitcher() {
+export function LanguageSwitcher({ forceDark = false }: { forceDark?: boolean }) {
   const { i18n } = useTranslation()
 
   const currentLanguage = languages.find((lang) => lang.code === i18n.language) || languages[0]
@@ -27,7 +27,7 @@ export function LanguageSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" className={forceDark ? 'text-gray-700 hover:text-gray-900 hover:bg-gray-100' : ''}>
           <Languages className="h-5 w-5" />
           <span className="sr-only">Change language</span>
         </Button>

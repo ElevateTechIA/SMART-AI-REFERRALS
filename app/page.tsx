@@ -41,18 +41,21 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white relative overflow-hidden">
       <div className="relative z-10">
+        {/* Brand gradient bar */}
+        <div className="eliv-gradient-bar h-1" />
+
         {/* Navigation */}
-        <nav className="px-6 py-6 border-b border-gray-100">
+        <nav className="px-6 py-6">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <a
               onClick={() => setShowQR(true)}
               className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
             >
-              <ElivBrand responsive="md/lg" />
+              <ElivBrand responsive="md/lg" forceDark />
             </a>
 
             <div className="flex items-center gap-2">
-              <LanguageSwitcher />
+              <LanguageSwitcher forceDark />
               <Link href="/auth/signin">
                 <Button variant="ghost" className="text-gray-700 hover:bg-gray-100">
                   {t('auth.signIn')}
@@ -68,7 +71,7 @@ export default function LandingPage() {
             <div className="space-y-8 text-center lg:text-left max-w-2xl mx-auto lg:mx-0">
               <div>
                 <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
-                  {t('landing.heroTitle')} <span className="text-theme-primary">{t('landing.heroTitleHighlight')}</span>
+                  {t('landing.heroTitle')} <span className="text-theme-accent">{t('landing.heroTitleHighlight')}</span>
                 </h1>
                 <p className="text-xl md:text-2xl text-gray-600 leading-relaxed">
                   {t('landing.heroSubtitle')}
@@ -80,7 +83,7 @@ export default function LandingPage() {
                 <Link href="/promotores">
                   <Button
                     size="lg"
-                    className="bg-theme-primary hover:opacity-90 text-white px-8 py-6 text-lg font-semibold rounded-xl shadow-lg w-full sm:w-auto"
+                    className="bg-theme-primary hover:opacity-90 text-gray-900 px-8 py-6 text-lg font-semibold rounded-xl shadow-lg w-full sm:w-auto"
                   >
                     {t('landing.startEarningFree')}
                   </Button>
@@ -125,24 +128,24 @@ export default function LandingPage() {
 
             <div className="grid md:grid-cols-3 gap-8">
               <div className="text-center">
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-blue-100 mx-auto mb-5">
-                  <Share2 className="w-8 h-8 text-blue-600" />
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-[#1E3A6E]/10 mx-auto mb-5">
+                  <Share2 className="w-8 h-8 text-[#1E3A6E]" />
                 </div>
                 <h3 className="text-gray-900 font-bold text-lg mb-2">{t('landing.step1Title')}</h3>
                 <p className="text-gray-500 text-sm">{t('landing.step1Desc')}</p>
               </div>
 
               <div className="text-center">
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-green-100 mx-auto mb-5">
-                  <QrCode className="w-8 h-8 text-green-600" />
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-[#6BC24A]/10 mx-auto mb-5">
+                  <QrCode className="w-8 h-8 text-[#6BC24A]" />
                 </div>
                 <h3 className="text-gray-900 font-bold text-lg mb-2">{t('landing.step2Title')}</h3>
                 <p className="text-gray-500 text-sm">{t('landing.step2Desc')}</p>
               </div>
 
               <div className="text-center">
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-amber-100 mx-auto mb-5">
-                  <DollarSign className="w-8 h-8 text-amber-600" />
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-[#C8D630]/15 mx-auto mb-5">
+                  <DollarSign className="w-8 h-8 text-[#9AB01A]" />
                 </div>
                 <h3 className="text-gray-900 font-bold text-lg mb-2">{t('landing.step3Title')}</h3>
                 <p className="text-gray-500 text-sm">{t('landing.step3Desc')}</p>
@@ -152,7 +155,8 @@ export default function LandingPage() {
         </div>
 
         {/* Choose Your Path - Detailed reinforcement */}
-        <div className="py-16 bg-gray-50">
+        <div className="eliv-gradient-bar h-0.5 opacity-40" />
+        <div className="py-16 eliv-gradient-bg-subtle">
           <div className="max-w-5xl mx-auto px-6">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
@@ -165,9 +169,11 @@ export default function LandingPage() {
 
             <div className="grid md:grid-cols-2 gap-8">
               {/* Promoter Card */}
-              <div className="bg-white rounded-3xl p-8 border border-gray-200 shadow-sm hover:shadow-md transition-shadow flex flex-col">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-green-100 mb-6">
-                  <DollarSign className="w-7 h-7 text-green-600" />
+              <div className="bg-white rounded-3xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+                <div className="eliv-gradient-bar h-1" />
+                <div className="p-8 flex flex-col flex-1">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-[#6BC24A]/10 mb-6">
+                  <DollarSign className="w-7 h-7 text-[#6BC24A]" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">{t('landing.promoterCardTitle')}</h3>
                 <p className="text-gray-600 mb-6 flex-1">{t('landing.promoterCardDesc')}</p>
@@ -188,18 +194,21 @@ export default function LandingPage() {
                 <Link href="/promotores">
                   <Button
                     size="lg"
-                    className="w-full bg-theme-primary hover:opacity-90 text-white py-6 text-lg font-semibold rounded-xl shadow-lg"
+                    className="w-full bg-theme-primary hover:opacity-90 text-gray-900 py-6 text-lg font-semibold rounded-xl shadow-lg"
                   >
                     {t('landing.startEarningFree')}
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
                 </Link>
+                </div>
               </div>
 
               {/* Business Card */}
-              <div className="bg-white rounded-3xl p-8 border border-gray-200 shadow-sm hover:shadow-md transition-shadow flex flex-col">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-blue-100 mb-6">
-                  <Store className="w-7 h-7 text-blue-600" />
+              <div className="bg-white rounded-3xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+                <div className="eliv-gradient-bar-reverse h-1" />
+                <div className="p-8 flex flex-col flex-1">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-[#1E3A6E]/10 mb-6">
+                  <Store className="w-7 h-7 text-[#1E3A6E]" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">{t('landing.businessCardTitle')}</h3>
                 <p className="text-gray-600 mb-6 flex-1">{t('landing.businessCardDesc')}</p>
@@ -226,6 +235,7 @@ export default function LandingPage() {
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
                 </Link>
+                </div>
               </div>
             </div>
           </div>
@@ -235,7 +245,7 @@ export default function LandingPage() {
         <div className="py-16">
           <div className="max-w-7xl mx-auto px-6 text-center">
             <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
-              {t('landing.notJustWebsite')} <span className="text-theme-primary">{t('landing.notJustWebsiteHighlight')}</span>
+              {t('landing.notJustWebsite')} <span className="text-theme-accent">{t('landing.notJustWebsiteHighlight')}</span>
             </h2>
             <p className="text-xl text-gray-600 mb-8">
               {t('landing.appDescription')}
@@ -245,7 +255,7 @@ export default function LandingPage() {
             <Link href="/dashboard">
               <Button
                 size="lg"
-                className="bg-theme-primary hover:opacity-90 text-white px-8 py-6 text-lg font-semibold rounded-xl shadow-lg"
+                className="bg-theme-primary hover:opacity-90 text-gray-900 px-8 py-6 text-lg font-semibold rounded-xl shadow-lg"
               >
                 {t('landing.previewDashboard')}
               </Button>
@@ -254,7 +264,8 @@ export default function LandingPage() {
         </div>
 
         {/* Final CTA - Catch users who scrolled all the way */}
-        <div className="py-16 bg-gray-50">
+        <div className="eliv-gradient-bar h-0.5 opacity-40" />
+        <div className="py-16 eliv-gradient-bg-subtle">
           <div className="max-w-3xl mx-auto px-6 text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               {t('landing.finalCtaTitle')}
@@ -266,7 +277,7 @@ export default function LandingPage() {
               <Link href="/promotores">
                 <Button
                   size="lg"
-                  className="bg-theme-primary hover:opacity-90 text-white px-8 py-6 text-lg font-semibold rounded-xl shadow-lg w-full sm:w-auto"
+                  className="bg-theme-primary hover:opacity-90 text-gray-900 px-8 py-6 text-lg font-semibold rounded-xl shadow-lg w-full sm:w-auto"
                 >
                   {t('landing.startEarningFree')}
                 </Button>
@@ -284,7 +295,8 @@ export default function LandingPage() {
         </div>
 
         {/* Footer */}
-        <footer className="py-8 border-t border-gray-200">
+        <div className="eliv-gradient-bar h-0.5 opacity-40" />
+        <footer className="py-8">
           <div className="max-w-7xl mx-auto px-6 text-center">
             <p className="text-gray-400">
               {t('landing.allRightsReserved')}
@@ -336,7 +348,7 @@ export default function LandingPage() {
                 onClick={() => {
                   navigator.clipboard.writeText('https://smart-ai-referrals.vercel.app/')
                 }}
-                className="flex-1 bg-theme-primary hover:opacity-90 text-white rounded-xl"
+                className="flex-1 bg-theme-primary hover:opacity-90 text-gray-900 rounded-xl"
               >
                 {t('landing.copyLink')}
               </Button>

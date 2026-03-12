@@ -135,7 +135,7 @@ export function ShareAppModal({ isOpen, onClose }: ShareAppModalProps) {
         <div className="flex gap-3">
           <Button
             onClick={copyLink}
-            className="flex-1 bg-theme-primary hover:opacity-90 text-white rounded-xl"
+            className="flex-1 bg-theme-primary hover:opacity-90 text-gray-900 rounded-xl"
           >
             {t('landing.copyLink', 'Copy Link')}
           </Button>

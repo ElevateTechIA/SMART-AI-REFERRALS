@@ -535,7 +535,7 @@ export default function VisitsPage() {
                       <Badge className={
                         tx.status === 'completed' ? 'bg-green-500 text-white' :
                         tx.status === 'pending' ? 'bg-yellow-500 text-white' :
-                        'bg-theme-primary text-white'
+                        'bg-theme-primary text-gray-900'
                       }>
                         {tx.status === 'completed' ? t('earnings.statusCompleted') :
                          tx.status === 'pending' ? t('earnings.statusPending') :

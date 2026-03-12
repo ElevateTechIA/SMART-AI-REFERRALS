@@ -241,7 +241,7 @@ function ReferralsContent() {
               <div className="relative flex items-center gap-4 sm:gap-5">
                 <div className="relative flex-shrink-0">
                   <div className="absolute inset-0 rounded-full blur-lg opacity-20 animate-pulse [animation-duration:3s]" style={{ background: 'var(--theme-primary)' }} />
-                  <img src="/icons/money.png" alt="" className="relative w-14 h-14 sm:w-[4.5rem] sm:h-[4.5rem] drop-shadow-lg" />
+                  <img src="/icons/money.png" alt="Earn money" className="relative w-14 h-14 sm:w-[4.5rem] sm:h-[4.5rem] drop-shadow-lg" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-theme-textPrimary font-bold text-base sm:text-xl leading-tight">
@@ -384,7 +384,7 @@ function ReferralsContent() {
                           : 'secondary'
                       }
                     >
-                      {earning.status}
+                      {t(`promotions.earningStatus${earning.status.charAt(0) + earning.status.slice(1).toLowerCase()}`)}
                     </Badge>
                   </div>
                 </div>
@@ -428,7 +428,7 @@ function ReferralList({
                 <Building2 className="h-4 w-4 text-muted-foreground" />
               </div>
               <div className="min-w-0">
-                <p className="font-medium truncate">{business?.name || 'Unknown'}</p>
+                <p className="font-medium truncate">{business?.name || t('common.unknown')}</p>
                 <p className="text-xs text-muted-foreground">
                   {formatDate(referral.createdAt)}
                 </p>

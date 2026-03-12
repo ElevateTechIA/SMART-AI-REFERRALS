@@ -37,6 +37,30 @@
   opacity: 0.45;
 }
 
+/* ELiv Brand Gradients — from brand guide color palette */
+.eliv-gradient-bar {
+  background: linear-gradient(90deg, #6BC24A 0%, #B8C820 25%, #C8D630 50%, #F5F1E3 75%, #1E3A6E 100%);
+}
+
+.eliv-gradient-bar-reverse {
+  background: linear-gradient(90deg, #1E3A6E 0%, #F5F1E3 25%, #C8D630 50%, #B8C820 75%, #6BC24A 100%);
+}
+
+.eliv-gradient-text {
+  background: linear-gradient(135deg, #1E3A6E 0%, #6BC24A 50%, #C8D630 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.eliv-gradient-border {
+  border-image: linear-gradient(90deg, #6BC24A, #C8D630, #1E3A6E) 1;
+}
+
+.eliv-gradient-bg-subtle {
+  background: linear-gradient(135deg, rgba(107, 194, 74, 0.05) 0%, rgba(200, 214, 48, 0.08) 50%, rgba(30, 58, 110, 0.05) 100%);
+}
+
 @font-face {
   font-family: 'Eugusto';
   src: url('/fonts/Eugusto.woff2') format('woff2'),

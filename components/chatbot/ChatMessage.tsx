@@ -47,7 +47,7 @@ export function ChatMessage({ message, onQuickAction }: ChatMessageProps) {
             'px-4 py-2.5 rounded-2xl text-sm',
             isAssistant
               ? 'bg-gray-100 text-gray-900 rounded-tl-sm'
-              : 'bg-theme-primary text-white rounded-tr-sm'
+              : 'bg-theme-primary text-gray-900 rounded-tr-sm'
           )}
         >
           {message.content}
