@@ -17,7 +17,7 @@ const buttonVariants = cva(
         secondary:
           'bg-theme-secondary text-white hover:bg-theme-secondaryLight',
         ghost: 'hover:bg-theme-cardBgHover text-theme-textPrimary',
-        link: 'text-theme-primary underline-offset-4 hover:underline',
+        link: 'text-theme-secondary underline-offset-4 hover:underline',
       },
       size: {
         default: 'h-11 px-4 py-2',

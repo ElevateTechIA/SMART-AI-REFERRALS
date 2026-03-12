@@ -396,7 +396,7 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
             <div className="px-5 py-3 border-t border-border">
               <button
                 onClick={() => setFlipped(false)}
-                className="w-full text-center text-sm font-medium text-theme-primary hover:opacity-80 transition-opacity"
+                className="w-full text-center text-sm font-medium text-theme-secondary hover:opacity-80 transition-opacity"
               >
                 {t('cards.viewPromo')}
               </button>

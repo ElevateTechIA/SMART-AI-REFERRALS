@@ -126,7 +126,7 @@ export function ShareAppModal({ isOpen, onClose }: ShareAppModalProps) {
           <p className="text-xs text-muted-foreground mb-1 text-center">
             {t('landing.orVisit', 'Or visit')}
           </p>
-          <p className="text-sm font-semibold text-theme-primary text-center break-all">
+          <p className="text-sm font-semibold text-theme-secondary text-center break-all">
             {appUrl.replace('https://', '').replace('http://', '')}
           </p>
         </div>
@@ -143,7 +143,7 @@ export function ShareAppModal({ isOpen, onClose }: ShareAppModalProps) {
             <Button
               onClick={shareApp}
               variant="outline"
-              className="flex-1 border-theme-primary text-theme-primary hover:bg-theme-primaryBg rounded-xl"
+              className="flex-1 border-theme-primary text-theme-secondary hover:bg-theme-primaryBg rounded-xl"
             >
               {t('landing.share', 'Share')}
             </Button>

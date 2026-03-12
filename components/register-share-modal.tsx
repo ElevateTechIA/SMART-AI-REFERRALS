@@ -143,7 +143,7 @@ export function RegisterShareModal({ isOpen, onClose, type }: RegisterShareModal
         <Button
           onClick={goToLink}
           variant="outline"
-          className="w-full border-theme-primaryBorder text-theme-primary hover:bg-theme-primaryBg rounded-xl mb-4 flex items-center justify-center gap-2"
+          className="w-full border-theme-primaryBorder text-theme-secondary hover:bg-theme-primaryBg rounded-xl mb-4 flex items-center justify-center gap-2"
         >
           <ExternalLink className="h-4 w-4" />
           {t('common.goToLink', 'Go to Registration')}
@@ -161,7 +161,7 @@ export function RegisterShareModal({ isOpen, onClose, type }: RegisterShareModal
             <Button
               onClick={shareLink}
               variant="outline"
-              className="flex-1 border-theme-primary text-theme-primary hover:bg-theme-primaryBg rounded-xl"
+              className="flex-1 border-theme-primary text-theme-secondary hover:bg-theme-primaryBg rounded-xl"
             >
               {t('landing.share')}
             </Button>

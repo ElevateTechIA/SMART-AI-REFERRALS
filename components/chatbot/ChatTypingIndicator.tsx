@@ -10,7 +10,7 @@ export function ChatTypingIndicator({ message }: ChatTypingIndicatorProps) {
   return (
     <div className="flex gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
       {/* Avatar */}
-      <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-theme-primaryBg text-theme-primary">
+      <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-theme-primaryBg text-theme-secondary">
         <Bot className="w-5 h-5" />
       </div>
 

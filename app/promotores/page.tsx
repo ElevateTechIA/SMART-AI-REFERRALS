@@ -159,7 +159,7 @@ export default function PromotersLandingPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-4xl md:text-5xl font-bold text-gray-900">${estimatedEarnings}</span>
-                  <DollarSign className="w-8 h-8 text-theme-primary" />
+                  <DollarSign className="w-8 h-8 text-theme-secondary" />
                 </div>
               </div>
 

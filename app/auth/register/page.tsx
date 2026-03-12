@@ -72,7 +72,7 @@ function RegisterContent() {
         <CardFooter className="flex flex-col gap-3 pb-8 bg-gray-50/50">
           <p className="text-sm text-gray-700 text-center font-medium">
             {t('auth.haveAccount')}{' '}
-            <Link href="/auth/login" className="text-theme-primary hover:opacity-80 font-semibold hover:underline">
+            <Link href="/auth/login" className="text-theme-secondary hover:opacity-80 font-semibold hover:underline">
               {t('auth.signIn')}
             </Link>
           </p>
@@ -89,7 +89,7 @@ export default function RegisterPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-theme-primary" />
+        <Loader2 className="h-8 w-8 animate-spin text-theme-secondary" />
       </div>
     }>
       <RegisterContent />

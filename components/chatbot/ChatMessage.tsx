@@ -24,7 +24,7 @@ export function ChatMessage({ message, onQuickAction }: ChatMessageProps) {
         className={cn(
           'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center',
           isAssistant
-            ? 'bg-theme-primaryBg text-theme-primary'
+            ? 'bg-theme-primaryBg text-theme-secondary'
             : 'bg-gray-100 text-gray-600'
         )}
       >
@@ -67,8 +67,8 @@ export function ChatMessage({ message, onQuickAction }: ChatMessageProps) {
                     : action.type === 'cancel'
                     ? 'border-gray-300 text-gray-600 hover:bg-gray-50'
                     : action.type === 'auth'
-                    ? 'border-theme-primary text-theme-primary hover:bg-theme-primaryBg'
-                    : 'border-theme-primaryBorder text-theme-primary hover:bg-theme-primaryBg'
+                    ? 'border-theme-primary text-theme-secondary hover:bg-theme-primaryBg'
+                    : 'border-theme-primaryBorder text-theme-secondary hover:bg-theme-primaryBg'
                 )}
               >
                 {action.label}

@@ -338,7 +338,7 @@ export default function LandingPage() {
 
             <div className="bg-gray-50 rounded-xl p-4 mb-4">
               <p className="text-xs text-gray-600 mb-1 text-center">{t('landing.orVisit')}</p>
-              <p className="text-sm font-semibold text-theme-primary text-center break-all">
+              <p className="text-sm font-semibold text-theme-secondary text-center break-all">
                 smart-ai-referrals.vercel.app
               </p>
             </div>
@@ -362,7 +362,7 @@ export default function LandingPage() {
                     })
                   }}
                   variant="outline"
-                  className="flex-1 border-theme-primary text-theme-primary hover:bg-theme-primaryBg rounded-xl"
+                  className="flex-1 border-theme-primary text-theme-secondary hover:bg-theme-primaryBg rounded-xl"
                 >
                   {t('landing.share')}
                 </Button>
