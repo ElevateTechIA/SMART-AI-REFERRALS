@@ -102,7 +102,7 @@ export function BusinessGrid({ businesses, userId, initialOfferId }: BusinessGri
 
   // Grid view
   return (
-    <div className="grid grid-cols-3 gap-3 sm:gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
       {/* Real businesses */}
       {businesses.map((biz) => {
         const logo = biz.images?.[biz.images.length - 1] || null

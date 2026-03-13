@@ -333,7 +333,7 @@ export function DashboardNav() {
               </div>
 
               {/* Color themes */}
-              <div className="mt-3 grid grid-cols-6 gap-2">
+              <div className="mt-3 grid grid-cols-3 sm:grid-cols-6 gap-2">
                 {Object.entries(availableThemes).map(([key, themeData]) => (
                   <button
                     key={key}

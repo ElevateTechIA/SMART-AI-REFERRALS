@@ -89,17 +89,22 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('app-mode', mode)
   }, [mode, resolveSystemMode, applyMode])
 
-  // Apply theme colors as CSS variables
+  // Apply theme colors as CSS variables (respects dark mode)
   useEffect(() => {
     const currentTheme = themes[theme]
     const root = document.documentElement
 
-    Object.entries(currentTheme.colors).forEach(([key, value]) => {
-      root.style.setProperty(`--theme-${key}`, value)
+    // Use darkColors if available and in dark mode, otherwise use default colors
+    const colors = (resolvedMode === 'dark' && 'darkColors' in currentTheme && currentTheme.darkColors)
+      ? currentTheme.darkColors
+      : currentTheme.colors
+
+    Object.entries(colors).forEach(([key, value]) => {
+      root.style.setProperty(`--theme-${key}`, value as string)
     })
 
     localStorage.setItem('app-theme', theme)
-  }, [theme])
+  }, [theme, resolvedMode])
 
   const setTheme = (newTheme: ThemeName) => {
     setThemeState(newTheme)

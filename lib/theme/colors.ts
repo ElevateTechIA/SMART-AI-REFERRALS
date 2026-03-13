@@ -209,6 +209,87 @@ export const themes = {
     }
   },
 
+  rosePastel: {
+    name: 'Rose Pastel',
+    colors: {
+      // Rose gradient — deep enough for white text readability
+      gradientFrom: '#8a2e50',
+      gradientVia: '#b04a6e',
+      gradientTo: '#c46888',
+
+      // Pastel pink primary for buttons/accents
+      primary: '#d4708e',
+      primaryLight: '#e8a0b5',
+      primaryDark: '#b84d6e',
+
+      // Soft lilac secondary
+      secondary: '#9e7098',
+      secondaryLight: '#c9a0c5',
+
+      // Peach accent
+      accent: '#f0b8a8',
+      accentHover: '#e8a494',
+
+      success: '#a8d8b9',
+      warning: '#f5d0a0',
+      error: '#e8a0a0',
+
+      // White cards with blush border
+      cardBg: 'rgba(255, 255, 255, 0.97)',
+      cardBgHover: 'rgba(255, 255, 255, 1)',
+      cardBorder: 'rgba(232, 128, 155, 0.18)',
+
+      // Very soft blush surfaces
+      primaryBg: '#fef5f7',
+      primaryBgHover: '#fde8ed',
+      primaryBorder: 'rgba(232, 128, 155, 0.15)',
+      overlayFrom: 'rgba(214, 96, 126, 0.3)',
+      overlayTo: 'rgba(214, 96, 126, 0.4)',
+
+      // High contrast text on light pink
+      textPrimary: '#1a0a10',
+      textSecondary: '#3d1f2e',
+      textMuted: '#7a5568',
+    },
+    darkColors: {
+      // Deep rose gradient (dark mode)
+      gradientFrom: '#1f0a14',
+      gradientVia: '#3d1a2e',
+      gradientTo: '#7a2e55',
+
+      // Brighter pink for dark backgrounds
+      primary: '#e8789e',
+      primaryLight: '#f2a0bc',
+      primaryDark: '#d4507a',
+
+      secondary: '#3d1a2e',
+      secondaryLight: '#5c2d48',
+
+      accent: '#d4a880',
+      accentHover: '#e0bc9a',
+
+      success: '#81c784',
+      warning: '#ffcc6a',
+      error: '#e57373',
+
+      // Dark rose cards with subtle warmth
+      cardBg: 'rgba(61, 26, 46, 0.45)',
+      cardBgHover: 'rgba(61, 26, 46, 0.65)',
+      cardBorder: 'rgba(232, 120, 158, 0.2)',
+
+      primaryBg: '#2a1220',
+      primaryBgHover: '#3d1a2e',
+      primaryBorder: 'rgba(232, 120, 158, 0.15)',
+      overlayFrom: 'rgba(31, 10, 20, 0.5)',
+      overlayTo: 'rgba(31, 10, 20, 0.6)',
+
+      // Light text on dark rose background
+      textPrimary: '#fdf2f6',
+      textSecondary: '#e8b8cc',
+      textMuted: '#c2849e',
+    }
+  },
+
   cleanBlue: {
     name: 'Clean Blue',
     colors: {

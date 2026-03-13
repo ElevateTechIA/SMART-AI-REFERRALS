@@ -39,25 +39,25 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden bg-white">
       <div className="relative z-10">
         {/* Brand gradient bar */}
         <div className="eliv-gradient-bar h-1" />
 
         {/* Navigation */}
-        <nav className="px-6 py-6">
+        <nav className="px-4 sm:px-6 py-3 sm:py-4 md:py-6">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <a
               onClick={() => setShowQR(true)}
-              className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+              className="flex items-center gap-2 md:gap-3 cursor-pointer hover:opacity-80 transition-opacity"
             >
-              <ElivBrand responsive="md/lg" forceDark />
+              <ElivBrand responsive="sm/md/lg" forceDark />
             </a>
 
             <div className="flex items-center gap-2">
-              <LanguageSwitcher forceDark />
+              <LanguageSwitcher />
               <Link href="/auth/signin">
-                <Button variant="ghost" className="text-gray-700 hover:bg-gray-100">
+                <Button variant="ghost" className="text-gray-600 hover:bg-gray-100 text-sm md:text-base">
                   {t('auth.signIn')}
                 </Button>
               </Link>
@@ -66,89 +66,90 @@ export default function LandingPage() {
         </nav>
 
         {/* Hero Section - Hook + Immediate CTAs */}
-        <div className="min-h-[min(calc(100vh-5rem),56rem)] flex items-center">
-          <div className="max-w-7xl mx-auto px-6 py-12 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center w-full">
-            <div className="space-y-8 text-center lg:text-left max-w-2xl mx-auto lg:mx-0">
+        <div className="min-h-[calc(100vh-5rem)] md:min-h-[56rem] flex items-center">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-12 grid lg:grid-cols-2 gap-6 lg:gap-16 items-center w-full">
+            <div className="space-y-6 md:space-y-8 text-center lg:text-left max-w-2xl mx-auto lg:mx-0">
               <div>
-                <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
-                  {t('landing.heroTitle')} <span className="text-theme-accent">{t('landing.heroTitleHighlight')}</span>
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 md:mb-6 leading-tight text-gray-900">
+                  {t('landing.heroTitle')} <span style={{ color: 'var(--theme-primary)' }}>{t('landing.heroTitleHighlight')}</span>
                 </h1>
-                <p className="text-xl md:text-2xl text-gray-600 leading-relaxed">
+                <p className="text-lg sm:text-xl md:text-2xl leading-relaxed text-gray-600">
                   {t('landing.heroSubtitle')}
                 </p>
               </div>
 
               {/* Primary CTAs right in the hero */}
-              <div className="flex flex-col sm:flex-row gap-4 items-center lg:items-start">
-                <Link href="/promotores">
+              <div className="flex flex-col sm:flex-row gap-3 md:gap-4 items-center lg:items-start">
+                <Link href="/promoters">
                   <Button
                     size="lg"
-                    className="bg-theme-primary hover:opacity-90 text-gray-900 px-8 py-6 text-lg font-semibold rounded-xl shadow-lg w-full sm:w-auto"
+                    className="text-white hover:opacity-90 px-6 md:px-8 py-4 md:py-6 text-base md:text-lg font-semibold rounded-xl shadow-lg w-full sm:w-auto"
+                    style={{ background: 'var(--theme-primary)' }}
                   >
                     {t('landing.startEarningFree')}
                   </Button>
                 </Link>
-                <Link href="/negocios">
+                <Link href="/businesses">
                   <Button
                     size="lg"
-                    className="bg-white border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-8 py-6 text-lg font-semibold rounded-xl w-full sm:w-auto"
+                    className="bg-white border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 md:px-8 py-4 md:py-6 text-base md:text-lg font-semibold rounded-xl w-full sm:w-auto"
                   >
                     {t('landing.listYourBusiness')}
                   </Button>
                 </Link>
               </div>
 
-              <p className="text-gray-500 text-sm">
+              <p className="text-xs md:text-sm text-gray-500">
                 {t('landing.noCardRequired')}
               </p>
             </div>
 
             <div className="flex justify-center lg:justify-end">
-              <div className="relative w-full max-w-[280px] sm:max-w-[320px] lg:max-w-[360px]">
+              <div className="relative w-full max-w-[240px] sm:max-w-[280px] md:max-w-[320px] lg:max-w-[360px]">
                 <Image
                   src="/dashboard/assets/mobile-smart-ref.png"
                   alt="Eliv App"
                   width={400}
                   height={800}
-                  className="w-full h-auto rounded-[2.5rem] shadow-2xl"
+                  className="w-full h-auto rounded-[2rem] md:rounded-[2.5rem] shadow-2xl"
                 />
-                <div className="absolute -top-4 -right-4 w-20 h-20 rounded-full blur-2xl animate-pulse" style={{ background: 'color-mix(in srgb, var(--theme-primary) 20%, transparent)' }}></div>
-                <div className="absolute -bottom-4 -left-4 w-32 h-32 rounded-full blur-2xl animate-pulse delay-1000" style={{ background: 'color-mix(in srgb, var(--theme-accent) 20%, transparent)' }}></div>
+                <div className="absolute -top-2 md:-top-4 -right-2 md:-right-4 w-12 md:w-20 h-12 md:h-20 rounded-full blur-2xl animate-pulse" style={{ background: 'color-mix(in srgb, var(--theme-primary) 20%, transparent)' }}></div>
+                <div className="absolute -bottom-2 md:-bottom-4 -left-2 md:-left-4 w-16 md:w-32 h-16 md:h-32 rounded-full blur-2xl animate-pulse delay-1000" style={{ background: 'color-mix(in srgb, var(--theme-accent) 20%, transparent)' }}></div>
               </div>
             </div>
           </div>
         </div>
 
         {/* How It Works - Build Trust */}
-        <div className="py-16">
-          <div className="max-w-5xl mx-auto px-6">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 text-center mb-12">
+        <div className="py-12 md:py-16">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-8 md:mb-12 text-gray-900">
               {t('landing.howItWorksTitle')}
             </h2>
 
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               <div className="text-center">
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-[#1E3A6E]/10 mx-auto mb-5">
-                  <Share2 className="w-8 h-8 text-[#1E3A6E]" />
+                <div className="w-12 md:w-16 h-12 md:h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 md:mb-5" style={{ background: 'color-mix(in srgb, var(--theme-primary) 15%, transparent)' }}>
+                  <Share2 className="w-6 md:w-8 h-6 md:h-8" style={{ color: 'var(--theme-primary)' }} />
                 </div>
-                <h3 className="text-gray-900 font-bold text-lg mb-2">{t('landing.step1Title')}</h3>
-                <p className="text-gray-500 text-sm">{t('landing.step1Desc')}</p>
+                <h3 className="font-bold text-base md:text-lg mb-2 text-gray-900">{t('landing.step1Title')}</h3>
+                <p className="text-sm md:text-base text-gray-500">{t('landing.step1Desc')}</p>
               </div>
 
               <div className="text-center">
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-[#6BC24A]/10 mx-auto mb-5">
-                  <QrCode className="w-8 h-8 text-[#6BC24A]" />
+                <div className="w-12 md:w-16 h-12 md:h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 md:mb-5" style={{ background: 'color-mix(in srgb, var(--theme-secondary) 15%, transparent)' }}>
+                  <QrCode className="w-6 md:w-8 h-6 md:h-8" style={{ color: 'var(--theme-secondary)' }} />
                 </div>
-                <h3 className="text-gray-900 font-bold text-lg mb-2">{t('landing.step2Title')}</h3>
-                <p className="text-gray-500 text-sm">{t('landing.step2Desc')}</p>
+                <h3 className="font-bold text-base md:text-lg mb-2 text-gray-900">{t('landing.step2Title')}</h3>
+                <p className="text-sm md:text-base text-gray-500">{t('landing.step2Desc')}</p>
               </div>
 
-              <div className="text-center">
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-[#C8D630]/15 mx-auto mb-5">
-                  <DollarSign className="w-8 h-8 text-[#9AB01A]" />
+              <div className="text-center sm:col-span-2 lg:col-span-1">
+                <div className="w-12 md:w-16 h-12 md:h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 md:mb-5" style={{ background: 'color-mix(in srgb, var(--theme-accent) 15%, transparent)' }}>
+                  <DollarSign className="w-6 md:w-8 h-6 md:h-8" style={{ color: 'var(--theme-accent)' }} />
                 </div>
-                <h3 className="text-gray-900 font-bold text-lg mb-2">{t('landing.step3Title')}</h3>
-                <p className="text-gray-500 text-sm">{t('landing.step3Desc')}</p>
+                <h3 className="font-bold text-base md:text-lg mb-2 text-gray-900">{t('landing.step3Title')}</h3>
+                <p className="text-sm md:text-base text-gray-500">{t('landing.step3Desc')}</p>
               </div>
             </div>
           </div>
@@ -156,83 +157,84 @@ export default function LandingPage() {
 
         {/* Choose Your Path - Detailed reinforcement */}
         <div className="eliv-gradient-bar h-0.5 opacity-40" />
-        <div className="py-16 eliv-gradient-bg-subtle">
-          <div className="max-w-5xl mx-auto px-6">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+        <div className="py-12 md:py-16 bg-gray-50">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-8 md:mb-12">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 text-gray-900">
                 {t('landing.choosePathTitle')}
               </h2>
-              <p className="text-lg text-gray-600">
+              <p className="text-base md:text-lg text-gray-600">
                 {t('landing.choosePathSubtitle')}
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid gap-6 md:gap-8">
               {/* Promoter Card */}
-              <div className="bg-white rounded-3xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+              <div className="rounded-2xl md:rounded-3xl overflow-hidden border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow flex flex-col">
                 <div className="eliv-gradient-bar h-1" />
-                <div className="p-8 flex flex-col flex-1">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-[#6BC24A]/10 mb-6">
-                  <DollarSign className="w-7 h-7 text-[#6BC24A]" />
+                <div className="p-6 md:p-8 flex flex-col flex-1">
+                <div className="w-12 md:w-14 h-12 md:h-14 rounded-2xl flex items-center justify-center mb-4 md:mb-6" style={{ background: 'color-mix(in srgb, var(--theme-primary) 15%, transparent)' }}>
+                  <DollarSign className="w-6 md:w-7 h-6 md:h-7" style={{ color: 'var(--theme-primary)' }} />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">{t('landing.promoterCardTitle')}</h3>
-                <p className="text-gray-600 mb-6 flex-1">{t('landing.promoterCardDesc')}</p>
-                <ul className="space-y-3 mb-8">
-                  <li className="flex items-center gap-3 text-gray-700">
-                    <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
-                    <span className="text-sm">{t('landing.promoterBenefit1')}</span>
+                <h3 className="text-xl md:text-2xl font-bold mb-2 text-gray-900">{t('landing.promoterCardTitle')}</h3>
+                <p className="mb-4 md:mb-6 flex-1 text-sm md:text-base text-gray-600">{t('landing.promoterCardDesc')}</p>
+                <ul className="space-y-2 md:space-y-3 mb-6 md:mb-8">
+                  <li className="flex items-center gap-3 text-gray-600">
+                    <CheckCircle2 className="w-4 md:w-5 h-4 md:h-5 flex-shrink-0" style={{ color: 'var(--theme-primary)' }} />
+                    <span className="text-sm md:text-base">{t('landing.promoterBenefit1')}</span>
                   </li>
-                  <li className="flex items-center gap-3 text-gray-700">
-                    <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
-                    <span className="text-sm">{t('landing.promoterBenefit2')}</span>
+                  <li className="flex items-center gap-3 text-gray-600">
+                    <CheckCircle2 className="w-4 md:w-5 h-4 md:h-5 flex-shrink-0" style={{ color: 'var(--theme-primary)' }} />
+                    <span className="text-sm md:text-base">{t('landing.promoterBenefit2')}</span>
                   </li>
-                  <li className="flex items-center gap-3 text-gray-700">
-                    <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
-                    <span className="text-sm">{t('landing.promoterBenefit3')}</span>
+                  <li className="flex items-center gap-3 text-gray-600">
+                    <CheckCircle2 className="w-4 md:w-5 h-4 md:h-5 flex-shrink-0" style={{ color: 'var(--theme-primary)' }} />
+                    <span className="text-sm md:text-base">{t('landing.promoterBenefit3')}</span>
                   </li>
                 </ul>
-                <Link href="/promotores">
+                <Link href="/promoters">
                   <Button
                     size="lg"
-                    className="w-full bg-theme-primary hover:opacity-90 text-gray-900 py-6 text-lg font-semibold rounded-xl shadow-lg"
+                    className="w-full text-white hover:opacity-90 py-4 md:py-6 text-base md:text-lg font-semibold rounded-xl shadow-lg"
+                    style={{ background: 'var(--theme-primary)' }}
                   >
                     {t('landing.startEarningFree')}
-                    <ArrowRight className="w-5 h-5 ml-2" />
+                    <ArrowRight className="w-4 md:w-5 h-4 md:h-5 ml-2" />
                   </Button>
                 </Link>
                 </div>
               </div>
 
               {/* Business Card */}
-              <div className="bg-white rounded-3xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-shadow flex flex-col">
-                <div className="eliv-gradient-bar-reverse h-1" />
-                <div className="p-8 flex flex-col flex-1">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-[#1E3A6E]/10 mb-6">
-                  <Store className="w-7 h-7 text-[#1E3A6E]" />
+              <div className="rounded-2xl md:rounded-3xl overflow-hidden border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow flex flex-col">
+                <div className="h-1" style={{ background: 'linear-gradient(to right, var(--theme-primary), var(--theme-secondary))' }} />
+                <div className="p-6 md:p-8 flex flex-col flex-1">
+                <div className="w-12 md:w-14 h-12 md:h-14 rounded-2xl flex items-center justify-center mb-4 md:mb-6" style={{ background: 'color-mix(in srgb, var(--theme-secondary) 15%, transparent)' }}>
+                  <Store className="w-6 md:w-7 h-6 md:h-7" style={{ color: 'var(--theme-secondary)' }} />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">{t('landing.businessCardTitle')}</h3>
-                <p className="text-gray-600 mb-6 flex-1">{t('landing.businessCardDesc')}</p>
-                <ul className="space-y-3 mb-8">
-                  <li className="flex items-center gap-3 text-gray-700">
-                    <CheckCircle2 className="w-5 h-5 text-blue-500 flex-shrink-0" />
-                    <span className="text-sm">{t('landing.businessBenefit1')}</span>
+                <h3 className="text-xl md:text-2xl font-bold mb-2 text-gray-900">{t('landing.businessCardTitle')}</h3>
+                <p className="mb-4 md:mb-6 flex-1 text-sm md:text-base text-gray-600">{t('landing.businessCardDesc')}</p>
+                <ul className="space-y-2 md:space-y-3 mb-6 md:mb-8">
+                  <li className="flex items-center gap-3 text-gray-600">
+                    <CheckCircle2 className="w-4 md:w-5 h-4 md:h-5 flex-shrink-0" style={{ color: 'var(--theme-secondary)' }} />
+                    <span className="text-sm md:text-base">{t('landing.businessBenefit1')}</span>
                   </li>
-                  <li className="flex items-center gap-3 text-gray-700">
-                    <CheckCircle2 className="w-5 h-5 text-blue-500 flex-shrink-0" />
-                    <span className="text-sm">{t('landing.businessBenefit2')}</span>
+                  <li className="flex items-center gap-3 text-gray-600">
+                    <CheckCircle2 className="w-4 md:w-5 h-4 md:h-5 flex-shrink-0" style={{ color: 'var(--theme-secondary)' }} />
+                    <span className="text-sm md:text-base">{t('landing.businessBenefit2')}</span>
                   </li>
-                  <li className="flex items-center gap-3 text-gray-700">
-                    <CheckCircle2 className="w-5 h-5 text-blue-500 flex-shrink-0" />
-                    <span className="text-sm">{t('landing.businessBenefit3')}</span>
+                  <li className="flex items-center gap-3 text-gray-600">
+                    <CheckCircle2 className="w-4 md:w-5 h-4 md:h-5 flex-shrink-0" style={{ color: 'var(--theme-secondary)' }} />
+                    <span className="text-sm md:text-base">{t('landing.businessBenefit3')}</span>
                   </li>
                 </ul>
-                <Link href="/negocios">
+                <Link href="/businesses">
                   <Button
                     size="lg"
-                    className="w-full bg-white border-2 border-gray-300 text-gray-700 hover:bg-gray-50 py-6 text-lg font-semibold rounded-xl"
+                    className="w-full bg-white border-2 border-gray-300 text-gray-700 hover:bg-gray-50 py-4 md:py-6 text-base md:text-lg font-semibold rounded-xl"
                   >
                     {t('landing.listYourBusiness')}
-                    <ArrowRight className="w-5 h-5 ml-2" />
+                    <ArrowRight className="w-4 md:w-5 h-4 md:h-5 ml-2" />
                   </Button>
                 </Link>
                 </div>
@@ -242,20 +244,21 @@ export default function LandingPage() {
         </div>
 
         {/* App Preview */}
-        <div className="py-16">
-          <div className="max-w-7xl mx-auto px-6 text-center">
-            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
-              {t('landing.notJustWebsite')} <span className="text-theme-accent">{t('landing.notJustWebsiteHighlight')}</span>
+        <div className="py-12 md:py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-gray-900">
+              {t('landing.notJustWebsite')} <span style={{ color: 'var(--theme-primary)' }}>{t('landing.notJustWebsiteHighlight')}</span>
             </h2>
-            <p className="text-xl text-gray-600 mb-8">
+            <p className="text-base md:text-xl mb-6 md:mb-8 text-gray-600 max-w-3xl mx-auto">
               {t('landing.appDescription')}
-              <br />
+              <br className="hidden sm:block" />
               {t('landing.appDescriptionLine2')}
             </p>
             <Link href="/dashboard">
               <Button
                 size="lg"
-                className="bg-theme-primary hover:opacity-90 text-gray-900 px-8 py-6 text-lg font-semibold rounded-xl shadow-lg"
+                className="text-white hover:opacity-90 px-6 md:px-8 py-4 md:py-6 text-base md:text-lg font-semibold rounded-xl shadow-lg"
+                style={{ background: 'var(--theme-primary)' }}
               >
                 {t('landing.previewDashboard')}
               </Button>
@@ -265,27 +268,28 @@ export default function LandingPage() {
 
         {/* Final CTA - Catch users who scrolled all the way */}
         <div className="eliv-gradient-bar h-0.5 opacity-40" />
-        <div className="py-16 eliv-gradient-bg-subtle">
-          <div className="max-w-3xl mx-auto px-6 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+        <div className="py-12 md:py-16 bg-gray-50">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 text-gray-900">
               {t('landing.finalCtaTitle')}
             </h2>
-            <p className="text-lg text-gray-600 mb-8">
+            <p className="text-base md:text-lg mb-6 md:mb-8 text-gray-600">
               {t('landing.finalCtaSubtitle')}
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/promotores">
+            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
+              <Link href="/promoters">
                 <Button
                   size="lg"
-                  className="bg-theme-primary hover:opacity-90 text-gray-900 px-8 py-6 text-lg font-semibold rounded-xl shadow-lg w-full sm:w-auto"
+                  className="text-white hover:opacity-90 px-6 md:px-8 py-4 md:py-6 text-base md:text-lg font-semibold rounded-xl shadow-lg w-full sm:w-auto"
+                  style={{ background: 'var(--theme-primary)' }}
                 >
                   {t('landing.startEarningFree')}
                 </Button>
               </Link>
-              <Link href="/negocios">
+              <Link href="/businesses">
                 <Button
                   size="lg"
-                  className="bg-white border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-8 py-6 text-lg font-semibold rounded-xl w-full sm:w-auto"
+                  className="bg-white border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 md:px-8 py-4 md:py-6 text-base md:text-lg font-semibold rounded-xl w-full sm:w-auto"
                 >
                   {t('landing.listYourBusiness')}
                 </Button>
@@ -296,9 +300,9 @@ export default function LandingPage() {
 
         {/* Footer */}
         <div className="eliv-gradient-bar h-0.5 opacity-40" />
-        <footer className="py-8">
-          <div className="max-w-7xl mx-auto px-6 text-center">
-            <p className="text-gray-400">
+        <footer className="py-6 md:py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
+            <p className="text-sm md:text-base text-gray-400">
               {t('landing.allRightsReserved')}
             </p>
           </div>
@@ -312,43 +316,44 @@ export default function LandingPage() {
           onClick={() => setShowQR(false)}
         >
           <div
-            className="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl relative animate-in fade-in zoom-in duration-200"
+            className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 max-w-sm w-full shadow-2xl relative animate-in fade-in zoom-in duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={() => setShowQR(false)}
-              className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors"
+              className="absolute top-2 md:top-4 right-2 md:right-4 p-2 rounded-full hover:bg-gray-100 transition-colors"
             >
-              <X className="h-5 w-5 text-gray-600" />
+              <X className="h-4 md:h-5 w-4 md:w-5 text-gray-500" />
             </button>
 
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-theme-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Share2 className="h-8 w-8 text-white" />
+            <div className="text-center mb-4 md:mb-6">
+              <div className="w-12 md:w-16 h-12 md:h-16 rounded-2xl flex items-center justify-center mx-auto mb-3 md:mb-4" style={{ background: 'var(--theme-primary)' }}>
+                <Share2 className="h-6 md:h-8 w-6 md:w-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">{t('landing.shareTheApp')}</h3>
-              <p className="text-sm text-gray-600">{t('landing.scanQR')}</p>
+              <h3 className="text-lg md:text-2xl font-bold mb-2 text-gray-900">{t('landing.shareTheApp')}</h3>
+              <p className="text-sm md:text-base text-gray-600">{t('landing.scanQR')}</p>
             </div>
 
-            <div className="bg-white rounded-2xl p-4 border-2 border-theme-primaryBorder mb-6">
+            <div className="bg-white rounded-2xl p-3 md:p-4 border-2 border-gray-200 mb-4 md:mb-6">
               {qrCode && (
                 <img src={qrCode} alt="QR Code" className="w-full h-auto" />
               )}
             </div>
 
-            <div className="bg-gray-50 rounded-xl p-4 mb-4">
-              <p className="text-xs text-gray-600 mb-1 text-center">{t('landing.orVisit')}</p>
-              <p className="text-sm font-semibold text-theme-secondary text-center break-all">
+            <div className="rounded-xl p-3 md:p-4 mb-3 md:mb-4 bg-gray-50">
+              <p className="text-xs md:text-sm mb-1 text-center text-gray-600">{t('landing.orVisit')}</p>
+              <p className="text-sm md:text-base font-semibold text-center break-all" style={{ color: 'var(--theme-primary)' }}>
                 smart-ai-referrals.vercel.app
               </p>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-2 md:gap-3">
               <Button
                 onClick={() => {
                   navigator.clipboard.writeText('https://smart-ai-referrals.vercel.app/')
                 }}
-                className="flex-1 bg-theme-primary hover:opacity-90 text-gray-900 rounded-xl"
+                className="flex-1 text-white hover:opacity-90 rounded-xl text-sm md:text-base"
+                style={{ background: 'var(--theme-primary)' }}
               >
                 {t('landing.copyLink')}
               </Button>
@@ -362,7 +367,7 @@ export default function LandingPage() {
                     })
                   }}
                   variant="outline"
-                  className="flex-1 border-theme-primary text-theme-secondary hover:bg-theme-primaryBg rounded-xl"
+                  className="flex-1 bg-white border-2 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl text-sm md:text-base"
                 >
                   {t('landing.share')}
                 </Button>

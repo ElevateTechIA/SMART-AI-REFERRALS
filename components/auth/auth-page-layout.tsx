@@ -20,7 +20,7 @@ export function AuthPageLayout({ children, showSignInLink = false, loginHref = '
       {/* Content Container */}
       <div className="min-h-screen flex flex-col">
         {/* Navigation */}
-        <nav className="px-6 py-6 border-b border-gray-100">
+        <nav className="px-6 py-6 border-b border-gray-200">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
@@ -29,10 +29,10 @@ export function AuthPageLayout({ children, showSignInLink = false, loginHref = '
 
             {/* Language Switcher & Sign In Button */}
             <div className="flex items-center gap-2">
-              <LanguageSwitcher forceDark />
+              <LanguageSwitcher />
               {showSignInLink && (
                 <Link href={loginHref}>
-                  <Button variant="ghost" className="text-gray-700 hover:bg-gray-100">
+                  <Button variant="ghost" className="text-gray-600 hover:bg-gray-100">
                     {t('auth.signIn')}
                   </Button>
                 </Link>
