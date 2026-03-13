@@ -2,9 +2,8 @@
 <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
  viewBox="214 0 832 832"
  preserveAspectRatio="xMidYMid meet">
-<rect x="214" y="0" width="832" height="832" fill="#4A8FF0"/>
 <g transform="translate(0.000000,832.000000) scale(0.100000,-0.100000)"
-fill="#ffffff" stroke="none">
+fill="currentColor" stroke="none">
 <path d="M5160 7354 c0 -13 425 -1311 536 -1638 41 -120 73 -221 70 -223 -5
 -5 -241 457 -600 1175 -157 314 -290 572 -295 572 -10 0 -424 -424 -429 -440
 -4 -10 124 -271 859 -1750 114 -228 205 -416 204 -418 -11 -12 -336 175 -560

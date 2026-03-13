@@ -52,6 +52,9 @@ export function AuthPageLayout({ children, showSignInLink = false, loginHref = '
             <p className="text-gray-400">
               {t('landing.allRightsReserved')}
             </p>
+            <Link href="/terms" className="text-xs text-gray-400 hover:text-gray-600 underline mt-1 inline-block">
+              {t('auth.termsOfService')}
+            </Link>
           </div>
         </footer>
       </div>

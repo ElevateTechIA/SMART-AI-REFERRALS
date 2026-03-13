@@ -70,7 +70,11 @@ function BusinessRegisterContent() {
             </Link>
           </p>
           <p className="text-xs text-center text-gray-500">
-            {t('auth.termsAgreement')}
+            {t('auth.termsAgreement')}{' '}
+            <Link href="/terms" className="underline hover:opacity-80" style={{ color: 'var(--theme-primary)' }}>
+              {t('auth.termsOfService')}
+            </Link>
+            {' '}{t('auth.andPrivacyPolicy')}
           </p>
         </CardFooter>
       </Card>

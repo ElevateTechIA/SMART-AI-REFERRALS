@@ -305,6 +305,9 @@ export default function LandingPage() {
             <p className="text-sm md:text-base text-gray-400">
               {t('landing.allRightsReserved')}
             </p>
+            <Link href="/terms" className="text-xs text-gray-400 hover:text-gray-600 underline mt-1 inline-block">
+              {t('auth.termsOfService')}
+            </Link>
           </div>
         </footer>
       </div>

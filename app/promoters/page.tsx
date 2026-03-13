@@ -224,6 +224,9 @@ export default function PromotersLandingPage() {
         <footer className="py-8 border-t border-gray-200">
           <div className="max-w-7xl mx-auto px-6 text-center">
             <p className="text-gray-400">{t('landing.allRightsReserved')}</p>
+            <Link href="/terms" className="text-xs text-gray-400 hover:text-gray-600 underline mt-1 inline-block">
+              {t('auth.termsOfService')}
+            </Link>
           </div>
         </footer>
       </div>

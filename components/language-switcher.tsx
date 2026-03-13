@@ -27,7 +27,7 @@ export function LanguageSwitcher({ forceDark = false }: { forceDark?: boolean })
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className={forceDark ? 'text-gray-700 hover:text-gray-900 hover:bg-gray-100' : ''}>
+        <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100">
           <Languages className="h-5 w-5" />
           <span className="sr-only">Change language</span>
         </Button>
