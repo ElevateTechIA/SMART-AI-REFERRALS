@@ -51,7 +51,7 @@ export default function LandingPage() {
               onClick={() => setShowQR(true)}
               className="flex items-center gap-2 md:gap-3 cursor-pointer hover:opacity-80 transition-opacity"
             >
-              <ElivBrand responsive="sm/md/lg" forceDark />
+              <ElivBrand responsive="sm/lg" forceDark />
             </a>
 
             <div className="flex items-center gap-2">
