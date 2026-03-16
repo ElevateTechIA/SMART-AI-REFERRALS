@@ -215,7 +215,7 @@ function SupportContent() {
           <HelpCircle className="h-8 w-8 text-primary" />
           {t('support.title')}
         </h1>
-        <p className="text-muted-foreground mt-1">
+        <p className="text-foreground/70 mt-1">
           {t('support.subtitle')}
         </p>
       </div>

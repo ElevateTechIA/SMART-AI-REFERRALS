@@ -145,7 +145,7 @@ function ReferralsContent() {
     <div className="space-y-6 max-w-full overflow-hidden">
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t('promotions.title')}</h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-foreground/70">
           {t('promotions.subtitle')}
         </p>
       </div>

@@ -103,10 +103,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       root.style.setProperty(`--theme-${key}`, value as string)
     })
 
-    // Override shadcn muted-foreground for themes with dark card backgrounds
+    // Override shadcn muted tokens for themes with dark card backgrounds
     if (theme === 'eliv') {
-      root.style.setProperty('--muted-foreground', '225 80% 88%')
+      root.style.setProperty('--muted', '232 70% 48%')
+      root.style.setProperty('--muted-foreground', '225 80% 92%')
     } else {
+      root.style.removeProperty('--muted')
       root.style.removeProperty('--muted-foreground')
     }
 

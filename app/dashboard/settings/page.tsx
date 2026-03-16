@@ -261,7 +261,7 @@ export default function SettingsPage() {
       <div className="max-w-2xl mx-auto space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{t('accountSettings.title')}</h1>
-          <p className="text-muted-foreground">{t('accountSettings.subtitle')}</p>
+          <p className="text-foreground/70">{t('accountSettings.subtitle')}</p>
         </div>
 
         {/* Profile completion banner */}

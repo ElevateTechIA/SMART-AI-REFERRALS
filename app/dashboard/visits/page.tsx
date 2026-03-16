@@ -389,7 +389,7 @@ export default function VisitsPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{t('visits.title')}</h1>
-          <p className="text-muted-foreground">
+          <p className="text-foreground/70">
             {t('visits.subtitle')}
           </p>
         </div>
@@ -561,7 +561,7 @@ export default function VisitsPage() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold tracking-tight">{t('visits.pendingVisits')}</h2>
-              <p className="text-muted-foreground">
+              <p className="text-foreground/70">
                 {t('visits.pendingVisitsDesc')}
               </p>
             </div>
