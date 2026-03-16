@@ -127,85 +127,42 @@ export const themes = {
     }
   },
 
-  sunset: {
-    name: 'Sunset Gold',
-    colors: {
-      gradientFrom: '#1a1207',
-      gradientVia: '#6b4f1d',
-      gradientTo: '#d4a844',
-
-      primary: '#c9952c',
-      primaryLight: '#d4a844',
-      primaryDark: '#a67c22',
-
-      secondary: '#8b6914',
-      secondaryLight: '#c9952c',
-
-      accent: '#e8c547',
-      accentHover: '#f0d264',
-
-      success: '#10b981',
-      warning: '#f59e0b',
-      error: '#ef4444',
-
-      cardBg: 'rgba(107, 79, 29, 0.4)',
-      cardBgHover: 'rgba(107, 79, 29, 0.6)',
-      cardBorder: 'rgba(212, 168, 68, 0.3)',
-
-      // Light tint surfaces
-      primaryBg: '#fdf8ed',
-      primaryBgHover: '#faf0d5',
-      primaryBorder: 'rgba(201, 149, 44, 0.2)',
-      overlayFrom: 'rgba(107, 79, 29, 0.4)',
-      overlayTo: 'rgba(107, 79, 29, 0.5)',
-
-      textPrimary: '#ffffff',
-      textSecondary: '#f0dca8',
-      textMuted: '#d4b87a',
-    }
-  },
-
   eliv: {
     name: 'eliv Brand',
     colors: {
-      // Eli Network indigo → Trust Link navy gradient (dashboard backgrounds)
-      gradientFrom: '#1E3A6E',
-      gradientVia: '#4A5BBD',
-      gradientTo: '#5B6ABF',
+      // Solid background — all three set to the same color
+      gradientFrom: '#4e61f2',
+      gradientVia: '#4e61f2',
+      gradientTo: '#4e61f2',
 
-      // Reward Spark chartreuse as primary (buttons, CTAs, highlights)
-      primary: '#B8C820',
-      primaryLight: '#C8D630',
-      primaryDark: '#9AB01A',
+      // eliv green for buttons/CTAs
+      primary: '#d6fd79',
+      primaryLight: '#e2fe9a',
+      primaryDark: '#b8e050',
 
-      // Trust Link navy as secondary (text, headers, cards)
-      secondary: '#1E3A6E',
-      secondaryLight: '#4A5BBD',
+      secondary: '#1a237e',
+      secondaryLight: '#3347d4',
 
-      // Growth Loop green as accent
-      accent: '#6BC24A',
-      accentHover: '#5AAF3A',
+      accent: '#d6fd79',
+      accentHover: '#c4f060',
 
       success: '#6BC24A',
-      warning: '#C8D630',
+      warning: '#f59e0b',
       error: '#EF4444',
 
-      // Cards with indigo glassmorphism
-      cardBg: 'rgba(74, 91, 189, 0.3)',
-      cardBgHover: 'rgba(74, 91, 189, 0.5)',
-      cardBorder: 'rgba(91, 106, 191, 0.3)',
+      cardBg: 'rgba(78, 97, 242, 0.25)',
+      cardBgHover: 'rgba(78, 97, 242, 0.4)',
+      cardBorder: 'rgba(112, 128, 245, 0.3)',
 
-      // Light tint surfaces - Community Light cream
-      primaryBg: '#F5F1E3',
-      primaryBgHover: '#EDE8D6',
-      primaryBorder: 'rgba(74, 91, 189, 0.15)',
-      overlayFrom: 'rgba(30, 58, 110, 0.4)',
-      overlayTo: 'rgba(30, 58, 110, 0.5)',
+      primaryBg: '#f4fde6',
+      primaryBgHover: '#e8fbc8',
+      primaryBorder: 'rgba(214, 253, 121, 0.3)',
+      overlayFrom: 'rgba(78, 97, 242, 0.4)',
+      overlayTo: 'rgba(78, 97, 242, 0.5)',
 
-      // White text for indigo/navy backgrounds
       textPrimary: '#ffffff',
-      textSecondary: '#D0D5F0',
-      textMuted: '#A0AACF',
+      textSecondary: '#c7ccfa',
+      textMuted: '#a0aaee',
     }
   },
 
