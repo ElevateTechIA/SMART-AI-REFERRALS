@@ -241,7 +241,7 @@ function ReferralsContent() {
               <div className="relative flex items-center gap-4 sm:gap-5">
                 <div className="relative flex-shrink-0">
                   <div className="absolute inset-0 rounded-full blur-lg opacity-20 animate-pulse [animation-duration:3s]" style={{ background: 'var(--theme-primary)' }} />
-                  <img src="/icons/money.png" alt="Earn money" className="relative w-14 h-14 sm:w-[4.5rem] sm:h-[4.5rem] drop-shadow-lg" />
+                  <img src="/money-bag.png" alt="Earn money" className="relative w-14 h-14 sm:w-[4.5rem] sm:h-[4.5rem] drop-shadow-lg" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-theme-textPrimary font-bold text-base sm:text-xl leading-tight">

@@ -17,7 +17,6 @@ import {
   Clock,
   CheckCircle,
   Loader2,
-  Share2,
   ArrowRight,
   Building2,
   QrCode,
@@ -393,12 +392,10 @@ export default function VisitsPage() {
             {t('visits.subtitle')}
           </p>
         </div>
-        <Link href="/dashboard/referrals">
-          <Button className="gap-2">
-            <Share2 className="h-4 w-4" />
-            {t('visits.startPromoting')}
-          </Button>
-        </Link>
+        <Button className="gap-2" disabled>
+          <DollarSign className="h-4 w-4" />
+          Cash Out
+        </Button>
       </div>
 
       {/* Stats Cards */}
