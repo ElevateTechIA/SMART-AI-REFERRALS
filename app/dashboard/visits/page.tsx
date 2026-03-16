@@ -946,25 +946,6 @@ export default function VisitsPage() {
         </div>
       )}
 
-      {/* Become a Referrer CTA */}
-      <Card className="bg-primary/5 border-primary">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Share2 className="h-5 w-5 text-primary" />
-            {t('visits.shareEarnMore')}
-          </CardTitle>
-          <CardDescription>
-            {t('visits.shareEarnMoreDesc')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-3">
-          <Link href="/dashboard/referrals">
-            <Button className="gap-2">
-              {t('visits.getPromoLinks')} <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
-        </CardContent>
-      </Card>
 
       {/* Visit History */}
       <Card>
@@ -1236,7 +1217,7 @@ export default function VisitsPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
-                      <span className="font-semibold text-green-600">
+                      <span className="font-semibold text-white">
                         +{formatCurrency(reward.amount)}
                       </span>
                       <Badge
