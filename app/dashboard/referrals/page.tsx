@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
@@ -240,8 +239,7 @@ function ReferralsContent() {
               </div>
               <div className="relative flex items-center gap-4 sm:gap-5">
                 <div className="relative flex-shrink-0">
-                  <div className="absolute inset-0 rounded-full blur-lg opacity-20 animate-pulse [animation-duration:3s]" style={{ background: 'var(--theme-primary)' }} />
-                  <img src="/money-bag.png" alt="Earn money" className="relative w-14 h-14 sm:w-[4.5rem] sm:h-[4.5rem] drop-shadow-lg" />
+                  <img src="/money-bag-removebg-preview.png" alt="Earn money" className="w-14 h-14 sm:w-[4.5rem] sm:h-[4.5rem]" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-theme-textPrimary font-bold text-base sm:text-xl leading-tight">
