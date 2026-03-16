@@ -83,12 +83,14 @@ interface ElivBrandProps {
   dark?: boolean
   /** Force dark text for light backgrounds (overrides dark prop) */
   forceDark?: boolean
+  /** Override logo color directly */
+  color?: string
 }
 
-export function ElivBrand({ size, responsive, className, forceDark = false }: ElivBrandProps) {
+export function ElivBrand({ size, responsive, className, forceDark = false, color }: ElivBrandProps) {
   // forceDark = light background (public pages) → secondary for contrast
   // default (dashboard) → adapts to light/dark via textPrimary
-  const logoColor = forceDark ? 'var(--theme-secondary)' : 'var(--theme-textPrimary)'
+  const logoColor = color ?? (forceDark ? 'var(--theme-secondary)' : 'var(--theme-textPrimary)')
 
   if (responsive) {
     const [mobile, desktop] = responsive.split('/') as [BrandSize, BrandSize]

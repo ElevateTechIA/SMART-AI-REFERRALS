@@ -54,7 +54,7 @@ export function DashboardNav() {
   const pathname = usePathname()
   const router = useRouter()
   const { t, i18n } = useTranslation()
-  const { theme, setTheme, mode, setMode, availableThemes } = useTheme()
+  const { theme, setTheme, mode, setMode, resolvedMode, availableThemes } = useTheme()
   const [showShareModal, setShowShareModal] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [headerHidden, setHeaderHidden] = useState(false)
@@ -125,11 +125,14 @@ export function DashboardNav() {
 
   return (
     <>
-      <header className={cn("sticky top-0 z-50 w-full border-b border-theme-cardBorder glass-card transition-transform duration-300", headerHidden && "-translate-y-full")}>
+      <header
+        className={cn("sticky top-0 z-50 w-full border-b border-white/10 transition-transform duration-300", headerHidden && "-translate-y-full")}
+        style={{ background: 'var(--theme-gradientFrom)' }}
+      >
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-6">
             <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <ElivBrand responsive="sm/md" />
+              <ElivBrand responsive="sm/md" color={resolvedMode === 'dark' || theme === 'eliv' ? '#ffffff' : undefined} />
             </Link>
             <nav className="hidden md:flex items-center gap-1">
               {filteredNavItems.map((item) => {
@@ -144,7 +147,9 @@ export function DashboardNav() {
                       size="sm"
                       className={cn(
                         'gap-2',
-                        isActive && 'bg-theme-primary text-gray-900 shadow-md hover:bg-theme-primary/90'
+                        isActive
+                          ? 'bg-theme-primary text-gray-900 shadow-md hover:bg-theme-primary/90'
+                          : (resolvedMode === 'dark' || theme === 'eliv') && 'text-white hover:bg-white/10 hover:text-white'
                       )}
                     >
                       <Icon className="w-4 h-4" />

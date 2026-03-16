@@ -103,7 +103,7 @@ export function PromoterDashboard() {
     amount: tx.amount,
   }))
 
-  const appUrl = 'https://smart-ai-referrals.vercel.app/'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://elivapp.com'
 
   useEffect(() => {
     if (user) fetchDashboardData()

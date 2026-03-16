@@ -24,7 +24,7 @@ export function RegisterShareModal({ isOpen, onClose, type }: RegisterShareModal
 
   const registerUrl = typeof window !== 'undefined'
     ? `${window.location.origin}/auth/register${type === 'business' ? '/business' : ''}`
-    : `https://smart-ai-referrals.vercel.app/auth/register${type === 'business' ? '/business' : ''}`
+    : `${process.env.NEXT_PUBLIC_APP_URL || 'https://elivapp.com'}/auth/register${type === 'business' ? '/business' : ''}`
 
   useEffect(() => {
     setCanShare(typeof navigator !== 'undefined' && !!navigator.share)

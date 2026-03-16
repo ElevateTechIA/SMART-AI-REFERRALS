@@ -150,8 +150,8 @@ export const themes = {
       warning: '#f59e0b',
       error: '#EF4444',
 
-      cardBg: 'rgba(78, 97, 242, 0.25)',
-      cardBgHover: 'rgba(78, 97, 242, 0.4)',
+      cardBg: '#4e61f2',
+      cardBgHover: '#3f51e0',
       cardBorder: 'rgba(112, 128, 245, 0.3)',
 
       primaryBg: '#f4fde6',
@@ -161,8 +161,8 @@ export const themes = {
       overlayTo: 'rgba(78, 97, 242, 0.5)',
 
       textPrimary: '#ffffff',
-      textSecondary: '#c7ccfa',
-      textMuted: '#a0aaee',
+      textSecondary: '#e0e4ff',
+      textMuted: '#c5cbf8',
     }
   },
 

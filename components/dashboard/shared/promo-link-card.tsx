@@ -22,7 +22,7 @@ export function PromoLinkCard({ qrCode, appUrl, onCopyLink, onShare, onShareApp 
     >
       <div className="flex items-center justify-between mb-2 md:mb-4">
         <h2 className="text-sm md:text-base font-bold text-white">{t('dashboard.myReferralLink')}</h2>
-        <ChevronRight className="h-4 w-4 text-white/60" />
+        <ChevronRight className="h-4 w-4 text-white/60 md:text-white/60" />
       </div>
       <div className="flex flex-col items-center bg-card rounded-lg md:rounded-xl p-3 md:p-4 overflow-hidden">
         {qrCode && (
@@ -41,13 +41,15 @@ export function PromoLinkCard({ qrCode, appUrl, onCopyLink, onShare, onShareApp 
         {/* Mobile-only share buttons */}
         <div className="flex gap-1.5 w-full md:hidden">
           <button
-            className="flex-1 h-8 bg-theme-accent hover:opacity-90 text-white rounded-md flex items-center justify-center"
+            className="flex-1 h-8 bg-theme-accent hover:opacity-90 rounded-md flex items-center justify-center"
+            style={{ color: '#001f3d' }}
             onClick={onShare}
           >
             <Share2 className="h-4 w-4" />
           </button>
           <button
-            className="flex-1 h-8 bg-muted-foreground/50 hover:bg-muted-foreground/60 text-white rounded-md flex items-center justify-center"
+            className="flex-1 h-8 bg-muted-foreground/50 hover:bg-muted-foreground/60 rounded-md flex items-center justify-center"
+            style={{ color: '#001f3d' }}
             onClick={onShareApp}
           >
             <QrCodeIcon className="h-4 w-4" />

@@ -24,7 +24,7 @@ export default function LandingPage() {
 
   const generateQRCode = async () => {
     try {
-      const qr = await QRCode.toDataURL('https://smart-ai-referrals.vercel.app/', {
+      const qr = await QRCode.toDataURL(process.env.NEXT_PUBLIC_APP_URL || 'https://elivapp.com', {
         width: 300,
         margin: 2,
         color: {
@@ -346,14 +346,14 @@ export default function LandingPage() {
             <div className="rounded-xl p-3 md:p-4 mb-3 md:mb-4 bg-gray-50">
               <p className="text-xs md:text-sm mb-1 text-center text-gray-600">{t('landing.orVisit')}</p>
               <p className="text-sm md:text-base font-semibold text-center break-all" style={{ color: 'var(--theme-primary)' }}>
-                smart-ai-referrals.vercel.app
+                elivapp.com
               </p>
             </div>
 
             <div className="flex gap-2 md:gap-3">
               <Button
                 onClick={() => {
-                  navigator.clipboard.writeText('https://smart-ai-referrals.vercel.app/')
+                  navigator.clipboard.writeText(process.env.NEXT_PUBLIC_APP_URL || 'https://elivapp.com')
                 }}
                 className="flex-1 text-white hover:opacity-90 rounded-xl text-sm md:text-base"
                 style={{ background: 'var(--theme-primary)' }}
@@ -366,7 +366,7 @@ export default function LandingPage() {
                     navigator.share({
                       title: 'Eliv',
                       text: 'Turn your network into real income!',
-                      url: 'https://smart-ai-referrals.vercel.app/',
+                      url: process.env.NEXT_PUBLIC_APP_URL || 'https://elivapp.com',
                     })
                   }}
                   variant="outline"
