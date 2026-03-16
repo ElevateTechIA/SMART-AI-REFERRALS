@@ -60,7 +60,7 @@ c-148 -76 -574 -293 -945 -481 -371 -189 -727 -369 -790 -401 -63 -33 -116
 
 export function ElivLogo({ size = 32, className }: ElivLogoProps) {
   return (
-    <span className={className} style={{ color: 'var(--theme-primary)' }}>
+    <span className={className} style={{ color: 'var(--theme-secondary)' }}>
       <ElivIcon size={size} />
     </span>
   )
@@ -85,8 +85,11 @@ interface ElivBrandProps {
   forceDark?: boolean
 }
 
-export function ElivBrand({ size, responsive, className, dark = true, forceDark = false }: ElivBrandProps) {
-  const textClass = forceDark ? 'text-gray-900' : dark ? 'text-theme-textPrimary' : 'text-white'
+export function ElivBrand({ size, responsive, className, forceDark = false }: ElivBrandProps) {
+  // forceDark = light background (public pages) → secondary for contrast
+  // default (dashboard) → adapts to light/dark via textPrimary
+  const logoColor = forceDark ? 'var(--theme-secondary)' : 'var(--theme-textPrimary)'
+
   if (responsive) {
     const [mobile, desktop] = responsive.split('/') as [BrandSize, BrandSize]
     const m = sizeConfig[mobile]
@@ -95,43 +98,41 @@ export function ElivBrand({ size, responsive, className, dark = true, forceDark 
     return (
       <span className={className ?? ''}>
         {/* Mobile */}
-        <span className="flex items-center gap-2 md:hidden" style={{ color: 'var(--theme-primary)' }}>
+        <span className="flex items-center gap-2 md:hidden" style={{ color: logoColor }}>
           <ElivIcon size={m.icon} />
           <span
             style={{
-              fontFamily: "'Eugusto', serif",
+              fontFamily: "'Eight One', sans-serif",
               fontSize: m.font,
               lineHeight: 1,
               letterSpacing: '0.02em',
               fontWeight: 700,
-              WebkitTextStroke: '0.3px currentColor',
               display: 'flex',
               alignItems: 'center',
               height: m.icon,
               paddingTop: m.pt,
             }}
           >
-            ELIV
+            eliv
           </span>
         </span>
         {/* Desktop */}
-        <span className="hidden md:flex items-center gap-2" style={{ color: 'var(--theme-primary)' }}>
+        <span className="hidden md:flex items-center gap-2" style={{ color: logoColor }}>
           <ElivIcon size={d.icon} />
           <span
             style={{
-              fontFamily: "'Eugusto', serif",
+              fontFamily: "'Eight One', sans-serif",
               fontSize: d.font,
               lineHeight: 1,
               letterSpacing: '0.02em',
               fontWeight: 700,
-              WebkitTextStroke: '0.3px currentColor',
               display: 'flex',
               alignItems: 'center',
               height: d.icon,
               paddingTop: d.pt,
             }}
           >
-            ELIV
+            eliv
           </span>
         </span>
       </span>
@@ -141,23 +142,22 @@ export function ElivBrand({ size, responsive, className, dark = true, forceDark 
   // Fallback: fixed size (for nav, smaller uses)
   const s = size ?? 32
   return (
-    <span className={`flex items-center gap-2 ${className ?? ''}`} style={{ color: 'var(--theme-primary)' }}>
+    <span className={`flex items-center gap-2 ${className ?? ''}`} style={{ color: logoColor }}>
       <ElivIcon size={s} />
       <span
         style={{
-          fontFamily: "'Eugusto', serif",
+          fontFamily: "'Eight One', sans-serif",
           fontSize: s * 0.85,
           lineHeight: 1,
           letterSpacing: '0.02em',
           fontWeight: 700,
-          WebkitTextStroke: '0.3px currentColor',
           display: 'flex',
           alignItems: 'center',
           height: s,
           paddingTop: s * 0.1,
         }}
       >
-        ELIV
+        eliv
       </span>
     </span>
   )

@@ -166,12 +166,12 @@ export const themes = {
   },
 
   eliv: {
-    name: 'ELiv Brand',
+    name: 'eliv Brand',
     colors: {
-      // Trust Link navy gradient (dashboard backgrounds)
-      gradientFrom: '#0F1B3D',
-      gradientVia: '#1E3A6E',
-      gradientTo: '#2B4F8C',
+      // Eli Network indigo → Trust Link navy gradient (dashboard backgrounds)
+      gradientFrom: '#1E3A6E',
+      gradientVia: '#4A5BBD',
+      gradientTo: '#5B6ABF',
 
       // Reward Spark chartreuse as primary (buttons, CTAs, highlights)
       primary: '#B8C820',
@@ -180,7 +180,7 @@ export const themes = {
 
       // Trust Link navy as secondary (text, headers, cards)
       secondary: '#1E3A6E',
-      secondaryLight: '#2B4F8C',
+      secondaryLight: '#4A5BBD',
 
       // Growth Loop green as accent
       accent: '#6BC24A',
@@ -190,103 +190,105 @@ export const themes = {
       warning: '#C8D630',
       error: '#EF4444',
 
-      // Cards with navy glassmorphism
-      cardBg: 'rgba(30, 58, 110, 0.4)',
-      cardBgHover: 'rgba(30, 58, 110, 0.6)',
-      cardBorder: 'rgba(43, 79, 140, 0.3)',
+      // Cards with indigo glassmorphism
+      cardBg: 'rgba(74, 91, 189, 0.3)',
+      cardBgHover: 'rgba(74, 91, 189, 0.5)',
+      cardBorder: 'rgba(91, 106, 191, 0.3)',
 
       // Light tint surfaces - Community Light cream
       primaryBg: '#F5F1E3',
       primaryBgHover: '#EDE8D6',
-      primaryBorder: 'rgba(30, 58, 110, 0.15)',
-      overlayFrom: 'rgba(15, 27, 61, 0.4)',
-      overlayTo: 'rgba(15, 27, 61, 0.5)',
+      primaryBorder: 'rgba(74, 91, 189, 0.15)',
+      overlayFrom: 'rgba(30, 58, 110, 0.4)',
+      overlayTo: 'rgba(30, 58, 110, 0.5)',
 
-      // White text for dark navy backgrounds
+      // White text for indigo/navy backgrounds
       textPrimary: '#ffffff',
-      textSecondary: '#C8D6E5',
-      textMuted: '#8DA4BF',
+      textSecondary: '#D0D5F0',
+      textMuted: '#A0AACF',
     }
   },
 
   rosePastel: {
     name: 'Rose Pastel',
     colors: {
-      // Rose gradient — deep enough for white text readability
-      gradientFrom: '#8a2e50',
-      gradientVia: '#b04a6e',
-      gradientTo: '#c46888',
+      // Soft pink gradient — light and airy
+      gradientFrom: '#DE5696',
+      gradientVia: '#E9A7CC',
+      gradientTo: '#F2CCDF',
 
-      // Pastel pink primary for buttons/accents
-      primary: '#d4708e',
-      primaryLight: '#e8a0b5',
-      primaryDark: '#b84d6e',
+      // Rosa suave as primary (buttons, CTAs — soft and girly)
+      primary: '#E9A7CC',
+      primaryLight: '#F2CCDF',
+      primaryDark: '#DE5696',
 
-      // Soft lilac secondary
-      secondary: '#9e7098',
-      secondaryLight: '#c9a0c5',
+      // Rosa fuerte as secondary (logo, headings — needs contrast)
+      secondary: '#DE5696',
+      secondaryLight: '#E9A7CC',
 
-      // Peach accent
-      accent: '#f0b8a8',
-      accentHover: '#e8a494',
+      // Rosa fuerte as accent
+      accent: '#DE5696',
+      accentHover: '#C94A85',
 
-      success: '#a8d8b9',
-      warning: '#f5d0a0',
-      error: '#e8a0a0',
+      success: '#81C784',
+      warning: '#F0B775',
+      error: '#E57373',
 
-      // White cards with blush border
+      // White cards with soft pink border
       cardBg: 'rgba(255, 255, 255, 0.97)',
       cardBgHover: 'rgba(255, 255, 255, 1)',
-      cardBorder: 'rgba(232, 128, 155, 0.18)',
+      cardBorder: 'rgba(233, 167, 204, 0.35)',
 
-      // Very soft blush surfaces
-      primaryBg: '#fef5f7',
-      primaryBgHover: '#fde8ed',
-      primaryBorder: 'rgba(232, 128, 155, 0.15)',
-      overlayFrom: 'rgba(214, 96, 126, 0.3)',
-      overlayTo: 'rgba(214, 96, 126, 0.4)',
+      // Very soft pink surfaces
+      primaryBg: '#FFF5F9',
+      primaryBgHover: '#FFEDF4',
+      primaryBorder: 'rgba(233, 167, 204, 0.25)',
+      overlayFrom: 'rgba(222, 86, 150, 0.2)',
+      overlayTo: 'rgba(222, 86, 150, 0.3)',
 
-      // High contrast text on light pink
-      textPrimary: '#1a0a10',
-      textSecondary: '#3d1f2e',
-      textMuted: '#7a5568',
+      // Soft dark text on light pink
+      textPrimary: '#3D1A2E',
+      textSecondary: '#6B3A52',
+      textMuted: '#B07090',
     },
     darkColors: {
-      // Deep rose gradient (dark mode)
-      gradientFrom: '#1f0a14',
-      gradientVia: '#3d1a2e',
-      gradientTo: '#7a2e55',
+      // Warm pink gradient (dark mode — not too dark)
+      gradientFrom: '#3D1A2E',
+      gradientVia: '#6B3050',
+      gradientTo: '#9E4A72',
 
-      // Brighter pink for dark backgrounds
-      primary: '#e8789e',
-      primaryLight: '#f2a0bc',
-      primaryDark: '#d4507a',
+      // Same rosa fuerte
+      primary: '#DE5696',
+      primaryLight: '#E9A7CC',
+      primaryDark: '#C94A85',
 
-      secondary: '#3d1a2e',
-      secondaryLight: '#5c2d48',
+      // Warm rose secondary
+      secondary: '#6B3050',
+      secondaryLight: '#9E4A72',
 
-      accent: '#d4a880',
-      accentHover: '#e0bc9a',
+      // Rosa suave accent
+      accent: '#E9A7CC',
+      accentHover: '#DE5696',
 
-      success: '#81c784',
-      warning: '#ffcc6a',
-      error: '#e57373',
+      success: '#81C784',
+      warning: '#F0B775',
+      error: '#E57373',
 
-      // Dark rose cards with subtle warmth
-      cardBg: 'rgba(61, 26, 46, 0.45)',
-      cardBgHover: 'rgba(61, 26, 46, 0.65)',
-      cardBorder: 'rgba(232, 120, 158, 0.2)',
+      // Warm rose cards (not too dark)
+      cardBg: 'rgba(107, 48, 80, 0.4)',
+      cardBgHover: 'rgba(107, 48, 80, 0.6)',
+      cardBorder: 'rgba(233, 167, 204, 0.2)',
 
-      primaryBg: '#2a1220',
-      primaryBgHover: '#3d1a2e',
-      primaryBorder: 'rgba(232, 120, 158, 0.15)',
-      overlayFrom: 'rgba(31, 10, 20, 0.5)',
-      overlayTo: 'rgba(31, 10, 20, 0.6)',
+      primaryBg: '#4A2238',
+      primaryBgHover: '#5C2D48',
+      primaryBorder: 'rgba(233, 167, 204, 0.15)',
+      overlayFrom: 'rgba(61, 26, 46, 0.4)',
+      overlayTo: 'rgba(61, 26, 46, 0.5)',
 
-      // Light text on dark rose background
-      textPrimary: '#fdf2f6',
-      textSecondary: '#e8b8cc',
-      textMuted: '#c2849e',
+      // Light pink text on dark rose
+      textPrimary: '#FFF5F9',
+      textSecondary: '#E9A7CC',
+      textMuted: '#D48AAB',
     }
   },
 

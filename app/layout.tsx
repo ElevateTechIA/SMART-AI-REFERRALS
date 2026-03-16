@@ -14,7 +14,7 @@ import { themes, defaultTheme } from '@/lib/theme/colors'
 const inter = Inter({ subsets: ['latin'] })
 
 export const viewport: Viewport = {
-  themeColor: '#1E3A6E',
+  themeColor: '#4A5BBD',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,

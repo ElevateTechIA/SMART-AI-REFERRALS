@@ -83,7 +83,7 @@ export default function TermsPage() {
             <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               <ElivBrand responsive="md/lg" forceDark />
             </Link>
-            <LanguageSwitcher />
+            <LanguageSwitcher forceDark />
           </div>
         </nav>
 

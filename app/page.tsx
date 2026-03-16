@@ -55,7 +55,7 @@ export default function LandingPage() {
             </a>
 
             <div className="flex items-center gap-2">
-              <LanguageSwitcher />
+              <LanguageSwitcher forceDark />
               <Link href="/auth/signin">
                 <Button variant="ghost" className="text-gray-600 hover:bg-gray-100 text-sm md:text-base">
                   {t('auth.signIn')}

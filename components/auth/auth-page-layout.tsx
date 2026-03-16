@@ -29,7 +29,7 @@ export function AuthPageLayout({ children, showSignInLink = false, loginHref = '
 
             {/* Language Switcher & Sign In Button */}
             <div className="flex items-center gap-2">
-              <LanguageSwitcher />
+              <LanguageSwitcher forceDark />
               {showSignInLink && (
                 <Link href={loginHref}>
                   <Button variant="ghost" className="text-gray-600 hover:bg-gray-100">

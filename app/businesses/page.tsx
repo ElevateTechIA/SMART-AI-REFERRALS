@@ -29,7 +29,7 @@ export default function BusinessLandingPage() {
             </Link>
 
             <div className="flex items-center gap-2">
-              <LanguageSwitcher />
+              <LanguageSwitcher forceDark />
               <Link href="/promoters">
                 <Button variant="ghost" className="hidden sm:inline-flex text-gray-600 hover:bg-gray-100">
                   {t('promotersLanding.cta')}

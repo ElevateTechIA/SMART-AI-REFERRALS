@@ -70,6 +70,14 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'Eight One';
+  src: url('/fonts/EightOne.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   :root {
     /* Clean white background */
