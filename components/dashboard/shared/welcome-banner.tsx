@@ -11,23 +11,8 @@ export function WelcomeBanner({ userName, subtitle }: WelcomeBannerProps) {
   const { t } = useTranslation()
 
   return (
-    <div className="relative rounded-2xl overflow-hidden mb-6">
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage: 'url(/dashboard/assets/header-backgroun.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-        }}
-      />
-      <div
-        className="absolute inset-0 opacity-60"
-        style={{
-          background: 'linear-gradient(135deg, var(--theme-gradientFrom), var(--theme-gradientTo))',
-        }}
-      />
-      <div className="relative px-6 py-8 md:px-8 md:py-10">
+    <div className="rounded-2xl overflow-hidden mb-6" style={{ background: 'var(--theme-cardBg)', borderColor: 'var(--theme-cardBorder)', borderWidth: '1px' }}>
+      <div className="px-6 py-8 md:px-8 md:py-10">
         <h1 className="text-2xl md:text-4xl font-bold text-theme-textPrimary mb-1">
           {t('dashboard.welcomeBack', { name: userName })}
         </h1>

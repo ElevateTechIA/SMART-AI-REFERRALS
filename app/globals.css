@@ -205,7 +205,7 @@
     --secondary-foreground: var(--theme-textPrimary-hsl);
     --accent: var(--theme-surfaceVariant-hsl);
     --accent-foreground: var(--theme-textPrimary-hsl);
-    --border: var(--theme-textSecondary-hsl);
+    --border: var(--theme-surfaceVariant-hsl);
   }
 
   /* Restore default light styling inside portaled overlays (modals, dialogs, etc.) */

@@ -182,14 +182,14 @@ export const themes = {
       gradientTo: '#ffb7da',
 
       // Rosa suave as primary (buttons, CTAs)
-      primary: '#E9A7CC',
+      primary: '#FF83BE',
       primaryLight: '#FFa8d0',
       primaryDark: '#D4467E',
 
       secondary: '#9B2D5E',
       secondaryLight: '#C85088',
 
-      accent: '#E9A7CC',
+      accent: '#FF83BE',
       accentHover: '#E870A8',
 
       success: '#81C784',
@@ -210,22 +210,22 @@ export const themes = {
       overlayTo: 'rgba(255, 183, 218, 0.4)',
 
       textPrimary: '#ffffff',
-      textSecondary: '#ffffff',
-      textMuted: '#fce0ee',
+      textSecondary: '#4a0e2a',
+      textMuted: '#7a2550',
       surfaceVariant: '#ffc8e2',
     },
     darkColors: {
-      // Softer, brighter pink for dark mode
-      gradientFrom: '#904060',
-      gradientVia: '#904060',
-      gradientTo: '#904060',
+      // Brighter pink for dark mode
+      gradientFrom: '#B85080',
+      gradientVia: '#B85080',
+      gradientTo: '#B85080',
 
       primary: '#FF83BE',
       primaryLight: '#FFa8d0',
       primaryDark: '#FF83BE',
 
-      secondary: '#C04878',
-      secondaryLight: '#D06898',
+      secondary: '#D06898',
+      secondaryLight: '#E080A8',
 
       accent: '#FF83BE',
       accentHover: '#E870A8',
@@ -237,20 +237,20 @@ export const themes = {
       error: '#c62828',
 
       // Brighter pink cards
-      cardBg: '#A85078',
-      cardBgHover: '#984868',
-      cardBorder: 'rgba(255, 131, 190, 0.25)',
+      cardBg: '#C86898',
+      cardBgHover: '#B86088',
+      cardBorder: 'rgba(255, 160, 210, 0.3)',
 
-      primaryBg: '#803858',
-      primaryBgHover: '#904060',
-      primaryBorder: 'rgba(255, 131, 190, 0.2)',
-      overlayFrom: 'rgba(144, 64, 96, 0.4)',
-      overlayTo: 'rgba(144, 64, 96, 0.5)',
+      primaryBg: '#A85078',
+      primaryBgHover: '#B85880',
+      primaryBorder: 'rgba(255, 131, 190, 0.25)',
+      overlayFrom: 'rgba(184, 80, 128, 0.4)',
+      overlayTo: 'rgba(184, 80, 128, 0.5)',
 
       textPrimary: '#ffffff',
       textSecondary: '#FFEEF3',
       textMuted: '#FFD8E8',
-      surfaceVariant: '#B86090',
+      surfaceVariant: '#D878A8',
     }
   },
 
