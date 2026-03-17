@@ -86,68 +86,75 @@ export function ShareAppModal({ isOpen, onClose }: ShareAppModalProps) {
       onClick={onClose}
     >
       <div
-        className="bg-card rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl relative animate-in fade-in zoom-in duration-200"
+        className="relative max-w-sm w-full rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-full hover:bg-muted transition-colors"
+        {/* Gradient header area */}
+        <div
+          className="px-6 pt-6 pb-10 text-center"
+          style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}
         >
-          <X className="h-5 w-5 text-muted-foreground" />
-        </button>
+          {/* Close Button */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/20 transition-colors"
+          >
+            <X className="h-5 w-5 text-white/80" />
+          </button>
 
-        {/* Header */}
-        <div className="text-center mb-6">
-          <div className="w-16 h-16 bg-theme-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Share2 className="h-8 w-8 text-white" />
+          <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-3">
+            <Share2 className="h-7 w-7 text-white" />
           </div>
-          <h3 className="text-2xl font-bold text-foreground mb-2">
+          <h3 className="text-xl font-bold text-white mb-1">
             {t('landing.shareTheApp', 'Share the App')}
           </h3>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-white/70">
             {t('landing.scanQR', 'Scan QR code or share the link')}
           </p>
         </div>
 
-        {/* QR Code */}
-        <div className="bg-background rounded-2xl p-4 border-2 border-theme-primaryBorder mb-6">
-          {qrCode && (
-            <img
-              src={qrCode}
-              alt="QR Code"
-              className="w-full h-auto"
-            />
-          )}
-        </div>
+        {/* Content area */}
+        <div className="bg-card px-6 pb-6 -mt-4 rounded-t-3xl">
+          {/* QR Code */}
+          <div className="bg-white rounded-2xl p-4 shadow-sm -mt-2 mb-4">
+            {qrCode && (
+              <img
+                src={qrCode}
+                alt="QR Code"
+                className="w-full h-auto max-w-[220px] mx-auto"
+              />
+            )}
+          </div>
 
-        {/* URL */}
-        <div className="bg-muted rounded-xl p-4 mb-4">
-          <p className="text-xs text-muted-foreground mb-1 text-center">
-            {t('landing.orVisit', 'Or visit')}
-          </p>
-          <p className="text-sm font-semibold text-theme-secondary text-center break-all">
-            {appUrl.replace('https://', '').replace('http://', '')}
-          </p>
-        </div>
+          {/* URL */}
+          <div className="bg-muted/60 rounded-xl py-3 px-4 mb-5">
+            <p className="text-[10px] text-muted-foreground mb-0.5 text-center uppercase tracking-wide">
+              {t('landing.orVisit', 'Or visit')}
+            </p>
+            <p className="text-sm font-semibold text-foreground text-center break-all">
+              {appUrl.replace('https://', '').replace('http://', '')}
+            </p>
+          </div>
 
-        {/* Action Buttons */}
-        <div className="flex gap-3">
-          <Button
-            onClick={copyLink}
-            className="flex-1 bg-theme-primary hover:opacity-90 text-gray-900 rounded-xl"
-          >
-            {t('landing.copyLink', 'Copy Link')}
-          </Button>
-          {canShare && (
+          {/* Action Buttons */}
+          <div className="flex gap-3">
             <Button
-              onClick={shareApp}
-              variant="outline"
-              className="flex-1 border-theme-primary text-theme-secondary hover:bg-theme-primaryBg rounded-xl"
+              onClick={copyLink}
+              className="flex-1 bg-theme-accent hover:opacity-90 rounded-xl font-semibold h-11"
+              style={{ color: '#001f3d' }}
             >
-              {t('landing.share', 'Share')}
+              {t('landing.copyLink', 'Copy Link')}
             </Button>
-          )}
+            {canShare && (
+              <Button
+                onClick={shareApp}
+                variant="outline"
+                className="flex-1 border-2 border-theme-primary text-foreground hover:bg-theme-primaryBg rounded-xl font-semibold h-11"
+              >
+                {t('landing.share', 'Share')}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </div>

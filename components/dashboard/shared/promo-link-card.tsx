@@ -48,7 +48,7 @@ export function PromoLinkCard({ qrCode, appUrl, onCopyLink, onShare, onShareApp 
             <Share2 className="h-4 w-4" />
           </button>
           <button
-            className="flex-1 h-8 bg-muted-foreground/50 hover:bg-muted-foreground/60 rounded-md flex items-center justify-center"
+            className="flex-1 h-8 bg-theme-primary hover:opacity-90 rounded-md flex items-center justify-center"
             style={{ color: '#001f3d' }}
             onClick={onShareApp}
           >
