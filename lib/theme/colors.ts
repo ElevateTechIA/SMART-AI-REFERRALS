@@ -201,7 +201,7 @@ export const themes = {
       // Solid pink cards (darkened for WCAG)
       cardBg: '#ffb7da',
       cardBgHover: '#f0a0c8',
-      cardBorder: 'rgba(233, 167, 204, 0.35)',
+      cardBorder: 'rgba(255, 255, 255, 0.5)',
 
       primaryBg: '#FFF5F9',
       primaryBgHover: '#FFEDF4',
@@ -210,8 +210,8 @@ export const themes = {
       overlayTo: 'rgba(255, 183, 218, 0.4)',
 
       textPrimary: '#ffffff',
-      textSecondary: '#fce0ee',
-      textMuted: '#f5d0e2',
+      textSecondary: '#ffffff',
+      textMuted: '#fce0ee',
       surfaceVariant: '#ffc8e2',
     },
     darkColors: {
