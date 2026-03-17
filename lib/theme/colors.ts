@@ -177,9 +177,9 @@ export const themes = {
     name: 'Rose Pastel',
     colors: {
       // Solid rose background (darkened for WCAG)
-      gradientFrom: '#943562',
-      gradientVia: '#943562',
-      gradientTo: '#943562',
+      gradientFrom: '#FF83BE',
+      gradientVia: '#FF83BE',
+      gradientTo: '#FF83BE',
 
       // Rosa suave as primary (buttons, CTAs)
       primary: '#E9A7CC',
@@ -200,20 +200,20 @@ export const themes = {
       error: '#c62828',
 
       // Solid pink cards (darkened for WCAG)
-      cardBg: '#943562',
-      cardBgHover: '#832e57',
+      cardBg: '#FF83BE',
+      cardBgHover: '#f06aaa',
       cardBorder: 'rgba(233, 167, 204, 0.35)',
 
       primaryBg: '#FFF5F9',
       primaryBgHover: '#FFEDF4',
       primaryBorder: 'rgba(233, 167, 204, 0.25)',
-      overlayFrom: 'rgba(148, 53, 98, 0.3)',
-      overlayTo: 'rgba(148, 53, 98, 0.4)',
+      overlayFrom: 'rgba(255, 131, 190, 0.3)',
+      overlayTo: 'rgba(255, 131, 190, 0.4)',
 
       textPrimary: '#ffffff',
       textSecondary: '#fce0ee',
       textMuted: '#f5d0e2',
-      surfaceVariant: '#a33d6e',
+      surfaceVariant: '#ff9eca',
     },
     darkColors: {
       // Solid warm rose background (dark mode)
