@@ -201,7 +201,7 @@ export const themes = {
       // Solid pink cards (darkened for WCAG)
       cardBg: '#ffb7da',
       cardBgHover: '#f0a0c8',
-      cardBorder: 'rgba(255, 255, 255, 0.5)',
+      cardBorder: 'rgba(233, 167, 204, 0.35)',
 
       primaryBg: '#FFF5F9',
       primaryBgHover: '#FFEDF4',
