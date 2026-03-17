@@ -66,6 +66,7 @@ interface BusinessGridProps {
 }
 
 export function BusinessGrid({ businesses, userId, initialOfferId, favorites, onToggleFavorite, isFiltered }: BusinessGridProps) {
+
   const { t } = useTranslation()
   const [selectedBusiness, setSelectedBusiness] = useState<BusinessWithOffer | null>(null)
   const [dismissedOffer, setDismissedOffer] = useState(false)
@@ -114,9 +115,23 @@ export function BusinessGrid({ businesses, userId, initialOfferId, favorites, on
     )
   }
 
+  const totalItems = businesses.length + placeholderCount
+  const needsScroll = totalItems > 8
+
   // Grid view
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+    <div
+      className={needsScroll
+        ? 'overflow-x-auto pb-2 scrollbar-thin'
+        : ''
+      }
+    >
+    <div
+      className={needsScroll
+        ? 'grid grid-rows-2 sm:grid-rows-3 lg:grid-rows-4 grid-flow-col auto-cols-[calc((100%-0.75rem)/2)] sm:auto-cols-[calc((100%-1.5rem)/3)] lg:auto-cols-[calc((100%-2.25rem)/4)] gap-3 sm:gap-4'
+        : 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4'
+      }
+    >
       {/* Real businesses */}
       {businesses.map((biz) => {
         const logo = biz.images?.[biz.images.length - 1] || null
@@ -198,6 +213,7 @@ export function BusinessGrid({ businesses, userId, initialOfferId, favorites, on
           </span>
         </div>
       ))}
+    </div>
     </div>
   )
 }
