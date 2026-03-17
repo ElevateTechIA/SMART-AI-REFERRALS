@@ -227,26 +227,26 @@ export function PromoterDashboard() {
             {/* Column 1: How It Works */}
             <div className="min-w-0">
               <div className="rounded-2xl p-5 shadow-xl h-full flex flex-col" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
-                <h2 className="text-base font-bold text-white mb-4">{t('dashboard.howItWorks')}</h2>
+                <h2 className="text-base font-bold text-theme-textPrimary mb-4">{t('dashboard.howItWorks')}</h2>
                 <div className="flex-1 flex flex-col justify-evenly">
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">1</div>
+                    <div className="w-8 h-8 rounded-full bg-theme-textPrimary/15 flex items-center justify-center flex-shrink-0 text-theme-textPrimary font-bold text-sm">1</div>
                     <div>
-                      <p className="text-white font-semibold text-sm">{t('dashboard.howStep1Title')}</p>
+                      <p className="text-theme-textPrimary font-semibold text-sm">{t('dashboard.howStep1Title')}</p>
                       <p className="text-theme-textSecondary text-xs">{t('dashboard.howStep1Desc')}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">2</div>
+                    <div className="w-8 h-8 rounded-full bg-theme-textPrimary/15 flex items-center justify-center flex-shrink-0 text-theme-textPrimary font-bold text-sm">2</div>
                     <div>
-                      <p className="text-white font-semibold text-sm">{t('dashboard.howStep2Title')}</p>
+                      <p className="text-theme-textPrimary font-semibold text-sm">{t('dashboard.howStep2Title')}</p>
                       <p className="text-theme-textSecondary text-xs">{t('dashboard.howStep2Desc')}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">3</div>
+                    <div className="w-8 h-8 rounded-full bg-theme-textPrimary/15 flex items-center justify-center flex-shrink-0 text-theme-textPrimary font-bold text-sm">3</div>
                     <div>
-                      <p className="text-white font-semibold text-sm">{t('dashboard.howStep3Title')}</p>
+                      <p className="text-theme-textPrimary font-semibold text-sm">{t('dashboard.howStep3Title')}</p>
                       <p className="text-theme-textSecondary text-xs">{t('dashboard.howStep3Desc')}</p>
                     </div>
                   </div>
@@ -269,8 +269,8 @@ export function PromoterDashboard() {
             <div className="space-y-6 min-w-0">
               <div className="rounded-2xl p-5 shadow-xl overflow-hidden" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-base font-bold text-white">{t('dashboard.topPartnersWeek', { count: Math.min(businesses.length, 5) })}</h2>
-                  <Link href="/dashboard/referrals" className="text-theme-textMuted hover:text-white">
+                  <h2 className="text-base font-bold text-theme-textPrimary">{t('dashboard.topPartnersWeek', { count: Math.min(businesses.length, 5) })}</h2>
+                  <Link href="/dashboard/referrals" className="text-theme-textMuted hover:text-theme-textPrimary">
                     <ChevronRight className="h-4 w-4" />
                   </Link>
                 </div>
@@ -283,19 +283,19 @@ export function PromoterDashboard() {
                       return (
                         <div
                           key={biz.id}
-                          className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-3 hover:bg-white/15 transition-colors"
+                          className="flex items-center gap-3 bg-theme-textPrimary/10 backdrop-blur-sm rounded-xl p-3 hover:bg-theme-textPrimary/15 transition-colors"
                         >
-                          <div className="w-12 h-12 lg:w-16 lg:h-16 rounded-lg overflow-hidden flex-shrink-0 bg-white/10">
+                          <div className="w-12 h-12 lg:w-16 lg:h-16 rounded-lg overflow-hidden flex-shrink-0 bg-theme-textPrimary/10">
                             {img ? (
                               <img src={img} alt={biz.name} className="w-full h-full object-cover" />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
-                                <Building2 className="h-6 w-6 lg:h-8 lg:w-8 text-white/40" />
+                                <Building2 className="h-6 w-6 lg:h-8 lg:w-8 text-theme-textMuted" />
                               </div>
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-white font-semibold text-sm truncate">{biz.name}</h3>
+                            <h3 className="text-theme-textPrimary font-semibold text-sm truncate">{biz.name}</h3>
                             <p className="text-theme-textMuted text-xs truncate">{biz.category}</p>
                             {commission > 0 && (
                               <p className="text-theme-primaryLight text-xs font-medium mt-0.5 truncate">
@@ -317,7 +317,7 @@ export function PromoterDashboard() {
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <Building2 className="h-10 w-10 text-white/30 mx-auto mb-3" />
+                    <Building2 className="h-10 w-10 text-theme-textMuted mx-auto mb-3" />
                     <p className="text-theme-textMuted text-sm">{t('dashboard.noBusinesses', 'No businesses available yet')}</p>
                   </div>
                 )}
@@ -379,26 +379,26 @@ export function PromoterDashboard() {
         <div className="space-y-2">
           {/* How It Works */}
           <div className="rounded-xl p-2.5 shadow-lg" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
-            <h2 className="text-sm font-bold text-white mb-2">{t('dashboard.howItWorks')}</h2>
+            <h2 className="text-sm font-bold text-theme-textPrimary mb-2">{t('dashboard.howItWorks')}</h2>
             <div className="space-y-2.5">
               <div className="flex items-start gap-2">
-                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-[10px]">1</div>
+                <div className="w-6 h-6 rounded-full bg-theme-textPrimary/15 flex items-center justify-center flex-shrink-0 text-theme-textPrimary font-bold text-[10px]">1</div>
                 <div>
-                  <p className="text-white font-semibold text-xs">{t('dashboard.howStep1Title')}</p>
+                  <p className="text-theme-textPrimary font-semibold text-xs">{t('dashboard.howStep1Title')}</p>
                   <p className="text-theme-textSecondary text-[10px]">{t('dashboard.howStep1Desc')}</p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
-                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-[10px]">2</div>
+                <div className="w-6 h-6 rounded-full bg-theme-textPrimary/15 flex items-center justify-center flex-shrink-0 text-theme-textPrimary font-bold text-[10px]">2</div>
                 <div>
-                  <p className="text-white font-semibold text-xs">{t('dashboard.howStep2Title')}</p>
+                  <p className="text-theme-textPrimary font-semibold text-xs">{t('dashboard.howStep2Title')}</p>
                   <p className="text-theme-textSecondary text-[10px]">{t('dashboard.howStep2Desc')}</p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
-                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-[10px]">3</div>
+                <div className="w-6 h-6 rounded-full bg-theme-textPrimary/15 flex items-center justify-center flex-shrink-0 text-theme-textPrimary font-bold text-[10px]">3</div>
                 <div>
-                  <p className="text-white font-semibold text-xs">{t('dashboard.howStep3Title')}</p>
+                  <p className="text-theme-textPrimary font-semibold text-xs">{t('dashboard.howStep3Title')}</p>
                   <p className="text-theme-textSecondary text-[10px]">{t('dashboard.howStep3Desc')}</p>
                 </div>
               </div>
@@ -417,10 +417,10 @@ export function PromoterDashboard() {
           {/* Top Partners This Week */}
           <div className="rounded-xl p-2.5 shadow-lg" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-sm font-bold text-white">{t('dashboard.topPartnersWeek', { count: Math.min(businesses.length, 5) })}</h2>
+              <h2 className="text-sm font-bold text-theme-textPrimary">{t('dashboard.topPartnersWeek', { count: Math.min(businesses.length, 5) })}</h2>
               <Link
                 href="/dashboard/referrals"
-                className="text-[10px] text-theme-textSecondary hover:text-white flex items-center gap-0.5"
+                className="text-[10px] text-theme-textSecondary hover:text-theme-textPrimary flex items-center gap-0.5"
               >
                 {t('dashboard.viewAll', 'View All')} <ChevronRight className="h-3 w-3" />
               </Link>
@@ -429,9 +429,9 @@ export function PromoterDashboard() {
               {businesses.length > 0 ? (
                 businesses.slice(0, 5).map((biz) => renderBusinessCard(biz))
               ) : (
-                <div className="flex items-center justify-center bg-white/5 rounded-lg p-4">
+                <div className="flex items-center justify-center bg-theme-textPrimary/5 rounded-lg p-4">
                   <div className="text-center">
-                    <Building2 className="h-8 w-8 text-white/30 mx-auto mb-2" />
+                    <Building2 className="h-8 w-8 text-theme-textMuted mx-auto mb-2" />
                     <p className="text-theme-textMuted text-[10px]">{t('dashboard.noBusinesses', 'No businesses yet')}</p>
                   </div>
                 </div>

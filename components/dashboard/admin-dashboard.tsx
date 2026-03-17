@@ -135,30 +135,30 @@ export function AdminDashboard() {
           {/* Column 1: Support Messages */}
           <div className="min-w-0">
             <div className="rounded-2xl p-5 shadow-xl h-full flex flex-col" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
-              <h2 className="text-base font-bold text-white mb-4">{t('dashboard.unreadMessages')}</h2>
+              <h2 className="text-base font-bold text-theme-textPrimary mb-4">{t('dashboard.unreadMessages')}</h2>
               {unreadTickets.length > 0 ? (
                 <div className="flex-1 flex flex-col justify-evenly">
                   {unreadTickets.slice(0, 3).map((ticket) => (
                     <div key={ticket.id} className="flex items-start gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-3">
-                      <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                        <Mail className="h-5 w-5 text-white" />
+                      <div className="w-10 h-10 rounded-full bg-theme-textPrimary/15 flex items-center justify-center flex-shrink-0">
+                        <Mail className="h-5 w-5 text-theme-textPrimary" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-white font-semibold text-sm truncate">{ticket.subject}</p>
+                        <p className="text-theme-textPrimary font-semibold text-sm truncate">{ticket.subject}</p>
                         <p className="text-theme-textSecondary text-xs truncate">{ticket.userName}</p>
                         <p className="text-theme-textMuted text-[10px] mt-0.5">{ticket.createdAt ? formatDate(ticket.createdAt) : ''}</p>
                       </div>
                     </div>
                   ))}
                   <Link href="/dashboard/admin?tab=support">
-                    <Button className="w-full bg-white/20 hover:bg-white/30 text-white rounded-lg h-10 text-sm font-semibold">
+                    <Button className="w-full bg-theme-textPrimary/15 hover:bg-theme-textPrimary/20 text-theme-textPrimary rounded-lg h-10 text-sm font-semibold">
                       {t('dashboard.viewSupport')} ({unreadTickets.length})
                     </Button>
                   </Link>
                 </div>
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center text-center">
-                  <MessageSquare className="h-10 w-10 text-white/40 mb-3" />
+                  <MessageSquare className="h-10 w-10 text-theme-textMuted mb-3" />
                   <p className="text-theme-textSecondary text-sm">{t('dashboard.noNewMessages')}</p>
                 </div>
               )}
@@ -179,52 +179,52 @@ export function AdminDashboard() {
           {/* Column 3: Pending Approvals */}
           <div className="min-w-0">
             <div className="rounded-2xl p-5 shadow-xl overflow-hidden h-full flex flex-col" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
-              <h2 className="text-base font-bold text-white mb-4">{t('dashboard.pendingApprovals')}</h2>
+              <h2 className="text-base font-bold text-theme-textPrimary mb-4">{t('dashboard.pendingApprovals')}</h2>
 
               {totalPending > 0 ? (
                 <div className="flex-1 flex flex-col justify-evenly">
                   <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                    <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                      <Building2 className="h-6 w-6 text-white" />
+                    <div className="w-12 h-12 rounded-full bg-theme-textPrimary/15 flex items-center justify-center flex-shrink-0">
+                      <Building2 className="h-6 w-6 text-theme-textPrimary" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-white font-semibold text-sm">{t('dashboard.pendingBusinesses')}</p>
+                      <p className="text-theme-textPrimary font-semibold text-sm">{t('dashboard.pendingBusinesses')}</p>
                       <p className="text-theme-textSecondary text-xs">{t('admin.pendingApproval', { count: stats?.pendingBusinesses || 0 })}</p>
                     </div>
-                    <span className="text-2xl font-bold text-white">{stats?.pendingBusinesses || 0}</span>
+                    <span className="text-2xl font-bold text-theme-textPrimary">{stats?.pendingBusinesses || 0}</span>
                   </div>
 
                   <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                    <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                      <Users className="h-6 w-6 text-white" />
+                    <div className="w-12 h-12 rounded-full bg-theme-textPrimary/15 flex items-center justify-center flex-shrink-0">
+                      <Users className="h-6 w-6 text-theme-textPrimary" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-white font-semibold text-sm">{t('dashboard.pendingPromoters')}</p>
+                      <p className="text-theme-textPrimary font-semibold text-sm">{t('dashboard.pendingPromoters')}</p>
                       <p className="text-theme-textSecondary text-xs">{t('admin.pendingApproval', { count: stats?.pendingReferrers || 0 })}</p>
                     </div>
-                    <span className="text-2xl font-bold text-white">{stats?.pendingReferrers || 0}</span>
+                    <span className="text-2xl font-bold text-theme-textPrimary">{stats?.pendingReferrers || 0}</span>
                   </div>
 
                   <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                    <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                      <MessageSquare className="h-6 w-6 text-white" />
+                    <div className="w-12 h-12 rounded-full bg-theme-textPrimary/15 flex items-center justify-center flex-shrink-0">
+                      <MessageSquare className="h-6 w-6 text-theme-textPrimary" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-white font-semibold text-sm">{t('dashboard.unreadMessages')}</p>
+                      <p className="text-theme-textPrimary font-semibold text-sm">{t('dashboard.unreadMessages')}</p>
                       <p className="text-theme-textSecondary text-xs">{t('dashboard.unreadMessagesCount', { count: stats?.unreadSupportTickets || 0 })}</p>
                     </div>
-                    <span className="text-2xl font-bold text-white">{stats?.unreadSupportTickets || 0}</span>
+                    <span className="text-2xl font-bold text-theme-textPrimary">{stats?.unreadSupportTickets || 0}</span>
                   </div>
 
                   <Link href="/dashboard/admin">
-                    <Button className="w-full bg-white/20 hover:bg-white/30 text-white rounded-lg h-10 text-sm font-semibold">
+                    <Button className="w-full bg-theme-textPrimary/15 hover:bg-theme-textPrimary/20 text-theme-textPrimary rounded-lg h-10 text-sm font-semibold">
                       {t('dashboard.reviewApprovals')}
                     </Button>
                   </Link>
                 </div>
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center text-center">
-                  <CheckCircle className="h-10 w-10 text-white/40 mb-3" />
+                  <CheckCircle className="h-10 w-10 text-theme-textMuted mb-3" />
                   <p className="text-theme-textSecondary text-sm">{t('dashboard.noPendingApprovals')}</p>
                 </div>
               )}
@@ -238,29 +238,29 @@ export function AdminDashboard() {
         <div className="space-y-2">
           {/* Support Messages */}
           <div className="rounded-xl p-2.5 shadow-lg" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
-            <h2 className="text-sm font-bold text-white mb-2">{t('dashboard.unreadMessages')}</h2>
+            <h2 className="text-sm font-bold text-theme-textPrimary mb-2">{t('dashboard.unreadMessages')}</h2>
             {unreadTickets.length > 0 ? (
               <div className="space-y-1.5">
                 {unreadTickets.slice(0, 3).map((ticket) => (
                   <div key={ticket.id} className="flex items-start gap-2 bg-white/10 backdrop-blur-sm rounded-lg p-2">
-                    <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                      <Mail className="h-3.5 w-3.5 text-white" />
+                    <div className="w-7 h-7 rounded-full bg-theme-textPrimary/15 flex items-center justify-center flex-shrink-0">
+                      <Mail className="h-3.5 w-3.5 text-theme-textPrimary" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-white font-semibold text-xs truncate">{ticket.subject}</p>
+                      <p className="text-theme-textPrimary font-semibold text-xs truncate">{ticket.subject}</p>
                       <p className="text-theme-textSecondary text-[10px] truncate">{ticket.userName}</p>
                     </div>
                   </div>
                 ))}
                 <Link href="/dashboard/admin?tab=support">
-                  <Button className="w-full bg-white/20 hover:bg-white/30 text-white rounded-md h-8 text-[11px] font-semibold">
+                  <Button className="w-full bg-theme-textPrimary/15 hover:bg-theme-textPrimary/20 text-theme-textPrimary rounded-md h-8 text-[11px] font-semibold">
                     {t('dashboard.viewSupport')} ({unreadTickets.length})
                   </Button>
                 </Link>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center text-center py-4">
-                <MessageSquare className="h-8 w-8 text-white/40 mb-2" />
+                <MessageSquare className="h-8 w-8 text-theme-textMuted mb-2" />
                 <p className="text-theme-textSecondary text-[10px]">{t('dashboard.noNewMessages')}</p>
               </div>
             )}
@@ -277,52 +277,52 @@ export function AdminDashboard() {
 
           {/* Pending Approvals */}
           <div className="rounded-xl p-2.5 shadow-lg" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
-            <h2 className="text-sm font-bold text-white mb-2">{t('dashboard.pendingApprovals')}</h2>
+            <h2 className="text-sm font-bold text-theme-textPrimary mb-2">{t('dashboard.pendingApprovals')}</h2>
 
             {totalPending > 0 ? (
               <div className="space-y-2">
                 <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-lg p-2.5">
-                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                    <Building2 className="h-4 w-4 text-white" />
+                  <div className="w-8 h-8 rounded-full bg-theme-textPrimary/15 flex items-center justify-center flex-shrink-0">
+                    <Building2 className="h-4 w-4 text-theme-textPrimary" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-white font-semibold text-xs">{t('dashboard.pendingBusinesses')}</p>
+                    <p className="text-theme-textPrimary font-semibold text-xs">{t('dashboard.pendingBusinesses')}</p>
                     <p className="text-theme-textSecondary text-[10px]">{t('admin.pendingApproval', { count: stats?.pendingBusinesses || 0 })}</p>
                   </div>
-                  <span className="text-lg font-bold text-white">{stats?.pendingBusinesses || 0}</span>
+                  <span className="text-lg font-bold text-theme-textPrimary">{stats?.pendingBusinesses || 0}</span>
                 </div>
 
                 <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-lg p-2.5">
-                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                    <Users className="h-4 w-4 text-white" />
+                  <div className="w-8 h-8 rounded-full bg-theme-textPrimary/15 flex items-center justify-center flex-shrink-0">
+                    <Users className="h-4 w-4 text-theme-textPrimary" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-white font-semibold text-xs">{t('dashboard.pendingPromoters')}</p>
+                    <p className="text-theme-textPrimary font-semibold text-xs">{t('dashboard.pendingPromoters')}</p>
                     <p className="text-theme-textSecondary text-[10px]">{t('admin.pendingApproval', { count: stats?.pendingReferrers || 0 })}</p>
                   </div>
-                  <span className="text-lg font-bold text-white">{stats?.pendingReferrers || 0}</span>
+                  <span className="text-lg font-bold text-theme-textPrimary">{stats?.pendingReferrers || 0}</span>
                 </div>
 
                 <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-lg p-2.5">
-                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                    <MessageSquare className="h-4 w-4 text-white" />
+                  <div className="w-8 h-8 rounded-full bg-theme-textPrimary/15 flex items-center justify-center flex-shrink-0">
+                    <MessageSquare className="h-4 w-4 text-theme-textPrimary" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-white font-semibold text-xs">{t('dashboard.unreadMessages')}</p>
+                    <p className="text-theme-textPrimary font-semibold text-xs">{t('dashboard.unreadMessages')}</p>
                     <p className="text-theme-textSecondary text-[10px]">{t('dashboard.unreadMessagesCount', { count: stats?.unreadSupportTickets || 0 })}</p>
                   </div>
-                  <span className="text-lg font-bold text-white">{stats?.unreadSupportTickets || 0}</span>
+                  <span className="text-lg font-bold text-theme-textPrimary">{stats?.unreadSupportTickets || 0}</span>
                 </div>
 
                 <Link href="/dashboard/admin">
-                  <Button className="w-full bg-white/20 hover:bg-white/30 text-white rounded-md h-8 text-[11px] font-semibold">
+                  <Button className="w-full bg-theme-textPrimary/15 hover:bg-theme-textPrimary/20 text-theme-textPrimary rounded-md h-8 text-[11px] font-semibold">
                     {t('dashboard.reviewApprovals')}
                   </Button>
                 </Link>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center text-center py-4">
-                <CheckCircle className="h-8 w-8 text-white/40 mb-2" />
+                <CheckCircle className="h-8 w-8 text-theme-textMuted mb-2" />
                 <p className="text-theme-textSecondary text-[10px]">{t('dashboard.noPendingApprovals')}</p>
               </div>
             )}

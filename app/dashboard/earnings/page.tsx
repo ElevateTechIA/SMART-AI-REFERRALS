@@ -121,12 +121,12 @@ export default function EarningsPage() {
         <div className="max-w-7xl mx-auto">
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2 text-theme-textSecondary hover:text-white mb-4 transition-colors"
+            className="inline-flex items-center gap-2 text-theme-textSecondary hover:text-theme-textPrimary mb-4 transition-colors"
           >
             <ChevronLeft className="h-5 w-5" />
             <span>{t('common.backToDashboard')}</span>
           </Link>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">{t('earnings.title')}</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-theme-textPrimary mb-2">{t('earnings.title')}</h1>
           <p className="text-theme-textSecondary">{t('earnings.subtitle')}</p>
         </div>
       </div>

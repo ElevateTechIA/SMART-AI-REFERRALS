@@ -104,7 +104,7 @@ export function BottomNav() {
               href={item.href}
               className={cn(
                 'flex flex-col items-center justify-center gap-1 transition-colors',
-                isActive ? 'text-white font-semibold' : 'text-theme-textMuted hover:text-theme-textSecondary'
+                isActive ? 'text-theme-textPrimary font-semibold' : 'text-theme-textMuted hover:text-theme-textSecondary'
               )}
             >
               <Icon className="h-5 w-5" />

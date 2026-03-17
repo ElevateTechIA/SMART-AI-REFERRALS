@@ -183,15 +183,14 @@ export const themes = {
 
       // Rosa suave as primary (buttons, CTAs)
       primary: '#E9A7CC',
-      primaryLight: '#F2CCDF',
-      primaryDark: '#9c2e5e',
+      primaryLight: '#FFa8d0',
+      primaryDark: '#D4467E',
 
-      // Rosa fuerte as secondary (logo, headings)
-      secondary: '#9c2e5e',
-      secondaryLight: '#E9A7CC',
+      secondary: '#9B2D5E',
+      secondaryLight: '#C85088',
 
-      accent: '#DE5696',
-      accentHover: '#C94A85',
+      accent: '#E9A7CC',
+      accentHover: '#E870A8',
 
       success: '#81C784',
       successForeground: '#111827',
@@ -202,7 +201,7 @@ export const themes = {
       // Solid pink cards (darkened for WCAG)
       cardBg: '#ffb7da',
       cardBgHover: '#f0a0c8',
-      cardBorder: 'rgba(233, 167, 204, 0.35)',
+      cardBorder: 'rgba(255, 255, 255, 0.5)',
 
       primaryBg: '#FFF5F9',
       primaryBgHover: '#FFEDF4',
@@ -216,20 +215,20 @@ export const themes = {
       surfaceVariant: '#ffc8e2',
     },
     darkColors: {
-      // Solid warm rose background (dark mode)
-      gradientFrom: '#6B3050',
-      gradientVia: '#6B3050',
-      gradientTo: '#6B3050',
+      // Softer, brighter pink for dark mode
+      gradientFrom: '#904060',
+      gradientVia: '#904060',
+      gradientTo: '#904060',
 
-      primary: '#DE5696',
-      primaryLight: '#E9A7CC',
-      primaryDark: '#E9A7CC',
+      primary: '#FF83BE',
+      primaryLight: '#FFa8d0',
+      primaryDark: '#FF83BE',
 
-      secondary: '#E9A7CC',
-      secondaryLight: '#9E4A72',
+      secondary: '#C04878',
+      secondaryLight: '#D06898',
 
-      accent: '#E9A7CC',
-      accentHover: '#DE5696',
+      accent: '#FF83BE',
+      accentHover: '#E870A8',
 
       success: '#81C784',
       successForeground: '#111827',
@@ -237,21 +236,21 @@ export const themes = {
       warningForeground: '#111827',
       error: '#c62828',
 
-      // Solid dark rose cards
-      cardBg: '#5C2844',
-      cardBgHover: '#4E2038',
-      cardBorder: 'rgba(233, 167, 204, 0.2)',
+      // Brighter pink cards
+      cardBg: '#A85078',
+      cardBgHover: '#984868',
+      cardBorder: 'rgba(255, 131, 190, 0.25)',
 
-      primaryBg: '#4A2238',
-      primaryBgHover: '#5C2D48',
-      primaryBorder: 'rgba(233, 167, 204, 0.15)',
-      overlayFrom: 'rgba(61, 26, 46, 0.4)',
-      overlayTo: 'rgba(61, 26, 46, 0.5)',
+      primaryBg: '#803858',
+      primaryBgHover: '#904060',
+      primaryBorder: 'rgba(255, 131, 190, 0.2)',
+      overlayFrom: 'rgba(144, 64, 96, 0.4)',
+      overlayTo: 'rgba(144, 64, 96, 0.5)',
 
-      textPrimary: '#FFF5F9',
-      textSecondary: '#E9A7CC',
-      textMuted: '#e0a0c0',
-      surfaceVariant: '#6a3050',
+      textPrimary: '#ffffff',
+      textSecondary: '#FFEEF3',
+      textMuted: '#FFD8E8',
+      surfaceVariant: '#B86090',
     }
   },
 

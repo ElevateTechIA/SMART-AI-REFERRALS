@@ -132,7 +132,7 @@ export function DashboardNav() {
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-6">
             <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <ElivBrand responsive="sm/md" color={resolvedMode === 'dark' || theme === 'eliv' ? '#ffffff' : undefined} />
+              <ElivBrand responsive="sm/md" color={resolvedMode === 'dark' || theme === 'eliv' || theme === 'rosePastel' ? '#ffffff' : undefined} />
             </Link>
             <nav className="hidden md:flex items-center gap-1">
               {filteredNavItems.map((item) => {
@@ -149,7 +149,7 @@ export function DashboardNav() {
                         'gap-2',
                         isActive
                           ? 'bg-theme-primary text-gray-900 shadow-md hover:bg-theme-primary/90'
-                          : (resolvedMode === 'dark' || theme === 'eliv') && 'text-white hover:bg-white/10 hover:text-white'
+                          : (resolvedMode === 'dark' || theme === 'eliv' || theme === 'rosePastel') && 'text-white hover:bg-white/10 hover:text-white'
                       )}
                     >
                       <Icon className="w-4 h-4" />
@@ -392,7 +392,7 @@ export function DashboardNav() {
             <div className="px-4 py-4">
               <button
                 onClick={handleSignOut}
-                className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-theme-textPrimary hover:bg-white/10 transition-colors"
+                className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-theme-textPrimary hover:bg-theme-textPrimary/10 transition-colors"
               >
                 <LogOut className="h-5 w-5" />
                 <span className="font-medium">{t('nav.signOut')}</span>
