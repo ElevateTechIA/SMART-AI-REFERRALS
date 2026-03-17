@@ -189,7 +189,7 @@ export function PromoterDashboard() {
         <div className="relative h-full p-4 flex flex-col justify-end">
           <h3 className="text-white font-bold text-sm mb-1 leading-tight">{biz.name}</h3>
           {commission > 0 && (
-            <p className="text-white/95 text-xs mb-2">
+            <p className="text-theme-textSecondary text-xs mb-2">
               {formatCurrency(commission)} {t('dashboard.perCustomer', 'per customer')}
             </p>
           )}
@@ -233,21 +233,21 @@ export function PromoterDashboard() {
                     <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">1</div>
                     <div>
                       <p className="text-white font-semibold text-sm">{t('dashboard.howStep1Title')}</p>
-                      <p className="text-white/70 text-xs">{t('dashboard.howStep1Desc')}</p>
+                      <p className="text-theme-textSecondary text-xs">{t('dashboard.howStep1Desc')}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">2</div>
                     <div>
                       <p className="text-white font-semibold text-sm">{t('dashboard.howStep2Title')}</p>
-                      <p className="text-white/70 text-xs">{t('dashboard.howStep2Desc')}</p>
+                      <p className="text-theme-textSecondary text-xs">{t('dashboard.howStep2Desc')}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">3</div>
                     <div>
                       <p className="text-white font-semibold text-sm">{t('dashboard.howStep3Title')}</p>
-                      <p className="text-white/70 text-xs">{t('dashboard.howStep3Desc')}</p>
+                      <p className="text-theme-textSecondary text-xs">{t('dashboard.howStep3Desc')}</p>
                     </div>
                   </div>
                 </div>
@@ -270,7 +270,7 @@ export function PromoterDashboard() {
               <div className="rounded-2xl p-5 shadow-xl overflow-hidden" style={{ background: 'linear-gradient(to bottom right, var(--theme-gradientFrom), var(--theme-gradientTo))' }}>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-base font-bold text-white">{t('dashboard.topPartnersWeek', { count: Math.min(businesses.length, 5) })}</h2>
-                  <Link href="/dashboard/referrals" className="text-white/60 hover:text-white">
+                  <Link href="/dashboard/referrals" className="text-theme-textMuted hover:text-white">
                     <ChevronRight className="h-4 w-4" />
                   </Link>
                 </div>
@@ -296,7 +296,7 @@ export function PromoterDashboard() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <h3 className="text-white font-semibold text-sm truncate">{biz.name}</h3>
-                            <p className="text-white/60 text-xs truncate">{biz.category}</p>
+                            <p className="text-theme-textMuted text-xs truncate">{biz.category}</p>
                             {commission > 0 && (
                               <p className="text-theme-primaryLight text-xs font-medium mt-0.5 truncate">
                                 {formatCurrency(commission)} {t('dashboard.perCustomer', 'per customer')}
@@ -318,7 +318,7 @@ export function PromoterDashboard() {
                 ) : (
                   <div className="text-center py-8">
                     <Building2 className="h-10 w-10 text-white/30 mx-auto mb-3" />
-                    <p className="text-white/60 text-sm">{t('dashboard.noBusinesses', 'No businesses available yet')}</p>
+                    <p className="text-theme-textMuted text-sm">{t('dashboard.noBusinesses', 'No businesses available yet')}</p>
                   </div>
                 )}
               </div>
@@ -385,21 +385,21 @@ export function PromoterDashboard() {
                 <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-[10px]">1</div>
                 <div>
                   <p className="text-white font-semibold text-xs">{t('dashboard.howStep1Title')}</p>
-                  <p className="text-white/70 text-[10px]">{t('dashboard.howStep1Desc')}</p>
+                  <p className="text-theme-textSecondary text-[10px]">{t('dashboard.howStep1Desc')}</p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
                 <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-[10px]">2</div>
                 <div>
                   <p className="text-white font-semibold text-xs">{t('dashboard.howStep2Title')}</p>
-                  <p className="text-white/70 text-[10px]">{t('dashboard.howStep2Desc')}</p>
+                  <p className="text-theme-textSecondary text-[10px]">{t('dashboard.howStep2Desc')}</p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
                 <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-[10px]">3</div>
                 <div>
                   <p className="text-white font-semibold text-xs">{t('dashboard.howStep3Title')}</p>
-                  <p className="text-white/70 text-[10px]">{t('dashboard.howStep3Desc')}</p>
+                  <p className="text-theme-textSecondary text-[10px]">{t('dashboard.howStep3Desc')}</p>
                 </div>
               </div>
             </div>
@@ -420,7 +420,7 @@ export function PromoterDashboard() {
               <h2 className="text-sm font-bold text-white">{t('dashboard.topPartnersWeek', { count: Math.min(businesses.length, 5) })}</h2>
               <Link
                 href="/dashboard/referrals"
-                className="text-[10px] text-white/90 hover:text-white flex items-center gap-0.5"
+                className="text-[10px] text-theme-textSecondary hover:text-white flex items-center gap-0.5"
               >
                 {t('dashboard.viewAll', 'View All')} <ChevronRight className="h-3 w-3" />
               </Link>
@@ -432,7 +432,7 @@ export function PromoterDashboard() {
                 <div className="flex items-center justify-center bg-white/5 rounded-lg p-4">
                   <div className="text-center">
                     <Building2 className="h-8 w-8 text-white/30 mx-auto mb-2" />
-                    <p className="text-white/50 text-[10px]">{t('dashboard.noBusinesses', 'No businesses yet')}</p>
+                    <p className="text-theme-textMuted text-[10px]">{t('dashboard.noBusinesses', 'No businesses yet')}</p>
                   </div>
                 </div>
               )}

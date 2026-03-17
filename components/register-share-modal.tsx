@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/use-toast'
 import { X, Users, Building2, ExternalLink } from 'lucide-react'
 import QRCode from 'qrcode'
@@ -96,32 +95,32 @@ export function RegisterShareModal({ isOpen, onClose, type }: RegisterShareModal
       onClick={onClose}
     >
       <div
-        className="bg-card rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl relative animate-in fade-in zoom-in duration-200"
+        className="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl relative animate-in fade-in zoom-in duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-full hover:bg-muted transition-colors"
+          className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors"
         >
-          <X className="h-5 w-5 text-muted-foreground" />
+          <X className="h-5 w-5 text-gray-400" />
         </button>
 
         {/* Header */}
         <div className="text-center mb-6">
-          <div className="w-16 h-16 bg-theme-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'var(--theme-secondary)' }}>
             {type === 'business' ? (
               <Building2 className="h-8 w-8 text-white" />
             ) : (
               <Users className="h-8 w-8 text-white" />
             )}
           </div>
-          <h3 className="text-2xl font-bold text-foreground mb-2">
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">
             {type === 'business'
               ? t('landing.listYourBusiness')
               : t('landing.startEarningFree')}
           </h3>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-gray-500">
             {type === 'business'
               ? t('auth.createBusinessAccountDesc')
               : t('auth.createReferrerAccountDesc')}
@@ -129,7 +128,7 @@ export function RegisterShareModal({ isOpen, onClose, type }: RegisterShareModal
         </div>
 
         {/* QR Code */}
-        <div className="bg-background rounded-2xl p-4 border-2 border-theme-primaryBorder mb-6">
+        <div className="bg-white rounded-2xl p-4 border-2 border-theme-primaryBorder mb-6">
           {qrCode && (
             <img
               src={qrCode}
@@ -140,31 +139,32 @@ export function RegisterShareModal({ isOpen, onClose, type }: RegisterShareModal
         </div>
 
         {/* Go to Link Button */}
-        <Button
+        <button
           onClick={goToLink}
-          variant="outline"
-          className="w-full border-theme-primaryBorder text-theme-secondary hover:bg-theme-primaryBg rounded-xl mb-4 flex items-center justify-center gap-2"
+          className="w-full border-2 rounded-xl mb-4 flex items-center justify-center gap-2 h-11 px-4 text-sm font-medium transition-colors hover:opacity-80"
+          style={{ borderColor: 'var(--theme-secondary)', color: 'var(--theme-secondary)' }}
         >
           <ExternalLink className="h-4 w-4" />
           {t('common.goToLink', 'Go to Registration')}
-        </Button>
+        </button>
 
         {/* Action Buttons */}
         <div className="flex gap-3">
-          <Button
+          <button
             onClick={copyLink}
-            className="flex-1 bg-theme-primary hover:opacity-90 text-gray-900 rounded-xl"
+            className="flex-1 rounded-xl h-11 px-4 text-sm font-medium text-white transition-colors hover:opacity-90"
+            style={{ background: 'var(--theme-secondary)' }}
           >
             {t('landing.copyLink')}
-          </Button>
+          </button>
           {canShare && (
-            <Button
+            <button
               onClick={shareLink}
-              variant="outline"
-              className="flex-1 border-theme-primary text-theme-secondary hover:bg-theme-primaryBg rounded-xl"
+              className="flex-1 border-2 rounded-xl h-11 px-4 text-sm font-medium transition-colors hover:opacity-80"
+              style={{ borderColor: 'var(--theme-secondary)', color: 'var(--theme-secondary)' }}
             >
               {t('landing.share')}
-            </Button>
+            </button>
           )}
         </div>
       </div>

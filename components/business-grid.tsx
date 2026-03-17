@@ -136,7 +136,7 @@ export function BusinessGrid({ businesses, userId, initialOfferId }: BusinessGri
             </span>
             {/* Earn tag */}
             {earn && (
-              <span className="text-[10px] sm:text-xs font-semibold text-green-600 dark:text-green-400">
+              <span className="text-[10px] sm:text-xs font-semibold text-theme-accent">
                 {t('promotions.earnTag', { amount: earn })}
               </span>
             )}

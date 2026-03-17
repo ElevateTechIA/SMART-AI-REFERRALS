@@ -388,7 +388,7 @@ export default function VisitsPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{t('visits.title')}</h1>
-          <p className="text-foreground/70">
+          <p className="text-muted-foreground">
             {t('visits.subtitle')}
           </p>
         </div>
@@ -558,7 +558,7 @@ export default function VisitsPage() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold tracking-tight">{t('visits.pendingVisits')}</h2>
-              <p className="text-foreground/70">
+              <p className="text-muted-foreground">
                 {t('visits.pendingVisitsDesc')}
               </p>
             </div>
@@ -615,7 +615,7 @@ export default function VisitsPage() {
                             <h3 className="text-white font-extrabold text-xl sm:text-2xl drop-shadow-lg truncate tracking-wide uppercase">
                               {businessName}
                             </h3>
-                            <p className="text-white/80 text-sm drop-shadow font-medium">
+                            <p className="text-theme-textSecondary text-sm drop-shadow font-medium">
                               {visit.business?.category}
                             </p>
                           </div>
@@ -663,9 +663,9 @@ export default function VisitsPage() {
 
                             {/* Expiry notice */}
                             <div className="px-5 pb-3">
-                              <div className={`flex items-center gap-2 rounded-xl px-4 py-2.5 ${daysRemaining <= 0 ? 'bg-destructive/15' : ''}`} style={daysRemaining > 0 ? { background: 'color-mix(in srgb, var(--theme-primary) 15%, transparent)' } : undefined}>
-                                <Clock className={`h-4 w-4 flex-shrink-0 ${daysRemaining <= 0 ? 'text-destructive' : 'text-theme-textMuted'}`} />
-                                <span className={`text-sm ${daysRemaining <= 0 ? 'text-destructive' : 'text-theme-textSecondary'}`}>
+                              <div className={`flex items-center gap-2 rounded-xl px-4 py-2.5 ${daysRemaining <= 0 ? 'bg-red-900/60' : ''}`} style={daysRemaining > 0 ? { background: 'color-mix(in srgb, var(--theme-primary) 15%, transparent)' } : undefined}>
+                                <Clock className={`h-4 w-4 flex-shrink-0 ${daysRemaining <= 0 ? 'text-red-300' : 'text-theme-textMuted'}`} />
+                                <span className={`text-sm ${daysRemaining <= 0 ? 'text-red-200 font-medium' : 'text-theme-textSecondary'}`}>
                                   {daysRemaining <= 0
                                     ? t('visits.qrExpired')
                                     : t('visits.qrExpires', { days: daysRemaining, dayWord: daysRemaining === 1 ? t('visits.day') : t('visits.days') })}
@@ -736,7 +736,7 @@ export default function VisitsPage() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className="gap-2 rounded-xl border-theme-cardBorder text-theme-textPrimary"
+                                  className="gap-2 rounded-xl bg-transparent border-theme-textSecondary text-theme-textPrimary hover:bg-white/10"
                                   onClick={() => openReviewDialog(visit.businessId, visit.business?.name || '')}
                                 >
                                   <Star className="h-4 w-4" />
@@ -810,7 +810,7 @@ export default function VisitsPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="gap-2 rounded-xl border-theme-cardBorder text-theme-textPrimary"
+                              className="gap-2 rounded-xl bg-transparent border-theme-textSecondary text-theme-textPrimary hover:bg-white/10"
                               onClick={() => setReceiptDialogVisitId(visit.id)}
                             >
                               <ReceiptText className="h-4 w-4" />
@@ -1006,6 +1006,7 @@ export default function VisitsPage() {
                                 <Button
                                   size="sm"
                                   variant="outline"
+                                  className="bg-transparent border-border hover:bg-white/10"
                                   onClick={() => setReceiptDialogVisitId(visit.id)}
                                   title={t('receipt.uploadReceipt')}
                                 >
@@ -1016,6 +1017,7 @@ export default function VisitsPage() {
                                 <Button
                                   size="sm"
                                   variant="outline"
+                                  className="bg-transparent border-border hover:bg-white/10"
                                   onClick={() => openReviewDialog(visit.businessId, visit.business?.name || '')}
                                   title={existingReview ? t('review.editReview') : t('review.writeReview')}
                                 >

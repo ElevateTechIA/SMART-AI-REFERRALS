@@ -560,7 +560,7 @@ export default function AdminDashboardPage() {
         <Shield className="h-8 w-8 text-primary" />
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{t('admin.title')}</h1>
-          <p className="text-foreground/70">
+          <p className="text-muted-foreground">
             {t('admin.subtitle')}
           </p>
         </div>

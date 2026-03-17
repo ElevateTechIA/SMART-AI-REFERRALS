@@ -175,6 +175,50 @@
     --theme-textPrimary: #111827;
     --theme-textSecondary: #4B5563;
     --theme-textMuted: #9CA3AF;
+
+    /* HSL versions set dynamically by theme-provider */
+    --theme-textPrimary-hsl: 222 47% 11%;
+    --theme-textSecondary-hsl: 215 14% 34%;
+    --theme-textMuted-hsl: 218 11% 65%;
+    --theme-cardBg-hsl: 0 0% 100%;
+    --theme-surfaceVariant-hsl: 220 14% 96%;
+  }
+
+  /* Scoped Shadcn overrides for themed surfaces (dashboard).
+     Card bg/fg are set at the page level so bg-card resolves correctly.
+     Text-related overrides are scoped to [data-card] so page-level
+     elements (titles, inputs, headings) keep default dark text. */
+  [data-themed-surface] {
+    --card: var(--theme-cardBg-hsl);
+    --card-foreground: var(--theme-textPrimary-hsl);
+  }
+
+  /* Inside cards: override text, muted, accent, border for themed content.
+     Targets both Card components ([data-card]) and raw bg-card divs. */
+  [data-themed-surface] [data-card],
+  [data-themed-surface] .bg-card {
+    --background: var(--theme-cardBg-hsl);
+    --foreground: var(--theme-textPrimary-hsl);
+    --muted: var(--theme-surfaceVariant-hsl);
+    --muted-foreground: var(--theme-textSecondary-hsl);
+    --secondary: var(--theme-surfaceVariant-hsl);
+    --secondary-foreground: var(--theme-textPrimary-hsl);
+    --accent: var(--theme-surfaceVariant-hsl);
+    --accent-foreground: var(--theme-textPrimary-hsl);
+    --border: var(--theme-textSecondary-hsl);
+  }
+
+  /* Restore default light styling inside portaled overlays (modals, dialogs, etc.) */
+  [data-themed-surface] [role="dialog"],
+  [data-themed-surface] [data-radix-popper-content-wrapper] {
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    --secondary-foreground: 222 47% 11%;
+    --accent-foreground: 217 91% 50%;
+    --border: 220 13% 91%;
   }
 
   .dark {

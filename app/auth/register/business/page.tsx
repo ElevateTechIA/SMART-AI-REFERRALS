@@ -65,13 +65,13 @@ function BusinessRegisterContent() {
         <CardFooter className="flex flex-col gap-3 pb-8 bg-gray-50 rounded-b-3xl">
           <p className="text-sm text-center font-medium text-gray-600">
             {t('auth.haveAccount')}{' '}
-            <Link href="/auth/login?from=business" className="hover:opacity-80 font-semibold hover:underline" style={{ color: 'var(--theme-primary)' }}>
+            <Link href="/auth/login?from=business" className="hover:opacity-80 font-semibold hover:underline" style={{ color: 'var(--theme-secondary)' }}>
               {t('auth.signIn')}
             </Link>
           </p>
           <p className="text-xs text-center text-gray-500">
             {t('auth.termsAgreement')}{' '}
-            <Link href="/terms" className="underline hover:opacity-80" style={{ color: 'var(--theme-primary)' }}>
+            <Link href="/terms" className="underline hover:opacity-80" style={{ color: 'var(--theme-secondary)' }}>
               {t('auth.termsOfService')}
             </Link>
             {' '}{t('auth.andPrivacyPolicy')}
@@ -86,7 +86,7 @@ export default function BusinessRegisterPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <Loader2 className="h-8 w-8 animate-spin" style={{ color: 'var(--theme-primary)' }} />
+        <Loader2 className="h-8 w-8 animate-spin" style={{ color: 'var(--theme-secondary)' }} />
       </div>
     }>
       <BusinessRegisterContent />

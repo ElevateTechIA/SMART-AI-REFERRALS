@@ -13,10 +13,10 @@ const buttonVariants = cva(
         destructive:
           'bg-theme-error text-white hover:opacity-90',
         outline:
-          'border-2 border-theme-cardBorder glass-card text-theme-textPrimary hover:border-theme-primary',
+          'border-2 border-border bg-transparent text-foreground hover:bg-accent hover:text-accent-foreground',
         secondary:
           'bg-theme-secondary text-white hover:bg-theme-secondaryLight',
-        ghost: 'hover:bg-theme-cardBgHover text-theme-textPrimary',
+        ghost: 'hover:bg-accent hover:text-accent-foreground',
         link: 'text-theme-secondary underline-offset-4 hover:underline',
       },
       size: {

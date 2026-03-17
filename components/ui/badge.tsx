@@ -16,9 +16,9 @@ const badgeVariants = cva(
           'border-transparent bg-theme-error text-white hover:opacity-80',
         outline: 'text-theme-textPrimary border-theme-cardBorder',
         success:
-          'border-transparent bg-theme-success text-white hover:opacity-80',
+          'border-transparent bg-theme-success text-[var(--theme-successForeground,#111827)] hover:opacity-80',
         warning:
-          'border-transparent bg-theme-warning text-white hover:opacity-80',
+          'border-transparent bg-theme-warning text-[var(--theme-warningForeground,#111827)] hover:opacity-80',
       },
     },
     defaultVariants: {

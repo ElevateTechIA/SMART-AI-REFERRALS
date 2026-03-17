@@ -93,21 +93,21 @@ export function BusinessDashboard() {
                   <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">1</div>
                   <div>
                     <p className="text-white font-semibold text-sm">{t('dashboard.howStep1TitleBiz')}</p>
-                    <p className="text-white/70 text-xs">{t('dashboard.howStep1DescBiz')}</p>
+                    <p className="text-theme-textSecondary text-xs">{t('dashboard.howStep1DescBiz')}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">2</div>
                   <div>
                     <p className="text-white font-semibold text-sm">{t('dashboard.howStep2TitleBiz')}</p>
-                    <p className="text-white/70 text-xs">{t('dashboard.howStep2DescBiz')}</p>
+                    <p className="text-theme-textSecondary text-xs">{t('dashboard.howStep2DescBiz')}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">3</div>
                   <div>
                     <p className="text-white font-semibold text-sm">{t('dashboard.howStep3TitleBiz')}</p>
-                    <p className="text-white/70 text-xs">{t('dashboard.howStep3DescBiz')}</p>
+                    <p className="text-theme-textSecondary text-xs">{t('dashboard.howStep3DescBiz')}</p>
                   </div>
                 </div>
               </div>
@@ -138,21 +138,21 @@ export function BusinessDashboard() {
                 <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-[10px]">1</div>
                 <div>
                   <p className="text-white font-semibold text-xs">{t('dashboard.howStep1TitleBiz')}</p>
-                  <p className="text-white/70 text-[10px]">{t('dashboard.howStep1DescBiz')}</p>
+                  <p className="text-theme-textSecondary text-[10px]">{t('dashboard.howStep1DescBiz')}</p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
                 <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-[10px]">2</div>
                 <div>
                   <p className="text-white font-semibold text-xs">{t('dashboard.howStep2TitleBiz')}</p>
-                  <p className="text-white/70 text-[10px]">{t('dashboard.howStep2DescBiz')}</p>
+                  <p className="text-theme-textSecondary text-[10px]">{t('dashboard.howStep2DescBiz')}</p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
                 <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-[10px]">3</div>
                 <div>
                   <p className="text-white font-semibold text-xs">{t('dashboard.howStep3TitleBiz')}</p>
-                  <p className="text-white/70 text-[10px]">{t('dashboard.howStep3DescBiz')}</p>
+                  <p className="text-theme-textSecondary text-[10px]">{t('dashboard.howStep3DescBiz')}</p>
                 </div>
               </div>
             </div>

@@ -145,8 +145,8 @@ export function AdminDashboard() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-white font-semibold text-sm truncate">{ticket.subject}</p>
-                        <p className="text-white/70 text-xs truncate">{ticket.userName}</p>
-                        <p className="text-white/50 text-[10px] mt-0.5">{ticket.createdAt ? formatDate(ticket.createdAt) : ''}</p>
+                        <p className="text-theme-textSecondary text-xs truncate">{ticket.userName}</p>
+                        <p className="text-theme-textMuted text-[10px] mt-0.5">{ticket.createdAt ? formatDate(ticket.createdAt) : ''}</p>
                       </div>
                     </div>
                   ))}
@@ -159,7 +159,7 @@ export function AdminDashboard() {
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center text-center">
                   <MessageSquare className="h-10 w-10 text-white/40 mb-3" />
-                  <p className="text-white/70 text-sm">{t('dashboard.noNewMessages')}</p>
+                  <p className="text-theme-textSecondary text-sm">{t('dashboard.noNewMessages')}</p>
                 </div>
               )}
             </div>
@@ -189,7 +189,7 @@ export function AdminDashboard() {
                     </div>
                     <div className="flex-1">
                       <p className="text-white font-semibold text-sm">{t('dashboard.pendingBusinesses')}</p>
-                      <p className="text-white/70 text-xs">{t('admin.pendingApproval', { count: stats?.pendingBusinesses || 0 })}</p>
+                      <p className="text-theme-textSecondary text-xs">{t('admin.pendingApproval', { count: stats?.pendingBusinesses || 0 })}</p>
                     </div>
                     <span className="text-2xl font-bold text-white">{stats?.pendingBusinesses || 0}</span>
                   </div>
@@ -200,7 +200,7 @@ export function AdminDashboard() {
                     </div>
                     <div className="flex-1">
                       <p className="text-white font-semibold text-sm">{t('dashboard.pendingPromoters')}</p>
-                      <p className="text-white/70 text-xs">{t('admin.pendingApproval', { count: stats?.pendingReferrers || 0 })}</p>
+                      <p className="text-theme-textSecondary text-xs">{t('admin.pendingApproval', { count: stats?.pendingReferrers || 0 })}</p>
                     </div>
                     <span className="text-2xl font-bold text-white">{stats?.pendingReferrers || 0}</span>
                   </div>
@@ -211,7 +211,7 @@ export function AdminDashboard() {
                     </div>
                     <div className="flex-1">
                       <p className="text-white font-semibold text-sm">{t('dashboard.unreadMessages')}</p>
-                      <p className="text-white/70 text-xs">{t('dashboard.unreadMessagesCount', { count: stats?.unreadSupportTickets || 0 })}</p>
+                      <p className="text-theme-textSecondary text-xs">{t('dashboard.unreadMessagesCount', { count: stats?.unreadSupportTickets || 0 })}</p>
                     </div>
                     <span className="text-2xl font-bold text-white">{stats?.unreadSupportTickets || 0}</span>
                   </div>
@@ -225,7 +225,7 @@ export function AdminDashboard() {
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center text-center">
                   <CheckCircle className="h-10 w-10 text-white/40 mb-3" />
-                  <p className="text-white/70 text-sm">{t('dashboard.noPendingApprovals')}</p>
+                  <p className="text-theme-textSecondary text-sm">{t('dashboard.noPendingApprovals')}</p>
                 </div>
               )}
             </div>
@@ -248,7 +248,7 @@ export function AdminDashboard() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-white font-semibold text-xs truncate">{ticket.subject}</p>
-                      <p className="text-white/70 text-[10px] truncate">{ticket.userName}</p>
+                      <p className="text-theme-textSecondary text-[10px] truncate">{ticket.userName}</p>
                     </div>
                   </div>
                 ))}
@@ -261,7 +261,7 @@ export function AdminDashboard() {
             ) : (
               <div className="flex flex-col items-center justify-center text-center py-4">
                 <MessageSquare className="h-8 w-8 text-white/40 mb-2" />
-                <p className="text-white/70 text-[10px]">{t('dashboard.noNewMessages')}</p>
+                <p className="text-theme-textSecondary text-[10px]">{t('dashboard.noNewMessages')}</p>
               </div>
             )}
           </div>
@@ -287,7 +287,7 @@ export function AdminDashboard() {
                   </div>
                   <div className="flex-1">
                     <p className="text-white font-semibold text-xs">{t('dashboard.pendingBusinesses')}</p>
-                    <p className="text-white/70 text-[10px]">{t('admin.pendingApproval', { count: stats?.pendingBusinesses || 0 })}</p>
+                    <p className="text-theme-textSecondary text-[10px]">{t('admin.pendingApproval', { count: stats?.pendingBusinesses || 0 })}</p>
                   </div>
                   <span className="text-lg font-bold text-white">{stats?.pendingBusinesses || 0}</span>
                 </div>
@@ -298,7 +298,7 @@ export function AdminDashboard() {
                   </div>
                   <div className="flex-1">
                     <p className="text-white font-semibold text-xs">{t('dashboard.pendingPromoters')}</p>
-                    <p className="text-white/70 text-[10px]">{t('admin.pendingApproval', { count: stats?.pendingReferrers || 0 })}</p>
+                    <p className="text-theme-textSecondary text-[10px]">{t('admin.pendingApproval', { count: stats?.pendingReferrers || 0 })}</p>
                   </div>
                   <span className="text-lg font-bold text-white">{stats?.pendingReferrers || 0}</span>
                 </div>
@@ -309,7 +309,7 @@ export function AdminDashboard() {
                   </div>
                   <div className="flex-1">
                     <p className="text-white font-semibold text-xs">{t('dashboard.unreadMessages')}</p>
-                    <p className="text-white/70 text-[10px]">{t('dashboard.unreadMessagesCount', { count: stats?.unreadSupportTickets || 0 })}</p>
+                    <p className="text-theme-textSecondary text-[10px]">{t('dashboard.unreadMessagesCount', { count: stats?.unreadSupportTickets || 0 })}</p>
                   </div>
                   <span className="text-lg font-bold text-white">{stats?.unreadSupportTickets || 0}</span>
                 </div>
@@ -323,7 +323,7 @@ export function AdminDashboard() {
             ) : (
               <div className="flex flex-col items-center justify-center text-center py-4">
                 <CheckCircle className="h-8 w-8 text-white/40 mb-2" />
-                <p className="text-white/70 text-[10px]">{t('dashboard.noPendingApprovals')}</p>
+                <p className="text-theme-textSecondary text-[10px]">{t('dashboard.noPendingApprovals')}</p>
               </div>
             )}
           </div>

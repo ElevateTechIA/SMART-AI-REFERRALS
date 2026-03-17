@@ -3,6 +3,29 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react'
 import { themes, defaultTheme, type ThemeName } from './colors'
 
+/** Convert a hex color (#rrggbb) to "H S% L%" string for Shadcn CSS vars */
+function hexToHSL(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16) / 255
+  const g = parseInt(hex.slice(3, 5), 16) / 255
+  const b = parseInt(hex.slice(5, 7), 16) / 255
+
+  const max = Math.max(r, g, b), min = Math.min(r, g, b)
+  const l = (max + min) / 2
+  let h = 0, s = 0
+
+  if (max !== min) {
+    const d = max - min
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break
+      case g: h = ((b - r) / d + 2) / 6; break
+      case b: h = ((r - g) / d + 4) / 6; break
+    }
+  }
+
+  return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`
+}
+
 export type Mode = 'light' | 'dark' | 'system'
 
 interface ThemeContextType {
@@ -103,14 +126,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       root.style.setProperty(`--theme-${key}`, value as string)
     })
 
-    // Override shadcn muted tokens for themes with dark card backgrounds
-    if (theme === 'eliv') {
-      root.style.setProperty('--muted', '232 70% 48%')
-      root.style.setProperty('--muted-foreground', '225 80% 92%')
-    } else {
-      root.style.removeProperty('--muted')
-      root.style.removeProperty('--muted-foreground')
-    }
+    // Set HSL versions of theme text colors for scoped Shadcn overrides.
+    // These are applied via CSS on [data-themed-surface] (dashboard layout)
+    // so modals/dialogs keep their default white bg + dark text.
+    root.style.setProperty('--theme-textPrimary-hsl', hexToHSL(colors.textPrimary as string))
+    root.style.setProperty('--theme-textSecondary-hsl', hexToHSL(colors.textSecondary as string))
+    root.style.setProperty('--theme-textMuted-hsl', hexToHSL(colors.textMuted as string))
+    root.style.setProperty('--theme-cardBg-hsl', hexToHSL(colors.cardBg as string))
+    root.style.setProperty('--theme-surfaceVariant-hsl', hexToHSL((colors as Record<string, string>).surfaceVariant || colors.cardBg as string))
 
     localStorage.setItem('app-theme', theme)
   }, [theme, resolvedMode])

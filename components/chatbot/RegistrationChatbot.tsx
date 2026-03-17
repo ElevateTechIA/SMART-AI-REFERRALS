@@ -345,7 +345,7 @@ export function RegistrationChatbot({
               {language === 'es' ? 'Asistente de Registro' : 'Registration Assistant'}
             </h3>
             {registrationType && (
-              <p className="text-white/70 text-xs">
+              <p className="text-theme-textSecondary text-xs">
                 {registrationType === 'business'
                   ? language === 'es' ? 'Registro de Negocio' : 'Business Registration'
                   : language === 'es' ? 'Registro de Promotor' : 'Promoter Registration'

@@ -31,7 +31,7 @@ export function WelcomeBanner({ userName, subtitle }: WelcomeBannerProps) {
         <h1 className="text-2xl md:text-4xl font-bold text-white mb-1">
           {t('dashboard.welcomeBack', { name: userName })}
         </h1>
-        <p className="text-white/90 text-sm md:text-lg">{subtitle}</p>
+        <p className="text-theme-textSecondary text-sm md:text-lg">{subtitle}</p>
       </div>
     </div>
   )

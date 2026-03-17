@@ -186,7 +186,7 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
                 <h3 className="text-white font-extrabold text-xl sm:text-2xl drop-shadow-lg truncate tracking-wide uppercase">
                   {business.name}
                 </h3>
-                <p className="text-white/80 text-sm drop-shadow font-medium">
+                <p className="text-theme-textSecondary text-sm drop-shadow font-medium">
                   {business.category}
                 </p>
               </div>
@@ -217,7 +217,7 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
                 {qrCode ? (
                   <img src={qrCode} alt="QR Code" className="w-36 h-36 sm:w-40 sm:h-40" />
                 ) : (
-                  <div className="w-36 h-36 sm:w-40 sm:h-40 bg-gray-100 animate-pulse rounded-xl" />
+                  <div className="w-36 h-36 sm:w-40 sm:h-40 bg-muted animate-pulse rounded-xl" />
                 )}
               </div>
             </div>

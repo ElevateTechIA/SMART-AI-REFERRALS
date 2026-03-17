@@ -59,7 +59,7 @@ export function PendingVisits() {
             return (
               <div
                 key={visit.businessId}
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted transition-colors"
               >
                 <div className="flex items-start gap-3 flex-1">
                   <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">

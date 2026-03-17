@@ -311,7 +311,7 @@ export default function BusinessDashboardPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{business.name}</h1>
-          <p className="text-foreground/70">
+          <p className="text-muted-foreground">
             {t('businessDashboard.businessDashboard')} - {business.category}
           </p>
         </div>
@@ -498,7 +498,7 @@ export default function BusinessDashboardPage() {
                 {promoQr ? (
                   <img src={promoQr} alt="QR Code" className="w-40 h-40" />
                 ) : (
-                  <div className="w-40 h-40 bg-gray-100 animate-pulse rounded-xl" />
+                  <div className="w-40 h-40 bg-muted animate-pulse rounded-xl" />
                 )}
               </div>
             </div>

@@ -22,7 +22,7 @@ export function PromoLinkCard({ qrCode, appUrl, onCopyLink, onShare, onShareApp 
     >
       <div className="flex items-center justify-between mb-2 md:mb-4">
         <h2 className="text-sm md:text-base font-bold text-white">{t('dashboard.myReferralLink')}</h2>
-        <ChevronRight className="h-4 w-4 text-white/60 md:text-white/60" />
+        <ChevronRight className="h-4 w-4 text-theme-textMuted md:text-theme-textMuted" />
       </div>
       <div className="flex flex-col items-center bg-card rounded-lg md:rounded-xl p-3 md:p-4 overflow-hidden">
         {qrCode && (

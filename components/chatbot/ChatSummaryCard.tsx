@@ -159,7 +159,7 @@ export function ChatSummaryCard({
           onClick={onConfirm}
           className={cn(
             'flex-1 flex items-center justify-center gap-2 px-4 py-2',
-            'text-sm font-medium text-white bg-theme-primary',
+            'text-sm font-medium text-gray-900 bg-theme-primary',
             'rounded-lg',
             'hover:opacity-90 transition-colors'
           )}
