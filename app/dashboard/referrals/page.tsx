@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo, Suspense } from 'react'
+import { useEffect, useState, useMemo, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useTranslation } from 'react-i18next'
@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
-import { apiGet } from '@/lib/api-client'
+import { apiGet, apiPost } from '@/lib/api-client'
 import type { Business, Offer, Visit, Earning } from '@/lib/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { BusinessGrid } from '@/components/business-grid'
@@ -26,6 +26,7 @@ import {
   ShieldAlert,
   Search,
   Plus,
+  Heart,
 } from 'lucide-react'
 
 interface ReferralsApiResponse {
@@ -33,6 +34,7 @@ interface ReferralsApiResponse {
   referrals: Visit[]
   earnings: Earning[]
   referrerStatus: string | null
+  favoriteBusinessIds: string[]
 }
 
 function ReferralsContent() {
@@ -49,6 +51,26 @@ function ReferralsContent() {
   const [serverReferrerStatus, setServerReferrerStatus] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
+  const [favorites, setFavorites] = useState<Set<string>>(new Set())
+
+  const toggleFavorite = useCallback((businessId: string) => {
+    setFavorites(prev => {
+      const next = new Set(prev)
+      const removing = next.has(businessId)
+      if (removing) {
+        next.delete(businessId)
+      } else {
+        next.add(businessId)
+      }
+      // Fire-and-forget API call
+      apiPost('/api/favorites', { businessId, action: removing ? 'remove' : 'add' })
+      // If no favorites left and viewing favorites category, switch to all
+      if (next.size === 0) {
+        setSelectedCategory('all')
+      }
+      return next
+    })
+  }, [])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -83,6 +105,13 @@ function ReferralsContent() {
 
         setBusinesses(businessList)
         setReferrals(referralsList)
+
+        // Load favorites from server
+        const favIds = data.favoriteBusinessIds || []
+        if (favIds.length > 0) {
+          setFavorites(new Set(favIds))
+          setSelectedCategory('favorites')
+        }
         setEarnings(earningsList)
         setServerReferrerStatus(data.referrerStatus)
       } catch (error) {
@@ -107,12 +136,23 @@ function ReferralsContent() {
 
   const filteredBusinesses = useMemo(() => {
     const query = searchQuery.toLowerCase().trim()
-    return businesses.filter((b) => {
-      const matchesCategory = selectedCategory === 'all' || b.category === selectedCategory
+    const filtered = businesses.filter((b) => {
+      const matchesCategory =
+        selectedCategory === 'all' ||
+        (selectedCategory === 'favorites' ? favorites.has(b.id) : b.category === selectedCategory)
       const matchesSearch = !query || b.name.toLowerCase().includes(query) || b.category?.toLowerCase().includes(query)
       return matchesCategory && matchesSearch
     })
-  }, [businesses, searchQuery, selectedCategory])
+    // Show favorites first when viewing all categories
+    if (selectedCategory === 'all' && favorites.size > 0) {
+      filtered.sort((a, b) => {
+        const aFav = favorites.has(a.id) ? 0 : 1
+        const bFav = favorites.has(b.id) ? 0 : 1
+        return aFav - bFav
+      })
+    }
+    return filtered
+  }, [businesses, searchQuery, selectedCategory, favorites])
 
   if (loading) {
     return (
@@ -281,6 +321,14 @@ function ReferralsContent() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('promotions.allCategories')}</SelectItem>
+                {favorites.size > 0 && (
+                  <SelectItem value="favorites">
+                    <span className="flex items-center gap-1.5">
+                      <Heart className="h-3.5 w-3.5 fill-rose-500 text-rose-500" />
+                      {t('promotions.favorites')}
+                    </span>
+                  </SelectItem>
+                )}
                 {categories.map((cat) => (
                   <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                 ))}
@@ -288,7 +336,7 @@ function ReferralsContent() {
             </Select>
           </div>
 
-          <BusinessGrid businesses={filteredBusinesses} userId={user!.id} initialOfferId={offerId} />
+          <BusinessGrid businesses={filteredBusinesses} userId={user!.id} initialOfferId={offerId} favorites={favorites} onToggleFavorite={toggleFavorite} isFiltered={selectedCategory !== 'all' || searchQuery.trim().length > 0} />
         </div>
       )}
 

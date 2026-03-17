@@ -203,7 +203,12 @@
     "statusRejected": "Rejected",
     "earningStatusPending": "Pending",
     "earningStatusApproved": "Approved",
-    "earningStatusPaid": "Paid"
+    "earningStatusPaid": "Paid",
+    "favorites": "Favorites",
+    "addToFavorites": "Add to favorites",
+    "removeFromFavorites": "Remove from favorites",
+    "noFavorites": "Tap the heart on any partner to add it to your favorites",
+    "noFavoritesTitle": "No favorites yet"
   },
   "admin": {
     "title": "Admin Dashboard",

@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '@/lib/utils'
 import type { Business, Offer } from '@/lib/types'
 import { ReferralCardCarousel } from '@/components/referral-card-carousel'
-import { ArrowLeft, Star } from 'lucide-react'
+import { ArrowLeft, Star, Heart } from 'lucide-react'
 
 function getFakeReviewCount(name: string): number {
   let hash = 0
@@ -60,9 +60,12 @@ interface BusinessGridProps {
   businesses: BusinessWithOffer[]
   userId: string
   initialOfferId?: string | null
+  favorites?: Set<string>
+  onToggleFavorite?: (businessId: string) => void
+  isFiltered?: boolean
 }
 
-export function BusinessGrid({ businesses, userId, initialOfferId }: BusinessGridProps) {
+export function BusinessGrid({ businesses, userId, initialOfferId, favorites, onToggleFavorite, isFiltered }: BusinessGridProps) {
   const { t } = useTranslation()
   const [selectedBusiness, setSelectedBusiness] = useState<BusinessWithOffer | null>(null)
   const [dismissedOffer, setDismissedOffer] = useState(false)
@@ -75,7 +78,7 @@ export function BusinessGrid({ businesses, userId, initialOfferId }: BusinessGri
     }
   }, [initialOfferId, businesses, selectedBusiness, dismissedOffer])
 
-  const placeholderCount = Math.max(0, 10 - businesses.length)
+  const placeholderCount = isFiltered ? 0 : Math.max(0, 10 - businesses.length)
 
   // Detail view — full page with back button
   if (selectedBusiness) {
@@ -100,6 +103,17 @@ export function BusinessGrid({ businesses, userId, initialOfferId }: BusinessGri
     )
   }
 
+  // Empty state for favorites filter
+  if (businesses.length === 0 && isFiltered) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-center">
+        <Heart className="h-12 w-12 text-muted-foreground/30 mb-3" />
+        <h3 className="text-sm font-semibold text-foreground mb-1">{t('promotions.noFavoritesTitle')}</h3>
+        <p className="text-xs text-muted-foreground max-w-[240px]">{t('promotions.noFavorites')}</p>
+      </div>
+    )
+  }
+
   // Grid view
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -110,12 +124,24 @@ export function BusinessGrid({ businesses, userId, initialOfferId }: BusinessGri
           ? formatCurrency(biz.offer.referrerCommissionAmount)
           : null
 
+        const isFavorite = favorites?.has(biz.id) ?? false
+
         return (
-          <button
+          <div
             key={biz.id}
+            className="relative flex flex-col items-center gap-1.5 p-2 sm:p-3 rounded-2xl bg-card border border-border hover:border-primary/40 hover:shadow-md transition-all cursor-pointer"
             onClick={() => setSelectedBusiness(biz)}
-            className="flex flex-col items-center gap-1.5 p-2 sm:p-3 rounded-2xl bg-card border border-border hover:border-primary/40 hover:shadow-md transition-all"
           >
+            {/* Favorite toggle */}
+            {onToggleFavorite && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onToggleFavorite(biz.id) }}
+                className="absolute top-1.5 right-1.5 z-10 p-1.5 rounded-full hover:bg-muted/80 transition-all active:scale-125"
+                aria-label={isFavorite ? t('promotions.removeFromFavorites') : t('promotions.addToFavorites')}
+              >
+                <Heart className={`h-4 w-4 transition-all duration-200 ${isFavorite ? 'fill-rose-500 text-rose-500 scale-110' : 'text-muted-foreground hover:text-rose-400'}`} />
+              </button>
+            )}
             {/* Logo circle */}
             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden bg-muted flex items-center justify-center border border-border shadow-sm">
               {logo ? (
@@ -147,7 +173,7 @@ export function BusinessGrid({ businesses, userId, initialOfferId }: BusinessGri
                 {getFakeReviewCount(biz.name)}
               </span>
             </div>
-          </button>
+          </div>
         )
       })}
 

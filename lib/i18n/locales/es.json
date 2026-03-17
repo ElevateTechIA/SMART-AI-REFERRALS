@@ -203,7 +203,12 @@
     "statusRejected": "Rechazado",
     "earningStatusPending": "Pendiente",
     "earningStatusApproved": "Aprobado",
-    "earningStatusPaid": "Pagado"
+    "earningStatusPaid": "Pagado",
+    "favorites": "Favoritos",
+    "addToFavorites": "Agregar a favoritos",
+    "removeFromFavorites": "Quitar de favoritos",
+    "noFavorites": "Toca el corazón en cualquier socio para agregarlo a tus favoritos",
+    "noFavoritesTitle": "Aún no tienes favoritos"
   },
   "admin": {
     "title": "Panel de Administrador",

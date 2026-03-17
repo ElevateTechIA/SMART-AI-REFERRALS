@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
     const userDoc = await db.collection('users').doc(userId).get()
     const userData = userDoc.data()
     const referrerStatus = userData?.referrerStatus || null
+    const favoriteBusinessIds: string[] = userData?.favoriteBusinessIds || []
 
     // Fetch active businesses with active offers
     // Note: Avoiding orderBy to prevent needing composite indexes
@@ -157,6 +158,7 @@ export async function GET(request: NextRequest) {
       referrals,
       earnings,
       referrerStatus,
+      favoriteBusinessIds,
     })
   } catch (error) {
     console.error('Error fetching referrals data:', error)
