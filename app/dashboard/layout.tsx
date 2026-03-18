@@ -45,7 +45,7 @@ export default function DashboardLayout({
   return (
     <div className="min-h-screen bg-background" data-themed-surface>
       <DashboardNav />
-      <main className="container mx-auto px-4 py-8 pb-20 md:pb-8">
+      <main className="mx-auto max-w-7xl px-4 py-8 pb-20 md:pb-8">
         {children}
       </main>
       <BottomNav />

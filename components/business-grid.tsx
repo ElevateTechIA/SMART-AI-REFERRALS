@@ -122,14 +122,14 @@ export function BusinessGrid({ businesses, userId, initialOfferId, favorites, on
   return (
     <div
       className={needsScroll
-        ? 'overflow-x-auto pb-2 scrollbar-thin'
+        ? 'overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0 scrollbar-thin'
         : ''
       }
     >
     <div
       className={needsScroll
-        ? 'grid grid-rows-2 sm:grid-rows-3 lg:grid-rows-4 grid-flow-col auto-cols-[calc((100%-0.75rem)/2)] sm:auto-cols-[calc((100%-1.5rem)/3)] lg:auto-cols-[calc((100%-2.25rem)/4)] gap-3 sm:gap-4'
-        : 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4'
+        ? 'grid grid-rows-2 sm:grid-rows-3 grid-flow-col auto-cols-[calc((100%-0.75rem)/2)] sm:auto-cols-[calc((100%-1.5rem)/3)] lg:grid-rows-none lg:grid-flow-row lg:auto-cols-auto lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4'
+        : 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4'
       }
     >
       {/* Real businesses */}
