@@ -17,6 +17,7 @@ import {
   ChevronLeft,
   Clock,
   Loader2,
+  Landmark,
 } from 'lucide-react'
 
 interface Transaction {
@@ -126,8 +127,18 @@ export default function EarningsPage() {
             <ChevronLeft className="h-5 w-5" />
             <span>{t('common.backToDashboard')}</span>
           </Link>
-          <h1 className="text-3xl md:text-4xl font-bold text-theme-textPrimary mb-2">{t('earnings.title')}</h1>
-          <p className="text-theme-textSecondary">{t('earnings.subtitle')}</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-theme-textPrimary mb-2">{t('earnings.title')}</h1>
+              <p className="text-theme-textSecondary">{t('earnings.subtitle')}</p>
+            </div>
+            <Link href="/dashboard/cashout">
+              <Button className="bg-white hover:bg-white/90 text-gray-900 rounded-xl h-11 px-5 font-semibold shadow-lg">
+                <Landmark className="h-4 w-4 mr-2" />
+                {t('cashout.cashOutButton')}
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 

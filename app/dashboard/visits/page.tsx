@@ -392,10 +392,12 @@ export default function VisitsPage() {
             {t('visits.subtitle')}
           </p>
         </div>
-        <Button className="gap-2" disabled>
-          <DollarSign className="h-4 w-4" />
-          Cash Out
-        </Button>
+        <Link href="/dashboard/cashout">
+          <Button className="gap-2">
+            <DollarSign className="h-4 w-4" />
+            {t('cashout.cashOutButton')}
+          </Button>
+        </Link>
       </div>
 
       {/* Stats Cards */}

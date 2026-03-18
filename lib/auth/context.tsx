@@ -45,6 +45,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     referrerStatus: data.referrerStatus as User['referrerStatus'],
     profileComplete: (data.profileComplete as boolean) || false,
     bankInfo: data.bankInfo as User['bankInfo'],
+    termsAccepted: (data.termsAccepted as boolean) || false,
+    termsAcceptedAt: (data.termsAcceptedAt as { toDate: () => Date })?.toDate() || undefined,
     createdAt: (data.createdAt as { toDate: () => Date })?.toDate() || new Date(),
     updatedAt: (data.updatedAt as { toDate: () => Date })?.toDate() || new Date(),
   })

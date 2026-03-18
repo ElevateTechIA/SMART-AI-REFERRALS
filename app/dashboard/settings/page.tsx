@@ -17,10 +17,7 @@ import {
   Camera,
   Calendar,
   Shield,
-  Landmark,
   Loader2,
-  Eye,
-  EyeOff,
   AlertCircle,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -45,7 +42,6 @@ export default function SettingsPage() {
   const [uploading, setUploading] = useState(false)
   const [cropperOpen, setCropperOpen] = useState(false)
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null)
-  const [showAccountNumber, setShowAccountNumber] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [formData, setFormData] = useState({
@@ -56,14 +52,6 @@ export default function SettingsPage() {
     city: '',
     zipcode: '',
     phone: '',
-  })
-
-  const [bankInfo, setBankInfo] = useState({
-    bankName: '',
-    accountHolderName: '',
-    routingNumber: '',
-    accountNumber: '',
-    accountType: 'checking' as 'checking' | 'savings',
   })
 
   // Load existing user data
@@ -78,19 +66,8 @@ export default function SettingsPage() {
         zipcode: user.zipcode || '',
         phone: user.phone || '',
       })
-      if (user.bankInfo) {
-        setBankInfo({
-          bankName: user.bankInfo.bankName || '',
-          accountHolderName: user.bankInfo.accountHolderName || '',
-          routingNumber: user.bankInfo.routingNumber || '',
-          accountNumber: user.bankInfo.accountNumber || '',
-          accountType: user.bankInfo.accountType || 'checking',
-        })
-      }
     }
   }, [user])
-
-  const isPromoter = user?.roles.includes('referrer')
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -187,24 +164,6 @@ export default function SettingsPage() {
       return false
     }
 
-    // Validate bank info if partially filled
-    const bankFields = [bankInfo.bankName, bankInfo.accountHolderName, bankInfo.routingNumber, bankInfo.accountNumber]
-    const filledBankFields = bankFields.filter((f) => f.trim().length > 0)
-    if (filledBankFields.length > 0 && filledBankFields.length < bankFields.length) {
-      toast({ title: t('common.error'), description: t('validation.bankInfoIncomplete'), variant: 'destructive' })
-      return false
-    }
-    if (filledBankFields.length === bankFields.length) {
-      if (!/^\d{9}$/.test(bankInfo.routingNumber)) {
-        toast({ title: t('common.error'), description: t('validation.invalidRoutingNumber'), variant: 'destructive' })
-        return false
-      }
-      if (!/^\d{4,17}$/.test(bankInfo.accountNumber)) {
-        toast({ title: t('common.error'), description: t('validation.invalidAccountNumber'), variant: 'destructive' })
-        return false
-      }
-    }
-
     return true
   }
 
@@ -215,13 +174,7 @@ export default function SettingsPage() {
 
     setSaving(true)
     try {
-      const bankFields = [bankInfo.bankName, bankInfo.accountHolderName, bankInfo.routingNumber, bankInfo.accountNumber]
-      const hasBankInfo = bankFields.every((f) => f.trim().length > 0)
-
       const payload: Record<string, unknown> = { ...formData }
-      if (hasBankInfo) {
-        payload.bankInfo = bankInfo
-      }
 
       const result = await apiPut<{ success: boolean; error?: string }>(
         '/api/users/profile',
@@ -476,104 +429,6 @@ export default function SettingsPage() {
             </form>
           </CardContent>
         </Card>
-
-        {/* Bank Information (Promoters only) */}
-        {isPromoter && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Landmark className="h-5 w-5" />
-                {t('accountSettings.bankInfo')}
-              </CardTitle>
-              <CardDescription>{t('accountSettings.bankInfoDesc')}</CardDescription>
-              <p className="text-xs text-muted-foreground mt-1">{t('accountSettings.bankInfoHint')}</p>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Bank Name */}
-              <div className="space-y-2">
-                <Label htmlFor="bankName">{t('accountSettings.bankName')}</Label>
-                <Input
-                  id="bankName"
-                  value={bankInfo.bankName}
-                  onChange={(e) => setBankInfo({ ...bankInfo, bankName: e.target.value })}
-                  placeholder={t('accountSettings.bankNamePlaceholder')}
-                />
-              </div>
-
-              {/* Account Holder Name */}
-              <div className="space-y-2">
-                <Label htmlFor="accountHolderName">{t('accountSettings.accountHolderName')}</Label>
-                <Input
-                  id="accountHolderName"
-                  value={bankInfo.accountHolderName}
-                  onChange={(e) => setBankInfo({ ...bankInfo, accountHolderName: e.target.value })}
-                  placeholder={t('accountSettings.accountHolderNamePlaceholder')}
-                />
-              </div>
-
-              {/* Routing & Account Numbers */}
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="routingNumber">{t('accountSettings.routingNumber')}</Label>
-                  <Input
-                    id="routingNumber"
-                    value={bankInfo.routingNumber}
-                    onChange={(e) => {
-                      const val = e.target.value.replace(/\D/g, '').slice(0, 9)
-                      setBankInfo({ ...bankInfo, routingNumber: val })
-                    }}
-                    placeholder={t('accountSettings.routingNumberPlaceholder')}
-                    maxLength={9}
-                    inputMode="numeric"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="accountNumber">{t('accountSettings.accountNumber')}</Label>
-                  <div className="relative">
-                    <Input
-                      id="accountNumber"
-                      type={showAccountNumber ? 'text' : 'password'}
-                      value={bankInfo.accountNumber}
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/\D/g, '').slice(0, 17)
-                        setBankInfo({ ...bankInfo, accountNumber: val })
-                      }}
-                      placeholder={t('accountSettings.accountNumberPlaceholder')}
-                      maxLength={17}
-                      inputMode="numeric"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowAccountNumber(!showAccountNumber)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      title={showAccountNumber ? t('accountSettings.hideAccountNumber') : t('accountSettings.showAccountNumber')}
-                    >
-                      {showAccountNumber ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Account Type */}
-              <div className="space-y-2">
-                <Label>{t('accountSettings.accountType')}</Label>
-                <Select
-                  value={bankInfo.accountType}
-                  onValueChange={(value) => setBankInfo({ ...bankInfo, accountType: value as 'checking' | 'savings' })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="checking">{t('accountSettings.checking')}</SelectItem>
-                    <SelectItem value="savings">{t('accountSettings.savings')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Account Info (read-only) */}
         <Card>

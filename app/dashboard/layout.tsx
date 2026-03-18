@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { useAuth } from '@/lib/auth/context'
 import { DashboardNav } from '@/components/dashboard/nav'
 import { BottomNav } from '@/components/dashboard/bottom-nav'
+import { TermsAcceptanceModal } from '@/components/terms-acceptance-modal'
 import { Loader2 } from 'lucide-react'
 
 export default function DashboardLayout({
@@ -48,6 +49,7 @@ export default function DashboardLayout({
         {children}
       </main>
       <BottomNav />
+      {!user.termsAccepted && <TermsAcceptanceModal />}
     </div>
   )
 }

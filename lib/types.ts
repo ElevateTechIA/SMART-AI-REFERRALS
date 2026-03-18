@@ -29,6 +29,8 @@ export interface User {
   referrerStatus?: ReferrerStatus
   profileComplete?: boolean
   bankInfo?: BankInfo
+  termsAccepted?: boolean
+  termsAcceptedAt?: Date
   createdAt: Date
   updatedAt: Date
 }
