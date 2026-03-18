@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAdminDb, verifyAuth } from '@/lib/firebase/admin'
 import { FieldValue } from 'firebase-admin/firestore'
 import { isValidPhoneNumber } from 'libphonenumber-js'
+import { getAppSettings } from '@/lib/app-settings.server'
 import type { Business } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
@@ -89,6 +90,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Check auto-approve setting
+    const appSettings = await getAppSettings()
+    const initialStatus = appSettings.autoApproveUsers ? 'active' : 'pending'
+
     // Create business
     const businessData = {
       ownerUserId,
@@ -99,7 +104,7 @@ export async function POST(request: NextRequest) {
       phone: phone.trim(),
       website: website ? website.trim() : null,
       images: Array.isArray(images) ? images.slice(0, 10) : [],
-      status: 'pending',
+      status: initialStatus,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
     }

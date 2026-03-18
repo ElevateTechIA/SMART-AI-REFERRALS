@@ -305,7 +305,13 @@
     "markRead": "Marcar Leído",
     "markUnread": "Marcar No Leído",
     "unread": "Nuevo",
-    "replyAndResolve": "Responder y Resolver"
+    "replyAndResolve": "Responder y Resolver",
+    "autoApproveTitle": "Auto-aprobación de Usuarios",
+    "autoApproveDesc": "Controla si los nuevos usuarios se aprueban automáticamente al registrarse o requieren aprobación manual del administrador.",
+    "autoApproveLabel": "Auto-aprobar nuevos usuarios",
+    "autoApproveHint": "Cuando está activado, todos los nuevos promotores y negocios serán aprobados automáticamente.",
+    "autoApproveWarning": "La auto-aprobación está activa. Todos los nuevos usuarios serán aprobados inmediatamente sin revisión manual. Recomendado solo para pruebas.",
+    "autoApproveUpdated": "Configuración de auto-aprobación actualizada exitosamente"
   },
   "earnings": {
     "title": "Tus Ganancias",

@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Switch } from '@/components/ui/switch'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { apiGet, apiPost, apiPut } from '@/lib/api-client'
@@ -123,6 +124,8 @@ export default function AdminDashboardPage() {
   const [commissionSplit, setCommissionSplit] = useState<CommissionSplit>(DEFAULT_COMMISSION_SPLIT)
   const [splitForm, setSplitForm] = useState<CommissionSplit>(DEFAULT_COMMISSION_SPLIT)
   const [splitSaving, setSplitSaving] = useState(false)
+  const [autoApproveUsers, setAutoApproveUsers] = useState(false)
+  const [autoApproveSaving, setAutoApproveSaving] = useState(false)
 
   useEffect(() => {
     // Check if user is admin
@@ -211,6 +214,12 @@ export default function AdminDashboardPage() {
               }))
             )
           }
+        }
+
+        // Fetch app settings (auto-approve flag)
+        const appSettingsResult = await apiGet<{ success: boolean; data: { autoApproveUsers: boolean } }>('/api/admin/config/app-settings')
+        if (appSettingsResult.ok && appSettingsResult.data?.success) {
+          setAutoApproveUsers(appSettingsResult.data.data.autoApproveUsers)
         }
       } catch (error) {
         console.error('Error fetching admin data:', error)
@@ -405,6 +414,33 @@ export default function AdminDashboardPage() {
       })
     } finally {
       setSplitSaving(false)
+    }
+  }
+
+  const handleToggleAutoApprove = async (checked: boolean) => {
+    setAutoApproveSaving(true)
+    try {
+      const result = await apiPut<{ success: boolean; error?: string }>(
+        '/api/admin/config/app-settings',
+        { autoApproveUsers: checked }
+      )
+      if (!result.ok) {
+        throw new Error(result.error || 'Failed to save')
+      }
+      setAutoApproveUsers(checked)
+      toast({
+        title: t('common.success'),
+        description: t('admin.autoApproveUpdated'),
+      })
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save'
+      toast({
+        title: t('common.error'),
+        description: errorMessage,
+        variant: 'destructive',
+      })
+    } finally {
+      setAutoApproveSaving(false)
     }
   }
 
@@ -710,7 +746,10 @@ export default function AdminDashboardPage() {
                 </Badge>
               )}
             </TabsTrigger>
-            {/* Settings tab hidden — commission split defaults to 30/30/40 */}
+            <TabsTrigger value="settings">
+              <Settings className="h-4 w-4 mr-1" />
+              {t('admin.tabSettings')}
+            </TabsTrigger>
           </TabsList>
         </div>
 
@@ -1507,7 +1546,42 @@ export default function AdminDashboardPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="settings" className="mt-4">
+        <TabsContent value="settings" className="mt-4 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <UserCheck className="h-5 w-5" />
+                {t('admin.autoApproveTitle')}
+              </CardTitle>
+              <CardDescription>
+                {t('admin.autoApproveDesc')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <Label className="text-base">{t('admin.autoApproveLabel')}</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {t('admin.autoApproveHint')}
+                  </p>
+                </div>
+                <Switch
+                  checked={autoApproveUsers}
+                  onCheckedChange={handleToggleAutoApprove}
+                  disabled={autoApproveSaving}
+                />
+              </div>
+              {autoApproveUsers && (
+                <div className="mt-3 rounded-lg bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 p-3">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200 flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                    {t('admin.autoApproveWarning')}
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">

@@ -89,6 +89,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     await setDoc(doc(db, 'users', firebaseUser.uid), userData)
 
+    // Trigger auto-approve if the admin flag is active (fire-and-forget)
+    firebaseUser.getIdToken().then((token) => {
+      fetch('/api/auth/auto-approve', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => {
+        // Non-critical: user will be approved manually if this fails
+      })
+    })
+
     return {
       id: firebaseUser.uid,
       email: userData.email as string,

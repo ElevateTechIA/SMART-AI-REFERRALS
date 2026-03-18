@@ -305,7 +305,13 @@
     "markRead": "Mark Read",
     "markUnread": "Mark Unread",
     "unread": "New",
-    "replyAndResolve": "Reply & Resolve"
+    "replyAndResolve": "Reply & Resolve",
+    "autoApproveTitle": "User Auto-Approval",
+    "autoApproveDesc": "Control whether new users are automatically approved upon registration or require manual admin approval.",
+    "autoApproveLabel": "Auto-approve new users",
+    "autoApproveHint": "When enabled, all new promoters and businesses will be approved automatically.",
+    "autoApproveWarning": "Auto-approval is active. All new users will be approved immediately without manual review. Recommended only for testing.",
+    "autoApproveUpdated": "Auto-approval setting updated successfully"
   },
   "earnings": {
     "title": "Your Earnings",
