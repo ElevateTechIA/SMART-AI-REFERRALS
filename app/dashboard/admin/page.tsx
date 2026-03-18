@@ -59,6 +59,7 @@ import {
   Send,
   ChevronLeft,
   ChevronRight,
+  User as UserIcon,
 } from 'lucide-react'
 
 const ITEMS_PER_PAGE = 10
@@ -139,6 +140,31 @@ interface BusinessRevenue {
   chargeCount: number
 }
 
+interface ChargeDetail {
+  id: string
+  businessId: string
+  visitId: string
+  offerId: string
+  amount: number
+  platformAmount: number
+  referrerAmount: number
+  consumerRewardAmount: number
+  status: 'OWED' | 'PAID' | 'VOID'
+  createdAt: string
+  updatedAt: string
+  paidAt: string | null
+  visit: {
+    consumerUserId: string
+    referrerUserId: string
+    status: string
+    attributionType: string
+    isNewCustomer: boolean
+    receiptId: string | null
+    createdAt: string
+    updatedAt: string
+  } | null
+}
+
 interface AdminStats {
   totalUsers: number
   roleCounts: {
@@ -199,6 +225,9 @@ export default function AdminDashboardPage() {
   const [splitSaving, setSplitSaving] = useState(false)
   const [autoApproveUsers, setAutoApproveUsers] = useState(false)
   const [autoApproveSaving, setAutoApproveSaving] = useState(false)
+  const [selectedRevenueBiz, setSelectedRevenueBiz] = useState<string | null>(null)
+  const [revenueBizCharges, setRevenueBizCharges] = useState<ChargeDetail[]>([])
+  const [revenueBizChargesLoading, setRevenueBizChargesLoading] = useState(false)
   // Search, filter & pagination state per tab
   const [businessSearch, setBusinessSearch] = useState('')
   const [businessStatusFilter, setBusinessStatusFilter] = useState('all')
@@ -840,13 +869,29 @@ export default function AdminDashboardPage() {
               {t('admin.revenueBreakdownDesc', 'Detailed breakdown of who owes and payment status')}
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <div className="flex gap-3 overflow-x-auto pb-2 -mx-2 px-2 snap-x snap-mandatory">
               {stats.revenueByBusiness.map((biz) => (
                 <div
                   key={biz.businessId}
-                  className="flex flex-col items-center text-center p-4 rounded-xl border border-border bg-muted/30 hover:bg-muted/60 transition-colors cursor-pointer w-[200px] flex-shrink-0 snap-start"
-                  onClick={() => router.push(`/dashboard/admin/charges?businessId=${biz.businessId}`)}
+                  className={`flex flex-col items-center text-center p-4 rounded-xl border transition-colors cursor-pointer w-[200px] flex-shrink-0 snap-start ${selectedRevenueBiz === biz.businessId ? 'border-foreground/40 bg-muted/60 ring-1 ring-foreground/20' : 'border-border bg-muted/30 hover:bg-muted/60'}`}
+                  onClick={async () => {
+                    if (selectedRevenueBiz === biz.businessId) {
+                      setSelectedRevenueBiz(null)
+                      setRevenueBizCharges([])
+                      return
+                    }
+                    setSelectedRevenueBiz(biz.businessId)
+                    setRevenueBizChargesLoading(true)
+                    try {
+                      const response = await apiGet<{ success: boolean; data: { charges: ChargeDetail[] } }>(`/api/admin/charges?businessId=${biz.businessId}`)
+                      if (response.ok && response.data?.data) {
+                        setRevenueBizCharges(response.data.data.charges)
+                      }
+                    } catch { /* ignore */ } finally {
+                      setRevenueBizChargesLoading(false)
+                    }
+                  }}
                 >
                   {/* Business Logo */}
                   <div className="h-14 w-14 rounded-xl overflow-hidden bg-muted border border-border mb-2">
@@ -893,6 +938,70 @@ export default function AdminDashboardPage() {
                 </div>
               ))}
             </div>
+
+            {/* Inline charge details */}
+            {selectedRevenueBiz && (
+              <div className="border-t pt-4">
+                {revenueBizChargesLoading ? (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />
+                    {t('common.loading')}
+                  </div>
+                ) : revenueBizCharges.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-6">
+                    {t('admin.noCharges', 'No charges found for this business')}
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {revenueBizCharges.map((charge) => (
+                      <div
+                        key={charge.id}
+                        className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border border-border bg-background gap-2"
+                      >
+                        <div className="flex-1 space-y-0.5">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-medium text-sm">
+                              {t('admin.chargeId', 'Charge')} #{charge.id.slice(0, 7).toUpperCase()}
+                            </span>
+                            <Badge variant={charge.status === 'PAID' ? 'default' : charge.status === 'OWED' ? 'destructive' : 'secondary'}>
+                              {charge.status}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {formatDate(new Date(charge.createdAt))}
+                            {charge.paidAt && ` - ${t('admin.paidOn', 'Paid')} ${formatDate(new Date(charge.paidAt))}`}
+                          </p>
+                          {charge.visit && (
+                            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                              <span className="flex items-center gap-1">
+                                <UserIcon className="h-3 w-3" />
+                                {t('admin.visitAttribution', 'Via')}: {charge.visit.attributionType === 'REFERRER' ? t('admin.promoter') : t('admin.platform')}
+                              </span>
+                              {charge.visit.isNewCustomer && (
+                                <Badge variant="outline" className="text-[10px] py-0">
+                                  {t('admin.newCustomer', 'New Customer')}
+                                </Badge>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex flex-col items-end gap-0.5">
+                          <span className={`text-base font-bold ${charge.status === 'OWED' ? 'text-red-600' : 'text-green-600'}`}>
+                            {formatCurrency(charge.platformAmount)}
+                          </span>
+                          <div className="text-[11px] text-muted-foreground text-right">
+                            <span>{t('admin.totalCharge', 'Total')}: {formatCurrency(charge.amount)}</span>
+                            {charge.referrerAmount > 0 && (
+                              <span className="ml-2">{t('admin.referrerPortion', 'Promoter')}: {formatCurrency(charge.referrerAmount)}</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
