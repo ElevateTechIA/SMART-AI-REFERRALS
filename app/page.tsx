@@ -28,7 +28,7 @@ export default function LandingPage() {
         width: 300,
         margin: 2,
         color: {
-          dark: themes[theme].colors.primaryDark,
+          dark: themes[theme].colors.accent,
           light: '#ffffff',
         },
       })

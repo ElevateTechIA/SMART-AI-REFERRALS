@@ -85,7 +85,7 @@ export function AdminDashboard() {
       const qr = await QRCode.toDataURL(appUrl, {
         width: 200,
         margin: 2,
-        color: { dark: themes[theme].colors.primaryDark, light: '#ffffff' },
+        color: { dark: themes[theme].colors.accent, light: '#ffffff' },
       })
       setQrCode(qr)
     } catch (error) {

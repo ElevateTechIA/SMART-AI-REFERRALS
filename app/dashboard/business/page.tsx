@@ -152,7 +152,7 @@ export default function BusinessDashboardPage() {
     QRCode.toDataURL(generateReferralUrl(business.id), {
       width: 240,
       margin: 2,
-      color: { dark: themes[theme].colors.primaryDark, light: '#ffffff' },
+      color: { dark: themes[theme].colors.accent, light: '#ffffff' },
     })
       .then(setPromoQr)
       .catch(console.error)

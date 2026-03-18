@@ -69,9 +69,9 @@ export function ElivLogo({ size = 32, className }: ElivLogoProps) {
 type BrandSize = 'sm' | 'md' | 'lg'
 
 const sizeConfig = {
-  sm: { icon: 28, font: 24, pt: 3 },
-  md: { icon: 36, font: 30, pt: 3 },
-  lg: { icon: 48, font: 40, pt: 5 },
+  sm: { icon: 28, font: 28, pt: 2 },
+  md: { icon: 36, font: 36, pt: 3 },
+  lg: { icon: 48, font: 48, pt: 4 },
 }
 
 interface ElivBrandProps {
@@ -149,14 +149,14 @@ export function ElivBrand({ size, responsive, className, forceDark = false, colo
       <span
         style={{
           fontFamily: "'Eight One', sans-serif",
-          fontSize: s * 0.85,
+          fontSize: s,
           lineHeight: 1,
           letterSpacing: '0.02em',
           fontWeight: 700,
           display: 'flex',
           alignItems: 'center',
           height: s,
-          paddingTop: s * 0.1,
+          paddingTop: s * 0.08,
         }}
       >
         eliv
