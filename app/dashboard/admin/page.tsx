@@ -180,7 +180,6 @@ export default function AdminDashboardPage() {
   const [offers, setOffers] = useState<Map<string, Offer>>(new Map())
   const [expandedBusiness, setExpandedBusiness] = useState<string | null>(null)
   const [expandedVisit, setExpandedVisit] = useState<string | null>(null)
-  const [revenueExpanded, setRevenueExpanded] = useState(false)
   const [commissionForm, setCommissionForm] = useState({
     referrerCommissionAmount: 0,
     consumerRewardType: 'none' as ConsumerRewardType,
@@ -800,20 +799,10 @@ export default function AdminDashboardPage() {
               </div>
             </CardContent>
           </Card>
-          <Card
-            className={`cursor-pointer transition-all ${revenueExpanded ? 'ring-2 ring-primary' : 'hover:shadow-md'}`}
-            onClick={() => setRevenueExpanded(!revenueExpanded)}
-          >
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{t('admin.totalRevenue')}</CardTitle>
-              <div className="flex items-center gap-1">
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-                {revenueExpanded ? (
-                  <ChevronUp className="h-3 w-3 text-muted-foreground" />
-                ) : (
-                  <ChevronDown className="h-3 w-3 text-muted-foreground" />
-                )}
-              </div>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</div>
@@ -840,7 +829,7 @@ export default function AdminDashboardPage() {
       )}
 
       {/* Revenue Breakdown by Business */}
-      {revenueExpanded && stats?.revenueByBusiness && stats.revenueByBusiness.length > 0 && (
+      {stats?.revenueByBusiness && stats.revenueByBusiness.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -852,11 +841,12 @@ export default function AdminDashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-2 px-2 snap-x snap-mandatory">
               {stats.revenueByBusiness.map((biz) => (
                 <div
                   key={biz.businessId}
-                  className="flex flex-col items-center text-center p-4 rounded-xl border border-border bg-muted/30 hover:bg-muted/60 transition-colors"
+                  className="flex flex-col items-center text-center p-4 rounded-xl border border-border bg-muted/30 hover:bg-muted/60 transition-colors cursor-pointer w-[200px] flex-shrink-0 snap-start"
+                  onClick={() => router.push(`/dashboard/admin/charges?businessId=${biz.businessId}`)}
                 >
                   {/* Business Logo */}
                   <div className="h-14 w-14 rounded-xl overflow-hidden bg-muted border border-border mb-2">
