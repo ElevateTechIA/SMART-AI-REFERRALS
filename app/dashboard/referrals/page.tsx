@@ -401,39 +401,49 @@ function ReferralsContent() {
             </p>
           ) : (
             <div className="divide-y">
-              {earnings.map((earning) => (
-                <div
-                  key={earning.id}
-                  className="flex items-center justify-between py-3 sm:py-4 gap-2"
-                >
-                  <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-                    <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              {earnings.map((earning) => {
+                const biz = businesses.find((b) => b.id === earning.businessId)
+                const bizImg = biz?.images?.[biz.images.length - 1]
+                return (
+                  <div
+                    key={earning.id}
+                    className="flex items-center gap-3 sm:gap-4 py-3 sm:py-4"
+                  >
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden flex-shrink-0 bg-muted border border-border">
+                      {bizImg ? (
+                        <img src={bizImg} alt={biz?.name || ''} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-primary/10">
+                          <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                        </div>
+                      )}
                     </div>
-                    <div className="min-w-0">
-                      <p className="font-medium text-sm sm:text-base truncate">{t('promotions.commissionEarned')}</p>
-                      <p className="text-xs sm:text-sm text-muted-foreground">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm sm:text-base truncate">{biz?.name || t('promotions.commissionEarned')}</p>
+                      <p className="text-xs text-muted-foreground">
                         {formatDate(earning.createdAt)}
+                        {' · '}
+                        {earning.type === 'REFERRER_COMMISSION' ? t('earnings.typeReferral') : t('earnings.typeReward')}
                       </p>
                     </div>
+                    <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                      <span className="font-bold text-sm sm:text-base">+{formatCurrency(earning.amount)}</span>
+                      <Badge
+                        className="text-[10px] sm:text-xs"
+                        variant={
+                          earning.status === 'PAID'
+                            ? 'success'
+                            : earning.status === 'APPROVED'
+                            ? 'default'
+                            : 'secondary'
+                        }
+                      >
+                        {t(`promotions.earningStatus${earning.status.charAt(0) + earning.status.slice(1).toLowerCase()}`)}
+                      </Badge>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-                    <span className="font-semibold text-sm sm:text-base">{formatCurrency(earning.amount)}</span>
-                    <Badge
-                      className="text-[10px] sm:text-xs"
-                      variant={
-                        earning.status === 'PAID'
-                          ? 'success'
-                          : earning.status === 'APPROVED'
-                          ? 'default'
-                          : 'secondary'
-                      }
-                    >
-                      {t(`promotions.earningStatus${earning.status.charAt(0) + earning.status.slice(1).toLowerCase()}`)}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </CardContent>
@@ -469,8 +479,14 @@ function ReferralList({
             className="flex items-center justify-between py-3"
           >
             <div className="flex items-center gap-3 min-w-0">
-              <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                <Building2 className="h-4 w-4 text-muted-foreground" />
+              <div className="h-8 w-8 rounded-xl overflow-hidden flex-shrink-0 bg-muted border border-border">
+                {business?.images?.[business.images.length - 1] ? (
+                  <img src={business.images[business.images.length - 1]} alt={business?.name || ''} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Building2 className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                )}
               </div>
               <div className="min-w-0">
                 <p className="font-medium truncate">{business?.name || t('common.unknown')}</p>

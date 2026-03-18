@@ -14,6 +14,7 @@ import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firesto
 import { apiPost, apiGet } from '@/lib/api-client'
 import type { Business, Offer, Visit, Charge, Receipt } from '@/lib/types'
 import { formatCurrency, formatDate, generateReferralUrl } from '@/lib/utils'
+import { SearchAndFilter, Pagination, paginate } from '@/components/list-controls'
 import {
   Building2,
   Users,
@@ -603,6 +604,8 @@ function VisitsList({
 }) {
   const { t } = useTranslation()
   const { toast } = useToast()
+  const [visitSearch, setVisitSearch] = useState('')
+  const [visitPage, setVisitPage] = useState(1)
   const [receiptDialogVisitId, setReceiptDialogVisitId] = useState<string | null>(null)
   const [visitReceipts, setVisitReceipts] = useState<Record<string, boolean>>({})
   const [viewingReceipt, setViewingReceipt] = useState<Receipt | null>(null)
@@ -650,6 +653,13 @@ function VisitsList({
     })
   }
 
+  const visitSearchLower = visitSearch.toLowerCase()
+  const filteredVisits = visits.filter((visit) => {
+    if (visitSearch && !visit.id.toLowerCase().includes(visitSearchLower)) return false
+    return true
+  })
+  const { paged: pagedVisits, totalPages: visitTotalPages } = paginate(filteredVisits, visitPage)
+
   if (visits.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
@@ -660,8 +670,15 @@ function VisitsList({
 
   return (
     <>
+      {visits.length > 10 && (
+        <SearchAndFilter
+          search={visitSearch}
+          onSearchChange={(v) => { setVisitSearch(v); setVisitPage(1) }}
+          searchPlaceholder={t('businessDashboard.searchVisitPlaceholder')}
+        />
+      )}
       <div className="divide-y">
-        {visits.map((visit) => (
+        {pagedVisits.map((visit) => (
           <div
             key={visit.id}
             className="flex items-center justify-between py-4 gap-4"
@@ -750,6 +767,7 @@ function VisitsList({
           </div>
         ))}
       </div>
+      <Pagination page={visitPage} totalPages={visitTotalPages} onPageChange={setVisitPage} />
 
       {/* Receipt Upload Dialog */}
       <ReceiptDialog

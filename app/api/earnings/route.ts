@@ -84,11 +84,17 @@ export async function GET(request: NextRequest) {
 
       // Get business info
       let businessName = 'Unknown Business'
+      let businessLogo: string | null = null
       if (data.businessId) {
         try {
           const businessDoc = await db.collection('businesses').doc(data.businessId).get()
           if (businessDoc.exists) {
-            businessName = businessDoc.data()?.name || businessName
+            const bizData = businessDoc.data()
+            businessName = bizData?.name || businessName
+            const images = bizData?.images as string[] | undefined
+            if (images && images.length > 0) {
+              businessLogo = images[images.length - 1]
+            }
           }
         } catch (error) {
           console.error('Error fetching business:', error)
@@ -137,6 +143,8 @@ export async function GET(request: NextRequest) {
         id: doc.id,
         date: createdAt ? createdAt.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
         business: businessName,
+        businessLogo: businessLogo,
+        businessId: data.businessId || null,
         customer: customerName,
         amount: amount,
         status: status,

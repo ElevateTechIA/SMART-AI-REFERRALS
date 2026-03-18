@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -9,6 +10,7 @@ import { formatCurrency } from '@/lib/utils'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { apiGet } from '@/lib/api-client'
+import { SearchAndFilter, Pagination, paginate } from '@/components/list-controls'
 import {
   DollarSign,
   TrendingUp,
@@ -24,6 +26,8 @@ interface Transaction {
   id: string
   date: string
   business: string
+  businessLogo?: string | null
+  businessId?: string | null
   customer: string
   amount: number
   status: 'completed' | 'pending' | 'processing'
@@ -55,6 +59,9 @@ export default function EarningsPage() {
   const { toast } = useToast()
   const { t } = useTranslation()
   const [selectedPeriod, setSelectedPeriod] = useState('all')
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<EarningsStats>({
     totalEarnings: 0,
@@ -96,6 +103,15 @@ export default function EarningsPage() {
 
     fetchEarnings()
   }, [user, selectedPeriod, toast, t])
+
+  // Reset page when filters change
+  const searchLower = search.toLowerCase()
+  const filtered = transactions.filter((tx) => {
+    if (statusFilter !== 'all' && tx.status !== statusFilter) return false
+    if (search && !tx.business.toLowerCase().includes(searchLower) && !tx.customer.toLowerCase().includes(searchLower)) return false
+    return true
+  })
+  const { paged, totalPages } = paginate(filtered, page)
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -235,64 +251,83 @@ export default function EarningsPage() {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-muted">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    {t('earnings.dateColumn')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    {t('earnings.businessColumn')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    {t('earnings.customerColumn')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    {t('earnings.typeColumn')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    {t('earnings.amountColumn')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    {t('earnings.statusColumn')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-card divide-y divide-border">
-                {transactions.map((transaction) => (
-                  <tr key={transaction.id} className="hover:bg-muted">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-                      {new Date(transaction.date).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
-                      {transaction.business}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
-                      {transaction.customer}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground capitalize">
-                      {transaction.type}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-foreground">
-                      {formatCurrency(transaction.amount)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {getStatusBadge(transaction.status)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="p-6 pt-0">
+            <SearchAndFilter
+              search={search}
+              onSearchChange={(v) => { setSearch(v); setPage(1) }}
+              statusFilter={statusFilter}
+              onStatusChange={(v) => { setStatusFilter(v); setPage(1) }}
+              statuses={[
+                { value: 'completed', label: t('earnings.statusCompleted') },
+                { value: 'pending', label: t('earnings.statusPending') },
+                { value: 'processing', label: t('earnings.statusProcessing') },
+              ]}
+              searchPlaceholder={t('earnings.searchPlaceholder')}
+            />
           </div>
 
-          {transactions.length === 0 && (
+          <div className="divide-y divide-border">
+            {paged.map((transaction) => (
+              <div key={transaction.id} className="px-6 py-4 hover:bg-muted/50 transition-colors">
+                <div className="flex items-center gap-4">
+                  {/* Business Logo */}
+                  <div className="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 bg-muted border border-border">
+                    {transaction.businessLogo ? (
+                      <Image
+                        src={transaction.businessLogo}
+                        alt={transaction.business}
+                        width={44}
+                        height={44}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center" style={{ background: 'color-mix(in srgb, var(--theme-primary) 15%, transparent)' }}>
+                        <DollarSign className="w-5 h-5 text-theme-primary" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <p className="font-semibold text-foreground truncate">{transaction.business}</p>
+                      <span className="text-xs text-muted-foreground capitalize hidden sm:inline">
+                        {transaction.type === 'referral' ? t('earnings.typeReferral') : t('earnings.typeReward')}
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground truncate">
+                      {transaction.customer}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {new Date(transaction.date).toLocaleDateString()}
+                    </p>
+                  </div>
+
+                  {/* Amount + Status */}
+                  <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                    <p className="font-bold text-foreground">
+                      +{formatCurrency(transaction.amount)}
+                    </p>
+                    {getStatusBadge(transaction.status)}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {filtered.length === 0 && (
             <div className="text-center py-12">
               <DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">{t('earnings.noTransactions')}</p>
               <p className="text-sm text-muted-foreground mt-2">
                 {t('earnings.startPromoting')}
               </p>
+            </div>
+          )}
+
+          {filtered.length > 0 && (
+            <div className="px-6 pb-6">
+              <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
             </div>
           )}
         </div>

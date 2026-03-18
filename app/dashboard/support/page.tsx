@@ -28,6 +28,7 @@ function SafeBoldText({ text, boldColor, textColor }: { text: string; boldColor:
   )
 }
 import { formatDate, formatDateTime } from '@/lib/utils'
+import { SearchAndFilter, Pagination, paginate } from '@/components/list-controls'
 import { HelpCircle, Send, Loader2, MessageSquare, CheckCircle, Shield, Store } from 'lucide-react'
 
 type SubjectOption = 'recommend' | 'bug' | 'other'
@@ -75,6 +76,9 @@ function SupportContent() {
     : subjectOption === 'bug'
     ? t('support.subjectBug')
     : customSubject
+  const [ticketSearch, setTicketSearch] = useState('')
+  const [ticketStatusFilter, setTicketStatusFilter] = useState('all')
+  const [ticketPage, setTicketPage] = useState(1)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [replyMessage, setReplyMessage] = useState('')
   const [replySending, setReplySending] = useState(false)
@@ -207,6 +211,14 @@ function SupportContent() {
       setReplySending(false)
     }
   }
+
+  const ticketSearchLower = ticketSearch.toLowerCase()
+  const filteredTickets = tickets.filter((ticket) => {
+    if (ticketStatusFilter !== 'all' && ticket.status !== ticketStatusFilter) return false
+    if (ticketSearch && !ticket.subject.toLowerCase().includes(ticketSearchLower) && !ticket.message.toLowerCase().includes(ticketSearchLower)) return false
+    return true
+  })
+  const { paged: pagedTickets, totalPages: ticketTotalPages } = paginate(filteredTickets, ticketPage)
 
   return (
     <div className="space-y-8">
@@ -421,7 +433,18 @@ function SupportContent() {
             </div>
           ) : (
             <div className="space-y-4">
-              {tickets.map((ticket) => (
+              <SearchAndFilter
+                search={ticketSearch}
+                onSearchChange={(v) => { setTicketSearch(v); setTicketPage(1) }}
+                statusFilter={ticketStatusFilter}
+                onStatusChange={(v) => { setTicketStatusFilter(v); setTicketPage(1) }}
+                statuses={[
+                  { value: 'open', label: t('support.open') },
+                  { value: 'resolved', label: t('support.resolved') },
+                ]}
+                searchPlaceholder={t('support.searchPlaceholder')}
+              />
+              {pagedTickets.map((ticket) => (
                 <div key={ticket.id} className="border rounded-lg p-4 space-y-3">
                   {/* Header */}
                   <div className="flex items-start justify-between gap-2">
@@ -558,6 +581,7 @@ function SupportContent() {
                   )}
                 </div>
               ))}
+              <Pagination page={ticketPage} totalPages={ticketTotalPages} onPageChange={setTicketPage} />
             </div>
           )}
         </CardContent>

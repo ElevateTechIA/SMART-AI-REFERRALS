@@ -225,6 +225,10 @@
     "totalPaid": "Pagado",
     "totalOwed": "Por cobrar",
     "allPaid": "Todo pagado",
+    "revenueBreakdown": "Ingresos por Negocio",
+    "revenueBreakdownDesc": "Desglose detallado de quién debe y estado de pago",
+    "chargeCount": "{{count}} cobros",
+    "owes": "Debe",
     "fraudAlerts": "Alertas de Fraude ({{count}})",
     "fraudAlertsDesc": "Alertas de fraude potencial sin resolver requieren atención",
     "unresolved": "Sin resolver",
@@ -346,7 +350,8 @@
     "statusProcessing": "Procesando",
     "failedToLoad": "Error al cargar datos de ganancias",
     "typeReferral": "Comisión",
-    "typeReward": "Recompensa"
+    "typeReward": "Recompensa",
+    "searchPlaceholder": "Buscar por negocio o cliente..."
   },
   "cashout": {
     "title": "Retirar Fondos",
@@ -492,7 +497,8 @@
     "promotion": "Promoción",
     "promoDiscountPercent": "{{value}}% de descuento",
     "promoDiscountFixed": "{{value}} de descuento",
-    "promoFreeItem": "Artículo gratis"
+    "promoFreeItem": "Artículo gratis",
+    "searchVisitPlaceholder": "Buscar por ID de visita..."
   },
   "qrScanner": {
     "title": "Escanear QR del Cliente",
@@ -995,7 +1001,8 @@
       "submit": "Enviar Recomendación",
       "sent": "¡Recomendación Enviada!",
       "sentDesc": "Contactaremos a este negocio y te avisaremos cuando se una."
-    }
+    },
+    "searchPlaceholder": "Buscar por asunto o mensaje..."
   },
   "pwa": {
     "offlineMode": "Estás sin conexión. Los cambios se sincronizarán cuando te reconectes.",

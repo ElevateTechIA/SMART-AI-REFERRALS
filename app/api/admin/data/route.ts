@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
           address: data.address,
           phone: data.phone,
           website: data.website,
+          images: data.images || [],
           status: data.status,
           ownerUserId: data.ownerUserId,
           createdAt: data.createdAt?.toDate() || null,

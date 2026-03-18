@@ -126,6 +126,8 @@ interface Transaction {
   id: string
   date: string
   business: string
+  businessLogo?: string | null
+  businessId?: string | null
   customer: string
   amount: number
   status: 'completed' | 'pending' | 'processing'
@@ -515,22 +517,26 @@ export default function VisitsPage() {
               <h3 className="text-sm font-semibold text-theme-textPrimary mb-3">{t('earnings.transactionHistory')}</h3>
               <div className="space-y-2">
                 {transactions.map((tx) => (
-                  <div key={tx.id} className="flex items-center justify-between py-3 border-b border-theme-cardBorder last:border-0">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: tx.status === 'completed' ? 'color-mix(in srgb, #22c55e 20%, transparent)' : tx.status === 'pending' ? 'color-mix(in srgb, #eab308 20%, transparent)' : 'color-mix(in srgb, var(--theme-primary) 20%, transparent)' }}>
-                        <DollarSign className={`h-4 w-4 ${tx.status === 'completed' ? 'text-green-400' : tx.status === 'pending' ? 'text-yellow-400' : 'text-theme-primary'}`} />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-theme-textPrimary">{tx.business}</p>
-                        <p className="text-xs text-theme-textMuted">
-                          {new Date(tx.date).toLocaleDateString()}
-                          {' · '}
-                          {tx.type === 'referral' ? t('earnings.typeReferral') : t('earnings.typeReward')}
-                        </p>
-                      </div>
+                  <div key={tx.id} className="flex items-center gap-3 py-3 border-b border-theme-cardBorder last:border-0">
+                    <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 border border-theme-cardBorder">
+                      {tx.businessLogo ? (
+                        <img src={tx.businessLogo} alt={tx.business} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center" style={{ background: tx.status === 'completed' ? 'color-mix(in srgb, #22c55e 20%, transparent)' : tx.status === 'pending' ? 'color-mix(in srgb, #eab308 20%, transparent)' : 'color-mix(in srgb, var(--theme-primary) 20%, transparent)' }}>
+                          <DollarSign className={`h-4 w-4 ${tx.status === 'completed' ? 'text-green-400' : tx.status === 'pending' ? 'text-yellow-400' : 'text-theme-primary'}`} />
+                        </div>
+                      )}
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-semibold text-theme-textPrimary">{formatCurrency(tx.amount)}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-theme-textPrimary truncate">{tx.business}</p>
+                      <p className="text-xs text-theme-textMuted">
+                        {new Date(tx.date).toLocaleDateString()}
+                        {' · '}
+                        {tx.type === 'referral' ? t('earnings.typeReferral') : t('earnings.typeReward')}
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                      <p className="text-sm font-bold text-theme-textPrimary">+{formatCurrency(tx.amount)}</p>
                       <Badge className={
                         tx.status === 'completed' ? 'bg-green-500 text-white' :
                         tx.status === 'pending' ? 'bg-yellow-500 text-white' :
@@ -981,8 +987,14 @@ export default function VisitsPage() {
                         <div className="py-4 border-b border-border">
                           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div className="flex items-start gap-4">
-                              <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                                <Building2 className="h-6 w-6 text-muted-foreground" />
+                              <div className="h-12 w-12 rounded-xl overflow-hidden flex-shrink-0 bg-muted border border-border">
+                                {visit.business?.images?.[visit.business.images.length - 1] ? (
+                                  <img src={visit.business.images[visit.business.images.length - 1]} alt={visit.business?.name || ''} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <Building2 className="h-6 w-6 text-muted-foreground" />
+                                  </div>
+                                )}
                               </div>
                               <div className="min-w-0">
                                 <h4 className="font-semibold break-words">
@@ -1206,19 +1218,27 @@ export default function VisitsPage() {
                     key={reward.id}
                     className="py-4 flex items-center justify-between"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                        <Gift className="h-5 w-5 text-green-600" />
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl overflow-hidden flex-shrink-0 bg-muted border border-border">
+                        {visit?.business?.images?.[visit.business.images.length - 1] ? (
+                          <img src={visit.business.images[visit.business.images.length - 1]} alt={visit?.business?.name || ''} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-green-100">
+                            <Gift className="h-5 w-5 text-green-600" />
+                          </div>
+                        )}
                       </div>
-                      <div>
-                        <p className="font-medium">{t('visits.rewardFromVisit')}</p>
+                      <div className="min-w-0">
+                        <p className="font-medium truncate">{visit?.business?.name || t('visits.rewardFromVisit')}</p>
                         <p className="text-sm text-muted-foreground">
-                          {visit?.business?.name} • {formatDate(reward.createdAt)}
+                          {formatDate(reward.createdAt)}
+                          {' · '}
+                          {t('visits.rewardFromVisit')}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <span className="font-semibold text-white">
+                    <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                      <span className="font-bold">
                         +{formatCurrency(reward.amount)}
                       </span>
                       <Badge

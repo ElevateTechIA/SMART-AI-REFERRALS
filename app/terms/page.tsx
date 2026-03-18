@@ -95,7 +95,7 @@ export default function TermsPage() {
               <h1 className="text-3xl md:text-4xl font-bold mb-3 text-gray-900">
                 {t('terms.pageTitle')}
               </h1>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-600">
                 {t('terms.lastUpdated')}
               </p>
             </div>
@@ -120,7 +120,7 @@ export default function TermsPage() {
                   </div>
 
                   {section.content && (
-                    <p className="leading-relaxed ml-0 sm:ml-14 text-gray-600">
+                    <p className="leading-relaxed ml-0 sm:ml-14 text-gray-800">
                       {section.content}
                     </p>
                   )}
@@ -142,7 +142,7 @@ export default function TermsPage() {
                             <p className="font-semibold text-gray-900">
                               {step.title}
                             </p>
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm text-gray-800">
                               {step.text}
                             </p>
                           </div>
@@ -156,7 +156,7 @@ export default function TermsPage() {
                       {section.bullets.map((bullet, i) => (
                         <li
                           key={i}
-                          className="flex items-start gap-2 text-gray-600"
+                          className="flex items-start gap-2 text-gray-800"
                         >
                           <span
                             className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0"
@@ -184,8 +184,8 @@ export default function TermsPage() {
                         className="text-sm font-medium"
                         style={{
                           color: section.footerType === 'warning'
-                            ? 'var(--theme-error, #ef4444)'
-                            : 'var(--theme-primary)',
+                            ? 'color-mix(in srgb, var(--theme-error, #ef4444) 70%, black)'
+                            : 'color-mix(in srgb, var(--theme-primary) 70%, black)',
                         }}
                       >
                         {section.footer}
@@ -201,7 +201,7 @@ export default function TermsPage() {
         {/* Footer */}
         <footer className="py-8 border-t border-gray-200">
           <div className="max-w-4xl mx-auto px-6 text-center">
-            <p className="text-gray-400">
+            <p className="text-gray-500">
               {t('landing.allRightsReserved')}
             </p>
           </div>

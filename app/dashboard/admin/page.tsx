@@ -129,6 +129,16 @@ interface AdminDataResponse {
   receipts: Receipt[]
 }
 
+interface BusinessRevenue {
+  businessId: string
+  businessName: string
+  businessLogo: string | null
+  owed: number
+  paid: number
+  total: number
+  chargeCount: number
+}
+
 interface AdminStats {
   totalUsers: number
   roleCounts: {
@@ -149,6 +159,7 @@ interface AdminStats {
   totalRevenue: number
   totalPaid: number
   totalOwed: number
+  revenueByBusiness?: BusinessRevenue[]
   unresolvedFraudFlags: number
 }
 
@@ -169,6 +180,7 @@ export default function AdminDashboardPage() {
   const [offers, setOffers] = useState<Map<string, Offer>>(new Map())
   const [expandedBusiness, setExpandedBusiness] = useState<string | null>(null)
   const [expandedVisit, setExpandedVisit] = useState<string | null>(null)
+  const [revenueExpanded, setRevenueExpanded] = useState(false)
   const [commissionForm, setCommissionForm] = useState({
     referrerCommissionAmount: 0,
     consumerRewardType: 'none' as ConsumerRewardType,
@@ -788,10 +800,20 @@ export default function AdminDashboardPage() {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card
+            className={`cursor-pointer transition-all ${revenueExpanded ? 'ring-2 ring-primary' : 'hover:shadow-md'}`}
+            onClick={() => setRevenueExpanded(!revenueExpanded)}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{t('admin.totalRevenue')}</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center gap-1">
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+                {revenueExpanded ? (
+                  <ChevronUp className="h-3 w-3 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                )}
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</div>
@@ -815,6 +837,74 @@ export default function AdminDashboardPage() {
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {/* Revenue Breakdown by Business */}
+      {revenueExpanded && stats?.revenueByBusiness && stats.revenueByBusiness.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5 text-primary" />
+              {t('admin.revenueBreakdown', 'Revenue by Business')}
+            </CardTitle>
+            <CardDescription>
+              {t('admin.revenueBreakdownDesc', 'Detailed breakdown of who owes and payment status')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+              {stats.revenueByBusiness.map((biz) => (
+                <div
+                  key={biz.businessId}
+                  className="flex flex-col items-center text-center p-4 rounded-xl border border-border bg-muted/30 hover:bg-muted/60 transition-colors"
+                >
+                  {/* Business Logo */}
+                  <div className="h-14 w-14 rounded-xl overflow-hidden bg-muted border border-border mb-2">
+                    {biz.businessLogo ? (
+                      <img
+                        src={biz.businessLogo}
+                        alt={biz.businessName}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-primary/10">
+                        <Building2 className="h-6 w-6 text-primary" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Name */}
+                  <p className="font-semibold text-sm text-foreground truncate w-full">{biz.businessName}</p>
+
+                  {/* Total */}
+                  <p className="text-lg font-bold text-foreground mt-1">{formatCurrency(biz.total)}</p>
+
+                  {/* Charge count */}
+                  <p className="text-xs text-muted-foreground">
+                    {t('admin.chargeCount', '{{count}} charges', { count: biz.chargeCount })}
+                  </p>
+
+                  {/* Owed / Paid */}
+                  <div className="flex flex-col items-center gap-0.5 mt-1.5">
+                    {biz.owed > 0 && (
+                      <span className="text-xs font-medium text-red-600">
+                        {t('admin.owes', 'Owes')}: {formatCurrency(biz.owed)}
+                      </span>
+                    )}
+                    {biz.paid > 0 && (
+                      <span className="text-xs text-green-600">
+                        {t('admin.paid', 'Paid')}: {formatCurrency(biz.paid)}
+                      </span>
+                    )}
+                    {biz.owed === 0 && biz.paid > 0 && (
+                      <CheckCircle className="h-3.5 w-3.5 text-green-600 mt-0.5" />
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Fraud Alerts */}
@@ -907,8 +997,14 @@ export default function AdminDashboardPage() {
                       <div key={business.id} className="py-4">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                           <div className="flex items-center gap-4">
-                            <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
-                              <Building2 className="h-6 w-6 text-muted-foreground" />
+                            <div className="h-12 w-12 rounded-xl overflow-hidden flex-shrink-0 bg-muted border border-border">
+                              {business.images?.[business.images.length - 1] ? (
+                                <img src={business.images[business.images.length - 1]} alt={business.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <Building2 className="h-6 w-6 text-muted-foreground" />
+                                </div>
+                              )}
                             </div>
                             <div className="min-w-0">
                               <h4 className="font-semibold break-words">{business.name}</h4>

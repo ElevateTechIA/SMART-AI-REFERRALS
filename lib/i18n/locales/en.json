@@ -225,6 +225,10 @@
     "totalPaid": "Paid",
     "totalOwed": "Owed",
     "allPaid": "All paid",
+    "revenueBreakdown": "Revenue by Business",
+    "revenueBreakdownDesc": "Detailed breakdown of who owes and payment status",
+    "chargeCount": "{{count}} charges",
+    "owes": "Owes",
     "fraudAlerts": "Fraud Alerts ({{count}})",
     "fraudAlertsDesc": "Unresolved potential fraud flags require attention",
     "unresolved": "Unresolved",
@@ -346,7 +350,8 @@
     "statusProcessing": "Processing",
     "failedToLoad": "Failed to load earnings data",
     "typeReferral": "Commission",
-    "typeReward": "Reward"
+    "typeReward": "Reward",
+    "searchPlaceholder": "Search by business or customer..."
   },
   "cashout": {
     "title": "Cash Out",
@@ -492,7 +497,8 @@
     "promotion": "Promotion",
     "promoDiscountPercent": "{{value}}% off",
     "promoDiscountFixed": "{{value}} off",
-    "promoFreeItem": "Free item"
+    "promoFreeItem": "Free item",
+    "searchVisitPlaceholder": "Search by visit ID..."
   },
   "qrScanner": {
     "title": "Scan Customer QR",
@@ -995,7 +1001,8 @@
       "submit": "Send Recommendation",
       "sent": "Recommendation Sent!",
       "sentDesc": "We'll reach out to this business and let you know when they join."
-    }
+    },
+    "searchPlaceholder": "Search by subject or message..."
   },
   "pwa": {
     "offlineMode": "You are offline. Changes will sync when you reconnect.",
