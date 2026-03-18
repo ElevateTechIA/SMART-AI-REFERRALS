@@ -36,7 +36,9 @@
     "share": "Compartir",
     "getStarted": "Comenzar",
     "signIn": "Iniciar sesión",
-    "repeat": "Repetido"
+    "repeat": "Repetido",
+    "open": "Abierto",
+    "resolved": "Resuelto"
   },
   "nav": {
     "dashboard": "Panel",
@@ -311,7 +313,13 @@
     "autoApproveLabel": "Auto-aprobar nuevos usuarios",
     "autoApproveHint": "Cuando está activado, todos los nuevos promotores y negocios serán aprobados automáticamente.",
     "autoApproveWarning": "La auto-aprobación está activa. Todos los nuevos usuarios serán aprobados inmediatamente sin revisión manual. Recomendado solo para pruebas.",
-    "autoApproveUpdated": "Configuración de auto-aprobación actualizada exitosamente"
+    "autoApproveUpdated": "Configuración de auto-aprobación actualizada exitosamente",
+    "pageOf": "Página {{page}} de {{total}}",
+    "allStatuses": "Todos los Estados",
+    "searchBusinessPlaceholder": "Buscar por nombre, categoría o dirección...",
+    "searchPromoterPlaceholder": "Buscar por nombre o correo...",
+    "searchVisitPlaceholder": "Buscar por nombre del negocio...",
+    "searchSupportPlaceholder": "Buscar por asunto, nombre o correo..."
   },
   "earnings": {
     "title": "Tus Ganancias",

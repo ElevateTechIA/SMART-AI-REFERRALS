@@ -57,7 +57,69 @@ import {
   HelpCircle,
   MessageSquare,
   Send,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
+
+const ITEMS_PER_PAGE = 10
+
+function Pagination({ page, totalPages, onPageChange }: { page: number; totalPages: number; onPageChange: (p: number) => void }) {
+  const { t } = useTranslation()
+  if (totalPages <= 1) return null
+  return (
+    <div className="flex items-center justify-between pt-4 border-t">
+      <p className="text-sm text-muted-foreground">
+        {t('admin.pageOf', { page, total: totalPages })}
+      </p>
+      <div className="flex items-center gap-2">
+        <Button size="sm" variant="outline" onClick={() => onPageChange(page - 1)} disabled={page <= 1}>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => onPageChange(page + 1)} disabled={page >= totalPages}>
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+function SearchAndFilter({ search, onSearchChange, statusFilter, onStatusChange, statuses, searchPlaceholder }: {
+  search: string; onSearchChange: (v: string) => void
+  statusFilter: string; onStatusChange: (v: string) => void
+  statuses: { value: string; label: string }[]
+  searchPlaceholder: string
+}) {
+  const { t } = useTranslation()
+  return (
+    <div className="flex flex-col sm:flex-row gap-2 mb-4">
+      <div className="relative flex-1">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder={searchPlaceholder}
+          value={search}
+          onChange={(e) => onSearchChange(e.target.value)}
+          className="pl-9"
+        />
+        {search && (
+          <button onClick={() => onSearchChange('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+      <Select value={statusFilter} onValueChange={onStatusChange}>
+        <SelectTrigger className="sm:w-[180px]">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">{t('admin.allStatuses')}</SelectItem>
+          {statuses.map((s) => (
+            <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  )
+}
 
 interface AdminDataResponse {
   businesses: Business[]
@@ -126,6 +188,20 @@ export default function AdminDashboardPage() {
   const [splitSaving, setSplitSaving] = useState(false)
   const [autoApproveUsers, setAutoApproveUsers] = useState(false)
   const [autoApproveSaving, setAutoApproveSaving] = useState(false)
+  // Search, filter & pagination state per tab
+  const [businessSearch, setBusinessSearch] = useState('')
+  const [businessStatusFilter, setBusinessStatusFilter] = useState('all')
+  const [businessPage, setBusinessPage] = useState(1)
+  const [referrerSearch, setReferrerSearch] = useState('')
+  const [referrerStatusFilter, setReferrerStatusFilter] = useState('all')
+  const [referrerPage, setReferrerPage] = useState(1)
+  const [userPage, setUserPage] = useState(1)
+  const [visitSearch, setVisitSearch] = useState('')
+  const [visitStatusFilter, setVisitStatusFilter] = useState('all')
+  const [visitPage, setVisitPage] = useState(1)
+  const [supportSearch, setSupportSearch] = useState('')
+  const [supportStatusFilter, setSupportStatusFilter] = useState('all')
+  const [supportPage, setSupportPage] = useState(1)
 
   useEffect(() => {
     // Check if user is admin
@@ -567,6 +643,29 @@ export default function AdminDashboardPage() {
 
   const allRoles = ['admin', 'business', 'referrer'] as const
 
+  // --- Filtered & paginated lists ---
+  const filteredBusinesses = businesses.filter((b) => {
+    const matchesStatus = businessStatusFilter === 'all' || b.status === businessStatusFilter
+    if (!matchesStatus) return false
+    if (!businessSearch) return true
+    const s = businessSearch.toLowerCase()
+    return b.name?.toLowerCase().includes(s) || b.category?.toLowerCase().includes(s) || b.address?.toLowerCase().includes(s)
+  })
+  const businessTotalPages = Math.max(1, Math.ceil(filteredBusinesses.length / ITEMS_PER_PAGE))
+  const paginatedBusinesses = filteredBusinesses.slice((businessPage - 1) * ITEMS_PER_PAGE, businessPage * ITEMS_PER_PAGE)
+
+  const referrers = users.filter((u) => u.roles.includes('referrer'))
+  const filteredReferrers = referrers.filter((r) => {
+    const status = r.referrerStatus || 'pending'
+    const matchesStatus = referrerStatusFilter === 'all' || status === referrerStatusFilter
+    if (!matchesStatus) return false
+    if (!referrerSearch) return true
+    const s = referrerSearch.toLowerCase()
+    return r.name?.toLowerCase().includes(s) || r.email?.toLowerCase().includes(s)
+  })
+  const referrerTotalPages = Math.max(1, Math.ceil(filteredReferrers.length / ITEMS_PER_PAGE))
+  const paginatedReferrers = filteredReferrers.slice((referrerPage - 1) * ITEMS_PER_PAGE, referrerPage * ITEMS_PER_PAGE)
+
   const filteredUsers = users.filter((u) => {
     if (!userSearch) return true
     const search = userSearch.toLowerCase()
@@ -575,8 +674,29 @@ export default function AdminDashboardPage() {
       u.email?.toLowerCase().includes(search)
     )
   })
+  const userTotalPages = Math.max(1, Math.ceil(filteredUsers.length / ITEMS_PER_PAGE))
+  const paginatedUsers = filteredUsers.slice((userPage - 1) * ITEMS_PER_PAGE, userPage * ITEMS_PER_PAGE)
 
-  const referrers = users.filter((u) => u.roles.includes('referrer'))
+  const filteredVisits = visits.filter((v) => {
+    const matchesStatus = visitStatusFilter === 'all' || v.status === visitStatusFilter
+    if (!matchesStatus) return false
+    if (!visitSearch) return true
+    const s = visitSearch.toLowerCase()
+    const biz = businesses.find((b) => b.id === v.businessId)
+    return biz?.name?.toLowerCase().includes(s) || false
+  })
+  const visitTotalPages = Math.max(1, Math.ceil(filteredVisits.length / ITEMS_PER_PAGE))
+  const paginatedVisits = filteredVisits.slice((visitPage - 1) * ITEMS_PER_PAGE, visitPage * ITEMS_PER_PAGE)
+
+  const filteredTickets = supportTickets.filter((t) => {
+    const matchesStatus = supportStatusFilter === 'all' || t.status === supportStatusFilter
+    if (!matchesStatus) return false
+    if (!supportSearch) return true
+    const s = supportSearch.toLowerCase()
+    return t.subject?.toLowerCase().includes(s) || t.userName?.toLowerCase().includes(s) || t.userEmail?.toLowerCase().includes(s)
+  })
+  const supportTotalPages = Math.max(1, Math.ceil(filteredTickets.length / ITEMS_PER_PAGE))
+  const paginatedTickets = filteredTickets.slice((supportPage - 1) * ITEMS_PER_PAGE, supportPage * ITEMS_PER_PAGE)
 
   if (loading) {
     return (
@@ -762,13 +882,25 @@ export default function AdminDashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {businesses.length === 0 ? (
+              <SearchAndFilter
+                search={businessSearch}
+                onSearchChange={(v) => { setBusinessSearch(v); setBusinessPage(1) }}
+                statusFilter={businessStatusFilter}
+                onStatusChange={(v) => { setBusinessStatusFilter(v); setBusinessPage(1) }}
+                statuses={[
+                  { value: 'pending', label: t('common.pending') },
+                  { value: 'active', label: t('common.active') },
+                  { value: 'suspended', label: t('common.suspended') },
+                ]}
+                searchPlaceholder={t('admin.searchBusinessPlaceholder')}
+              />
+              {paginatedBusinesses.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
-                  {t('admin.noBusinesses')}
+                  {businessSearch || businessStatusFilter !== 'all' ? t('common.noResults') : t('admin.noBusinesses')}
                 </p>
               ) : (
                 <div className="divide-y">
-                  {businesses.map((business) => {
+                  {paginatedBusinesses.map((business) => {
                     const offer = offers.get(business.id)
                     const isExpanded = expandedBusiness === business.id
                     return (
@@ -970,6 +1102,7 @@ export default function AdminDashboardPage() {
                       </div>
                     )
                   })}
+                  <Pagination page={businessPage} totalPages={businessTotalPages} onPageChange={setBusinessPage} />
                 </div>
               )}
             </CardContent>
@@ -988,13 +1121,25 @@ export default function AdminDashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {referrers.length === 0 ? (
+              <SearchAndFilter
+                search={referrerSearch}
+                onSearchChange={(v) => { setReferrerSearch(v); setReferrerPage(1) }}
+                statusFilter={referrerStatusFilter}
+                onStatusChange={(v) => { setReferrerStatusFilter(v); setReferrerPage(1) }}
+                statuses={[
+                  { value: 'pending', label: t('common.pending') },
+                  { value: 'active', label: t('common.active') },
+                  { value: 'suspended', label: t('common.suspended') },
+                ]}
+                searchPlaceholder={t('admin.searchPromoterPlaceholder')}
+              />
+              {paginatedReferrers.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
-                  {t('admin.noPromoters')}
+                  {referrerSearch || referrerStatusFilter !== 'all' ? t('common.noResults') : t('admin.noPromoters')}
                 </p>
               ) : (
                 <div className="divide-y">
-                  {referrers.map((referrer) => (
+                  {paginatedReferrers.map((referrer) => (
                     <div
                       key={referrer.id}
                       className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4"
@@ -1083,6 +1228,7 @@ export default function AdminDashboardPage() {
                       </div>
                     </div>
                   ))}
+                  <Pagination page={referrerPage} totalPages={referrerTotalPages} onPageChange={setReferrerPage} />
                 </div>
               )}
             </CardContent>
@@ -1102,12 +1248,12 @@ export default function AdminDashboardPage() {
                 <Input
                   placeholder={t('admin.searchUsersPlaceholder')}
                   value={userSearch}
-                  onChange={(e) => setUserSearch(e.target.value)}
+                  onChange={(e) => { setUserSearch(e.target.value); setUserPage(1) }}
                   className="pl-9"
                 />
                 {userSearch && (
                   <button
-                    onClick={() => setUserSearch('')}
+                    onClick={() => { setUserSearch(''); setUserPage(1) }}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
                     <X className="h-4 w-4" />
@@ -1115,13 +1261,13 @@ export default function AdminDashboardPage() {
                 )}
               </div>
 
-              {filteredUsers.length === 0 ? (
+              {paginatedUsers.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
                   {userSearch ? t('common.noResults') : t('admin.noUsers')}
                 </p>
               ) : (
                 <div className="divide-y">
-                  {filteredUsers.map((u) => (
+                  {paginatedUsers.map((u) => (
                     <div
                       key={u.id}
                       className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-3"
@@ -1164,6 +1310,7 @@ export default function AdminDashboardPage() {
                       </div>
                     </div>
                   ))}
+                  <Pagination page={userPage} totalPages={userTotalPages} onPageChange={setUserPage} />
                 </div>
               )}
             </CardContent>
@@ -1179,13 +1326,26 @@ export default function AdminDashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {visits.length === 0 ? (
+              <SearchAndFilter
+                search={visitSearch}
+                onSearchChange={(v) => { setVisitSearch(v); setVisitPage(1) }}
+                statusFilter={visitStatusFilter}
+                onStatusChange={(v) => { setVisitStatusFilter(v); setVisitPage(1) }}
+                statuses={[
+                  { value: 'CREATED', label: 'Created' },
+                  { value: 'CHECKED_IN', label: 'Checked In' },
+                  { value: 'CONVERTED', label: 'Converted' },
+                  { value: 'REJECTED', label: 'Rejected' },
+                ]}
+                searchPlaceholder={t('admin.searchVisitPlaceholder')}
+              />
+              {paginatedVisits.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
-                  {t('admin.noVisits')}
+                  {visitSearch || visitStatusFilter !== 'all' ? t('common.noResults') : t('admin.noVisits')}
                 </p>
               ) : (
                 <div className="divide-y">
-                  {visits.slice(0, 20).map((visit) => {
+                  {paginatedVisits.map((visit) => {
                     const business = businesses.find((b) => b.id === visit.businessId)
                     const receipt = receipts.get(visit.id)
                     const isVisitExpanded = expandedVisit === visit.id
@@ -1356,6 +1516,7 @@ export default function AdminDashboardPage() {
                       </div>
                     )
                   })}
+                  <Pagination page={visitPage} totalPages={visitTotalPages} onPageChange={setVisitPage} />
                 </div>
               )}
             </CardContent>
@@ -1374,16 +1535,27 @@ export default function AdminDashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {supportTickets.length === 0 ? (
+              <SearchAndFilter
+                search={supportSearch}
+                onSearchChange={(v) => { setSupportSearch(v); setSupportPage(1) }}
+                statusFilter={supportStatusFilter}
+                onStatusChange={(v) => { setSupportStatusFilter(v); setSupportPage(1) }}
+                statuses={[
+                  { value: 'open', label: t('common.open') },
+                  { value: 'resolved', label: t('common.resolved') },
+                ]}
+                searchPlaceholder={t('admin.searchSupportPlaceholder')}
+              />
+              {paginatedTickets.length === 0 ? (
                 <div className="text-center py-8">
                   <MessageSquare className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
                   <p className="text-muted-foreground">
-                    {t('admin.noSupportTickets')}
+                    {supportSearch || supportStatusFilter !== 'all' ? t('common.noResults') : t('admin.noSupportTickets')}
                   </p>
                 </div>
               ) : (
                 <div className="divide-y">
-                  {supportTickets.map((ticket) => {
+                  {paginatedTickets.map((ticket) => {
                     const isExpanded = expandedTicket === ticket.id
                     return (
                       <div key={ticket.id} className="py-4">
@@ -1540,6 +1712,7 @@ export default function AdminDashboardPage() {
                       </div>
                     )
                   })}
+                  <Pagination page={supportPage} totalPages={supportTotalPages} onPageChange={setSupportPage} />
                 </div>
               )}
             </CardContent>

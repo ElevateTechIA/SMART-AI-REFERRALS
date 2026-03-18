@@ -36,7 +36,9 @@
     "share": "Share",
     "getStarted": "Get Started",
     "signIn": "Sign in",
-    "repeat": "Repeat"
+    "repeat": "Repeat",
+    "open": "Open",
+    "resolved": "Resolved"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -311,7 +313,13 @@
     "autoApproveLabel": "Auto-approve new users",
     "autoApproveHint": "When enabled, all new promoters and businesses will be approved automatically.",
     "autoApproveWarning": "Auto-approval is active. All new users will be approved immediately without manual review. Recommended only for testing.",
-    "autoApproveUpdated": "Auto-approval setting updated successfully"
+    "autoApproveUpdated": "Auto-approval setting updated successfully",
+    "pageOf": "Page {{page}} of {{total}}",
+    "allStatuses": "All Statuses",
+    "searchBusinessPlaceholder": "Search by name, category or address...",
+    "searchPromoterPlaceholder": "Search by name or email...",
+    "searchVisitPlaceholder": "Search by business name...",
+    "searchSupportPlaceholder": "Search by subject, name or email..."
   },
   "earnings": {
     "title": "Your Earnings",
