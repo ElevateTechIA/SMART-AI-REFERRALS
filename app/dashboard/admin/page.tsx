@@ -968,7 +968,7 @@ export default function AdminDashboardPage() {
               <div className="mt-2 space-y-1">
                 {stats.totalOwed > 0 ? (
                   <>
-                    <p className="text-xs text-red-600 font-medium">
+                    <p className="text-xs text-theme-error font-medium">
                       {t('admin.totalOwed')}: {formatCurrency(stats.totalOwed)}
                     </p>
                     <p className="text-xs text-green-600">
@@ -1058,7 +1058,7 @@ export default function AdminDashboardPage() {
                   {/* Owed / Paid */}
                   <div className="flex flex-col items-center gap-0.5 mt-1.5">
                     {biz.owed > 0 && (
-                      <span className="text-xs font-medium text-red-600">
+                      <span className="text-xs font-medium text-theme-error">
                         {t('admin.owes', 'Owes')}: {formatCurrency(biz.owed)}
                       </span>
                     )}
@@ -1099,13 +1099,13 @@ export default function AdminDashboardPage() {
                           <div className="flex items-center gap-4 text-sm flex-wrap">
                             <span className="font-medium">{revenueBizCharges.length} {t('admin.charges', 'charges')}</span>
                             <span className="text-muted-foreground">{t('admin.totalCharge', 'Total')}: {formatCurrency(totalPlatform)}</span>
-                            <span className="text-green-600 font-medium">{t('admin.paid', 'Paid')}: {formatCurrency(totalPaidAmt)}</span>
-                            <span className="text-red-600 font-medium">{t('admin.owes', 'Owes')}: {formatCurrency(totalPlatform - totalPaidAmt)}</span>
+                            <span className="text-theme-success font-medium">{t('admin.paid', 'Paid')}: {formatCurrency(totalPaidAmt)}</span>
+                            <span className="text-theme-error font-medium">{t('admin.owes', 'Owes')}: {formatCurrency(totalPlatform - totalPaidAmt)}</span>
                           </div>
                           {totalPlatform > 0 && (
                             <div className="flex items-center gap-2 min-w-[160px]">
                               <div className="flex-1 h-2 rounded-full bg-muted">
-                                <div className="h-2 rounded-full bg-green-500 transition-all" style={{ width: `${pctPaid}%` }} />
+                                <div className="h-2 rounded-full bg-theme-success transition-all" style={{ width: `${pctPaid}%` }} />
                               </div>
                               <span className="text-xs text-muted-foreground whitespace-nowrap">{pctPaid}%</span>
                             </div>
@@ -1120,13 +1120,13 @@ export default function AdminDashboardPage() {
                       const isExpanded = expandedChargePayments === charge.id
 
                       return (
-                        <div key={charge.id} className={`rounded-xl border transition-colors ${charge.status === 'PAID' ? 'border-green-200 dark:border-green-900' : charge.status === 'PARTIAL' ? 'border-amber-200 dark:border-amber-900' : 'border-border'} bg-background`}>
+                        <div key={charge.id} className={`rounded-xl border transition-colors ${charge.status === 'PAID' ? 'border-theme-success/30' : charge.status === 'PARTIAL' ? 'border-theme-warning/30' : 'border-border'} bg-background`}>
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-3">
                             {/* Left: info */}
                             <div className="flex-1 space-y-1">
                               <div className="flex items-center gap-2 flex-wrap">
                                 {/* Color dot */}
-                                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${charge.status === 'PAID' ? 'bg-green-500' : charge.status === 'PARTIAL' ? 'bg-amber-500' : charge.status === 'VOID' ? 'bg-gray-400' : 'bg-red-500'}`} />
+                                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${charge.status === 'PAID' ? 'bg-theme-success' : charge.status === 'PARTIAL' ? 'bg-theme-warning' : charge.status === 'VOID' ? 'bg-theme-secondary' : 'bg-theme-error'}`} />
                                 <span className="font-medium text-sm">
                                   {t('admin.chargeId', 'Charge')} #{charge.id.slice(0, 7).toUpperCase()}
                                 </span>
@@ -1155,9 +1155,9 @@ export default function AdminDashboardPage() {
                               {charge.status === 'PARTIAL' && (
                                 <div className="flex items-center gap-2 mt-1">
                                   <div className="w-32 h-1.5 rounded-full bg-muted">
-                                    <div className="h-1.5 rounded-full bg-amber-500 transition-all" style={{ width: `${paidPct}%` }} />
+                                    <div className="h-1.5 rounded-full bg-theme-warning transition-all" style={{ width: `${paidPct}%` }} />
                                   </div>
-                                  <span className="text-[10px] text-amber-600 font-medium">
+                                  <span className="text-[10px] text-theme-warning font-medium">
                                     {formatCurrency(charge.paidAmount || 0)} / {formatCurrency(charge.platformAmount)} ({paidPct}%)
                                   </span>
                                 </div>
@@ -1176,7 +1176,7 @@ export default function AdminDashboardPage() {
                             {/* Right: amount + actions */}
                             <div className="flex flex-col items-end gap-2">
                               <div className="text-right">
-                                <span className={`text-lg font-bold ${charge.status === 'PAID' ? 'text-green-600' : charge.status === 'PARTIAL' ? 'text-amber-600' : 'text-red-600'}`}>
+                                <span className={`text-lg font-bold ${charge.status === 'PAID' ? 'text-theme-success' : charge.status === 'PARTIAL' ? 'text-theme-warning' : 'text-theme-error'}`}>
                                   {charge.status === 'PAID' ? formatCurrency(charge.platformAmount) : formatCurrency(remaining)}
                                 </span>
                                 <p className="text-[10px] text-muted-foreground">
@@ -1186,11 +1186,11 @@ export default function AdminDashboardPage() {
                               {/* Action buttons */}
                               {charge.status !== 'PAID' && charge.status !== 'VOID' && (
                                 <div className="flex items-center gap-1.5">
-                                  <Button size="sm" className="h-8 text-xs bg-green-600 hover:bg-green-700 text-white" onClick={() => openPaymentModal(charge, true)}>
+                                  <Button size="sm" className="h-8 text-xs" onClick={() => openPaymentModal(charge, true)}>
                                     <CheckCircle className="h-3 w-3 mr-1" />
                                     {t('admin.markPaid', 'Mark Paid')}
                                   </Button>
-                                  <Button size="sm" variant="outline" className="h-8 text-xs border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:hover:bg-amber-950" onClick={() => openPaymentModal(charge)}>
+                                  <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => openPaymentModal(charge)}>
                                     <DollarSign className="h-3 w-3 mr-1" />
                                     {t('admin.partialPay', 'Partial')}
                                   </Button>
@@ -1228,12 +1228,12 @@ export default function AdminDashboardPage() {
                                   {chargePayments.map((payment) => (
                                     <div key={payment.id} className={`grid grid-cols-[1fr_80px_80px_1fr_80px] gap-2 items-center text-xs px-2 py-1.5 rounded-md ${payment.status === 'VOIDED' ? 'opacity-50 line-through bg-muted/30' : 'bg-background'}`}>
                                       <span className="text-foreground">{formatDateTime(new Date(payment.createdAt))}</span>
-                                      <span className={payment.status === 'VOIDED' ? 'text-muted-foreground' : 'text-green-600 font-semibold'}>{formatCurrency(payment.amount)}</span>
+                                      <span className={payment.status === 'VOIDED' ? 'text-muted-foreground' : 'text-theme-success font-semibold'}>{formatCurrency(payment.amount)}</span>
                                       <Badge variant="outline" className="text-[9px] py-0 px-1.5 w-fit">{payment.method}</Badge>
                                       <span className="text-muted-foreground truncate">{payment.note || '—'}</span>
                                       <div className="text-right">
                                         {payment.status === 'ACTIVE' ? (
-                                          <Button size="sm" variant="ghost" className="h-6 text-[10px] text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 px-2" disabled={voidingPayment === payment.id} onClick={() => handleVoidPayment(charge.id, payment.id, payment.amount)}>
+                                          <Button size="sm" variant="ghost" className="h-6 text-[10px] text-theme-error hover:opacity-80 px-2" disabled={voidingPayment === payment.id} onClick={() => handleVoidPayment(charge.id, payment.id, payment.amount)}>
                                             {voidingPayment === payment.id ? <Loader2 className="h-3 w-3 animate-spin" /> : t('admin.void', 'Void')}
                                           </Button>
                                         ) : (
@@ -2316,11 +2316,11 @@ export default function AdminDashboardPage() {
                   </div>
                   <div>
                     <p className="text-muted-foreground text-xs">{t('admin.paid', 'Paid')}</p>
-                    <p className="font-bold text-green-600">{formatCurrency(paidSoFar)}</p>
+                    <p className="font-bold text-theme-success">{formatCurrency(paidSoFar)}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground text-xs">{t('admin.remaining', 'Remaining')}</p>
-                    <p className="font-bold text-red-600">{formatCurrency(remaining)}</p>
+                    <p className="font-bold text-theme-error">{formatCurrency(remaining)}</p>
                   </div>
                 </div>
 
@@ -2382,7 +2382,7 @@ export default function AdminDashboardPage() {
             <Button variant="outline" onClick={() => setPaymentModal({ open: false, charge: null })} disabled={paymentSaving}>
               {t('common.cancel', 'Cancel')}
             </Button>
-            <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={handleRegisterPayment} disabled={paymentSaving || !paymentAmount}>
+            <Button onClick={handleRegisterPayment} disabled={paymentSaving || !paymentAmount}>
               {paymentSaving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <CheckCircle className="h-4 w-4 mr-1" />}
               {t('admin.registerPaymentBtn', 'Register Payment')} {paymentAmount ? `— ${formatCurrency(parseFloat(paymentAmount) || 0)}` : ''}
             </Button>
