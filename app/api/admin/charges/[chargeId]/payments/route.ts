@@ -29,7 +29,6 @@ export async function GET(
     const paymentsSnapshot = await db
       .collection('charge_payments')
       .where('chargeId', '==', chargeId)
-      .orderBy('createdAt', 'desc')
       .get()
 
     const payments = paymentsSnapshot.docs.map((doc) => {
@@ -47,6 +46,13 @@ export async function GET(
         voidedBy: data.voidedBy,
         createdAt: data.createdAt?.toDate?.() || data.createdAt,
       }
+    })
+
+    // Sort by createdAt descending (avoids needing a composite index)
+    payments.sort((a, b) => {
+      const dateA = a.createdAt instanceof Date ? a.createdAt.getTime() : new Date(a.createdAt).getTime()
+      const dateB = b.createdAt instanceof Date ? b.createdAt.getTime() : new Date(b.createdAt).getTime()
+      return dateB - dateA
     })
 
     return NextResponse.json({
