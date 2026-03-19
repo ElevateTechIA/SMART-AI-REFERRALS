@@ -11,7 +11,6 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Switch } from '@/components/ui/switch'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { apiGet, apiPost, apiPut } from '@/lib/api-client'
@@ -245,8 +244,8 @@ export default function AdminDashboardPage() {
   const [revenueBizCharges, setRevenueBizCharges] = useState<ChargeDetail[]>([])
   const [revenueBizChargesLoading, setRevenueBizChargesLoading] = useState(false)
   const [chargesCache, setChargesCache] = useState<Map<string, ChargeDetail[]>>(new Map())
-  // Payment modal state
-  const [paymentModal, setPaymentModal] = useState<{ open: boolean; charge: ChargeDetail | null }>({ open: false, charge: null })
+  // Payment inline form state
+  const [paymentFormChargeId, setPaymentFormChargeId] = useState<string | null>(null)
   const [paymentAmount, setPaymentAmount] = useState('')
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('TRANSFER')
   const [paymentNote, setPaymentNote] = useState('')
@@ -712,16 +711,19 @@ export default function AdminDashboardPage() {
   const allRoles = ['admin', 'business', 'referrer'] as const
 
   // --- Payment handlers ---
-  const openPaymentModal = (charge: ChargeDetail, fullPay = false) => {
+  const togglePaymentForm = (charge: ChargeDetail, fullPay = false) => {
+    if (paymentFormChargeId === charge.id) {
+      setPaymentFormChargeId(null)
+      return
+    }
     const remaining = charge.platformAmount - (charge.paidAmount || 0)
     setPaymentAmount(fullPay ? remaining.toFixed(2) : '')
     setPaymentMethod('TRANSFER')
     setPaymentNote('')
-    setPaymentModal({ open: true, charge })
+    setPaymentFormChargeId(charge.id)
   }
 
-  const handleRegisterPayment = async () => {
-    const charge = paymentModal.charge
+  const handleRegisterPayment = async (charge: ChargeDetail) => {
     if (!charge) return
     const amount = parseFloat(paymentAmount)
     if (isNaN(amount) || amount <= 0) {
@@ -751,7 +753,7 @@ export default function AdminDashboardPage() {
         if (bizCharges) next.set(charge.businessId, bizCharges.map(c => c.id === charge.id ? updatedCharge : c))
         return next
       })
-      setPaymentModal({ open: false, charge: null })
+      setPaymentFormChargeId(null)
       toast({
         title: t('common.success'),
         description: newStatus === 'PAID'
@@ -1186,11 +1188,11 @@ export default function AdminDashboardPage() {
                               {/* Action buttons */}
                               {charge.status !== 'PAID' && charge.status !== 'VOID' && (
                                 <div className="flex items-center gap-1.5">
-                                  <Button size="sm" className="h-8 text-xs" onClick={() => openPaymentModal(charge, true)}>
+                                  <Button size="sm" className="h-8 text-xs" onClick={() => togglePaymentForm(charge, true)}>
                                     <CheckCircle className="h-3 w-3 mr-1" />
                                     {t('admin.markPaid', 'Mark Paid')}
                                   </Button>
-                                  <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => openPaymentModal(charge)}>
+                                  <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => togglePaymentForm(charge)}>
                                     <DollarSign className="h-3 w-3 mr-1" />
                                     {t('admin.partialPay', 'Partial')}
                                   </Button>
@@ -1246,6 +1248,100 @@ export default function AdminDashboardPage() {
                               )}
                             </div>
                           )}
+
+                          {/* Inline payment form */}
+                          {paymentFormChargeId === charge.id && (() => {
+                            const paidSoFar = charge.paidAmount || 0
+                            const formRemaining = charge.platformAmount - paidSoFar
+                            return (
+                              <div className="border-t px-4 py-4 bg-muted/10 space-y-4">
+                                <div className="flex items-center justify-between">
+                                  <h4 className="text-sm font-semibold">{t('admin.registerPayment', 'Register Payment')}</h4>
+                                  <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setPaymentFormChargeId(null)}>
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+
+                                {/* Summary */}
+                                <div className="grid grid-cols-3 gap-3 p-3 rounded-lg bg-muted/50 text-sm">
+                                  <div>
+                                    <p className="text-muted-foreground text-xs">{t('admin.platform', 'Platform')}</p>
+                                    <p className="font-bold">{formatCurrency(charge.platformAmount)}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-muted-foreground text-xs">{t('admin.paid', 'Paid')}</p>
+                                    <p className="font-bold text-theme-success">{formatCurrency(paidSoFar)}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-muted-foreground text-xs">{t('admin.remaining', 'Remaining')}</p>
+                                    <p className="font-bold text-theme-error">{formatCurrency(formRemaining)}</p>
+                                  </div>
+                                </div>
+
+                                {/* Amount */}
+                                <div className="space-y-2">
+                                  <Label>{t('admin.paymentAmount', 'Payment Amount')}</Label>
+                                  <div className="relative">
+                                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                      type="number"
+                                      step="0.01"
+                                      min="0.01"
+                                      max={formRemaining}
+                                      placeholder="0.00"
+                                      value={paymentAmount}
+                                      onChange={(e) => setPaymentAmount(e.target.value)}
+                                      className="pl-9"
+                                    />
+                                  </div>
+                                  {/* Quick amounts */}
+                                  <div className="flex gap-2 flex-wrap">
+                                    {[25, 50, 75, 100].map(pct => {
+                                      const val = Math.round(formRemaining * pct) / 100
+                                      return (
+                                        <Button key={pct} size="sm" variant={paymentAmount === val.toFixed(2) ? 'default' : 'outline'} className="h-7 text-xs" onClick={() => setPaymentAmount(val.toFixed(2))}>
+                                          {pct}%
+                                        </Button>
+                                      )
+                                    })}
+                                  </div>
+                                </div>
+
+                                {/* Payment method */}
+                                <div className="space-y-2">
+                                  <Label>{t('admin.paymentMethod', 'Payment Method')}</Label>
+                                  <div className="flex gap-2 flex-wrap">
+                                    {([['TRANSFER', 'Transferencia'], ['ZELLE', 'Zelle'], ['CASH', 'Efectivo'], ['CHECK', 'Cheque'], ['OTHER', 'Otro']] as [PaymentMethod, string][]).map(([val, label]) => (
+                                      <Button key={val} size="sm" variant={paymentMethod === val ? 'default' : 'outline'} className="h-8 text-xs" onClick={() => setPaymentMethod(val)}>
+                                        {label}
+                                      </Button>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                {/* Note */}
+                                <div className="space-y-2">
+                                  <Label>{t('admin.note', 'Note')} <span className="text-muted-foreground">({t('common.optional', 'optional')})</span></Label>
+                                  <Input
+                                    placeholder={t('admin.paymentNotePlaceholder', 'e.g. Ref #12345')}
+                                    value={paymentNote}
+                                    onChange={(e) => setPaymentNote(e.target.value)}
+                                  />
+                                </div>
+
+                                {/* Actions */}
+                                <div className="flex items-center justify-end gap-2 pt-1">
+                                  <Button variant="outline" size="sm" onClick={() => setPaymentFormChargeId(null)} disabled={paymentSaving}>
+                                    {t('common.cancel', 'Cancel')}
+                                  </Button>
+                                  <Button size="sm" onClick={() => handleRegisterPayment(charge)} disabled={paymentSaving || !paymentAmount}>
+                                    {paymentSaving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <CheckCircle className="h-4 w-4 mr-1" />}
+                                    {t('admin.registerPaymentBtn', 'Register Payment')} {paymentAmount ? `— ${formatCurrency(parseFloat(paymentAmount) || 0)}` : ''}
+                                  </Button>
+                                </div>
+                              </div>
+                            )
+                          })()}
                         </div>
                       )
                     })}
@@ -2292,103 +2388,6 @@ export default function AdminDashboardPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Payment Modal */}
-      <Dialog open={paymentModal.open} onOpenChange={(open) => { if (!open) setPaymentModal({ open: false, charge: null }) }}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{t('admin.registerPayment', 'Register Payment')}</DialogTitle>
-            <DialogDescription>
-              {t('admin.chargeId', 'Charge')} #{paymentModal.charge?.id.slice(0, 7).toUpperCase()} — {stats?.revenueByBusiness?.find(b => b.businessId === paymentModal.charge?.businessId)?.businessName || ''}
-            </DialogDescription>
-          </DialogHeader>
-
-          {paymentModal.charge && (() => {
-            const charge = paymentModal.charge!
-            const paidSoFar = charge.paidAmount || 0
-            const remaining = charge.platformAmount - paidSoFar
-            return (
-              <div className="space-y-4">
-                {/* Summary */}
-                <div className="grid grid-cols-3 gap-3 p-3 rounded-lg bg-muted/50 text-sm">
-                  <div>
-                    <p className="text-muted-foreground text-xs">{t('admin.platform', 'Platform')}</p>
-                    <p className="font-bold">{formatCurrency(charge.platformAmount)}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground text-xs">{t('admin.paid', 'Paid')}</p>
-                    <p className="font-bold text-theme-success">{formatCurrency(paidSoFar)}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground text-xs">{t('admin.remaining', 'Remaining')}</p>
-                    <p className="font-bold text-theme-error">{formatCurrency(remaining)}</p>
-                  </div>
-                </div>
-
-                {/* Amount */}
-                <div className="space-y-2">
-                  <Label>{t('admin.paymentAmount', 'Payment Amount')}</Label>
-                  <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min="0.01"
-                      max={remaining}
-                      placeholder="0.00"
-                      value={paymentAmount}
-                      onChange={(e) => setPaymentAmount(e.target.value)}
-                      className="pl-9"
-                    />
-                  </div>
-                  {/* Quick amounts */}
-                  <div className="flex gap-2 flex-wrap">
-                    {[25, 50, 75, 100].map(pct => {
-                      const val = Math.round(remaining * pct) / 100
-                      return (
-                        <Button key={pct} size="sm" variant={paymentAmount === val.toFixed(2) ? 'default' : 'outline'} className="h-7 text-xs" onClick={() => setPaymentAmount(val.toFixed(2))}>
-                          {pct}%
-                        </Button>
-                      )
-                    })}
-                  </div>
-                </div>
-
-                {/* Payment method */}
-                <div className="space-y-2">
-                  <Label>{t('admin.paymentMethod', 'Payment Method')}</Label>
-                  <div className="flex gap-2 flex-wrap">
-                    {([['TRANSFER', 'Transferencia'], ['ZELLE', 'Zelle'], ['CASH', 'Efectivo'], ['CHECK', 'Cheque'], ['OTHER', 'Otro']] as [PaymentMethod, string][]).map(([val, label]) => (
-                      <Button key={val} size="sm" variant={paymentMethod === val ? 'default' : 'outline'} className="h-8 text-xs" onClick={() => setPaymentMethod(val)}>
-                        {label}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Note */}
-                <div className="space-y-2">
-                  <Label>{t('admin.note', 'Note')} <span className="text-muted-foreground">({t('common.optional', 'optional')})</span></Label>
-                  <Input
-                    placeholder={t('admin.paymentNotePlaceholder', 'e.g. Ref #12345')}
-                    value={paymentNote}
-                    onChange={(e) => setPaymentNote(e.target.value)}
-                  />
-                </div>
-              </div>
-            )
-          })()}
-
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setPaymentModal({ open: false, charge: null })} disabled={paymentSaving}>
-              {t('common.cancel', 'Cancel')}
-            </Button>
-            <Button onClick={handleRegisterPayment} disabled={paymentSaving || !paymentAmount}>
-              {paymentSaving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <CheckCircle className="h-4 w-4 mr-1" />}
-              {t('admin.registerPaymentBtn', 'Register Payment')} {paymentAmount ? `— ${formatCurrency(parseFloat(paymentAmount) || 0)}` : ''}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
