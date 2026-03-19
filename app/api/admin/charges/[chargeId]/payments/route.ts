@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { chargeId: string } }
+  context: { params: { chargeId: string } }
 ) {
   try {
     const authResult = await verifyAdmin(request)
@@ -16,7 +16,7 @@ export async function GET(
       )
     }
 
-    const { chargeId } = params
+    const { chargeId } = context.params
 
     if (!chargeId) {
       return NextResponse.json(

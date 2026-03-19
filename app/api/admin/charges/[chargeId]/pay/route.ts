@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { chargeId: string } }
+  context: { params: { chargeId: string } }
 ) {
   try {
     const authResult = await verifyAdmin(request)
@@ -17,7 +17,7 @@ export async function POST(
       )
     }
 
-    const { chargeId } = params
+    const { chargeId } = context.params
     const body = await request.json()
     const { amount, method, note } = body
 
