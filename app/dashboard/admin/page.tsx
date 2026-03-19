@@ -1491,7 +1491,7 @@ export default function AdminDashboardPage() {
       )}
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue={initialTab}>
+      <Tabs defaultValue={initialTab} onValueChange={() => { setSelectedRevenueBiz(null); setRevenueBizCharges([]); setPaymentFormChargeId(null) }}>
         <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
           <TabsList className="w-max sm:w-auto">
             <TabsTrigger value="businesses">{t('admin.tabBusinesses')}</TabsTrigger>
