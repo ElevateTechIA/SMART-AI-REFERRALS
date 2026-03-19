@@ -256,6 +256,7 @@ export default function AdminDashboardPage() {
   const [chargePayments, setChargePayments] = useState<ChargePayment[]>([])
   const [chargePaymentsLoading, setChargePaymentsLoading] = useState(false)
   const [voidingPayment, setVoidingPayment] = useState<string | null>(null)
+  const [payAllBizSaving, setPayAllBizSaving] = useState(false)
   // Search, filter & pagination state per tab
   const [businessSearch, setBusinessSearch] = useState('')
   const [businessStatusFilter, setBusinessStatusFilter] = useState('all')
@@ -816,6 +817,38 @@ export default function AdminDashboardPage() {
     }
   }
 
+  const handlePayAllBusiness = async () => {
+    const unpaidCharges = revenueBizCharges.filter(c => c.status !== 'PAID' && c.status !== 'VOID')
+    if (unpaidCharges.length === 0) return
+    setPayAllBizSaving(true)
+    try {
+      for (const charge of unpaidCharges) {
+        const remaining = charge.platformAmount - (charge.paidAmount || 0)
+        if (remaining <= 0.01) continue
+        const result = await apiPost<{ success: boolean; data: { newPaidAmount: number; newStatus: string; remaining: number } }>(`/api/admin/charges/${charge.id}/pay`, {
+          amount: remaining,
+          method: 'TRANSFER',
+          note: null,
+        })
+        if (!result.ok) throw new Error(result.error || `Failed to pay charge ${charge.id}`)
+        const { newPaidAmount, newStatus } = result.data!.data
+        const updatedCharge: ChargeDetail = { ...charge, paidAmount: newPaidAmount, status: newStatus as ChargeDetail['status'], paidAt: new Date().toISOString() }
+        setRevenueBizCharges(prev => prev.map(c => c.id === charge.id ? updatedCharge : c))
+        setChargesCache(prev => {
+          const next = new Map(prev)
+          const bizCharges = next.get(charge.businessId)
+          if (bizCharges) next.set(charge.businessId, bizCharges.map(c => c.id === charge.id ? updatedCharge : c))
+          return next
+        })
+      }
+      toast({ title: t('common.success'), description: t('admin.allChargesPaid', 'All charges marked as paid') })
+    } catch (error) {
+      toast({ title: t('common.error'), description: error instanceof Error ? error.message : 'Failed', variant: 'destructive' })
+    } finally {
+      setPayAllBizSaving(false)
+    }
+  }
+
   // --- Filtered & paginated lists ---
   const filteredBusinesses = businesses.filter((b) => {
     const matchesStatus = businessStatusFilter === 'all' || b.status === businessStatusFilter
@@ -1122,22 +1155,32 @@ export default function AdminDashboardPage() {
                       const totalPlatform = revenueBizCharges.reduce((s, c) => s + c.platformAmount, 0)
                       const totalPaidAmt = revenueBizCharges.reduce((s, c) => s + (c.paidAmount || 0), 0)
                       const pctPaid = totalPlatform > 0 ? Math.round((totalPaidAmt / totalPlatform) * 100) : 0
+                      const totalOwed = totalPlatform - totalPaidAmt
+                      const hasUnpaid = revenueBizCharges.some(c => c.status !== 'PAID' && c.status !== 'VOID')
                       return (
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-lg bg-muted/50">
                           <div className="flex items-center gap-4 text-sm flex-wrap">
                             <span className="font-medium">{revenueBizCharges.length} {t('admin.charges', 'charges')}</span>
                             <span className="text-muted-foreground">{t('admin.totalCharge', 'Total')}: {formatCurrency(totalPlatform)}</span>
                             <span className="text-theme-success font-medium">{t('admin.paid', 'Paid')}: {formatCurrency(totalPaidAmt)}</span>
-                            <span className="text-theme-error font-medium">{t('admin.owes', 'Owes')}: {formatCurrency(totalPlatform - totalPaidAmt)}</span>
+                            <span className="text-theme-error font-medium">{t('admin.owes', 'Owes')}: {formatCurrency(totalOwed)}</span>
                           </div>
-                          {totalPlatform > 0 && (
-                            <div className="flex items-center gap-2 min-w-[160px]">
-                              <div className="flex-1 h-2 rounded-full bg-muted">
-                                <div className="h-2 rounded-full bg-theme-success transition-all" style={{ width: `${pctPaid}%` }} />
+                          <div className="flex items-center gap-3">
+                            {totalPlatform > 0 && (
+                              <div className="flex items-center gap-2 min-w-[120px]">
+                                <div className="flex-1 h-2 rounded-full bg-muted">
+                                  <div className="h-2 rounded-full bg-theme-success transition-all" style={{ width: `${pctPaid}%` }} />
+                                </div>
+                                <span className="text-xs text-muted-foreground whitespace-nowrap">{pctPaid}%</span>
                               </div>
-                              <span className="text-xs text-muted-foreground whitespace-nowrap">{pctPaid}%</span>
-                            </div>
-                          )}
+                            )}
+                            {hasUnpaid && (
+                              <Button size="sm" className="h-8 text-xs" disabled={payAllBizSaving} onClick={handlePayAllBusiness}>
+                                {payAllBizSaving ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <CheckCircle className="h-3 w-3 mr-1" />}
+                                {t('admin.payAll', 'Pay All')} — {formatCurrency(totalOwed)}
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       )
                     })()}
