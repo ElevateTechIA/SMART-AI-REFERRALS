@@ -257,6 +257,7 @@ export default function AdminDashboardPage() {
   const [chargePaymentsLoading, setChargePaymentsLoading] = useState(false)
   const [voidingPayment, setVoidingPayment] = useState<string | null>(null)
   const [payAllBizSaving, setPayAllBizSaving] = useState(false)
+  const [payAllMethod, setPayAllMethod] = useState<PaymentMethod>('TRANSFER')
   // Search, filter & pagination state per tab
   const [businessSearch, setBusinessSearch] = useState('')
   const [businessStatusFilter, setBusinessStatusFilter] = useState('all')
@@ -827,7 +828,7 @@ export default function AdminDashboardPage() {
         if (remaining <= 0.01) continue
         const result = await apiPost<{ success: boolean; data: { newPaidAmount: number; newStatus: string; remaining: number } }>(`/api/admin/charges/${charge.id}/pay`, {
           amount: remaining,
-          method: 'TRANSFER',
+          method: payAllMethod,
           note: null,
         })
         if (!result.ok) throw new Error(result.error || `Failed to pay charge ${charge.id}`)
@@ -1175,10 +1176,22 @@ export default function AdminDashboardPage() {
                               </div>
                             )}
                             {hasUnpaid && (
-                              <Button size="sm" className="h-8 text-xs" disabled={payAllBizSaving} onClick={handlePayAllBusiness}>
-                                {payAllBizSaving ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <CheckCircle className="h-3 w-3 mr-1" />}
-                                {t('admin.payAll', 'Pay All')} — {formatCurrency(totalOwed)}
-                              </Button>
+                              <div className="flex items-center gap-1.5">
+                                <Select value={payAllMethod} onValueChange={(v) => setPayAllMethod(v as PaymentMethod)}>
+                                  <SelectTrigger className="h-8 w-[130px] text-xs">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {([['TRANSFER', 'Transferencia'], ['ZELLE', 'Zelle'], ['CASH', 'Efectivo'], ['CHECK', 'Cheque'], ['OTHER', 'Otro']] as const).map(([val, label]) => (
+                                      <SelectItem key={val} value={val}>{label}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <Button size="sm" className="h-8 text-xs" disabled={payAllBizSaving} onClick={handlePayAllBusiness}>
+                                  {payAllBizSaving ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <CheckCircle className="h-3 w-3 mr-1" />}
+                                  {t('admin.payAll', 'Pay All')} — {formatCurrency(totalOwed)}
+                                </Button>
+                              </div>
                             )}
                           </div>
                         </div>
