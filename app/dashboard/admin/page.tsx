@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Switch } from '@/components/ui/switch'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { apiGet, apiPost, apiPut } from '@/lib/api-client'
@@ -149,7 +150,8 @@ interface ChargeDetail {
   platformAmount: number
   referrerAmount: number
   consumerRewardAmount: number
-  status: 'OWED' | 'PAID' | 'VOID'
+  status: 'OWED' | 'PARTIAL' | 'PAID' | 'VOID'
+  paidAmount: number
   createdAt: string
   updatedAt: string
   paidAt: string | null
@@ -164,6 +166,20 @@ interface ChargeDetail {
     updatedAt: string
   } | null
 }
+
+interface ChargePayment {
+  id: string
+  chargeId: string
+  amount: number
+  method: string
+  note: string | null
+  registeredBy: string
+  status: 'ACTIVE' | 'VOIDED'
+  voidedAt: string | null
+  createdAt: string
+}
+
+type PaymentMethod = 'TRANSFER' | 'ZELLE' | 'CASH' | 'CHECK' | 'OTHER'
 
 interface AdminStats {
   totalUsers: number
@@ -229,6 +245,17 @@ export default function AdminDashboardPage() {
   const [revenueBizCharges, setRevenueBizCharges] = useState<ChargeDetail[]>([])
   const [revenueBizChargesLoading, setRevenueBizChargesLoading] = useState(false)
   const [chargesCache, setChargesCache] = useState<Map<string, ChargeDetail[]>>(new Map())
+  // Payment modal state
+  const [paymentModal, setPaymentModal] = useState<{ open: boolean; charge: ChargeDetail | null }>({ open: false, charge: null })
+  const [paymentAmount, setPaymentAmount] = useState('')
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('TRANSFER')
+  const [paymentNote, setPaymentNote] = useState('')
+  const [paymentSaving, setPaymentSaving] = useState(false)
+  // Payment history
+  const [expandedChargePayments, setExpandedChargePayments] = useState<string | null>(null)
+  const [chargePayments, setChargePayments] = useState<ChargePayment[]>([])
+  const [chargePaymentsLoading, setChargePaymentsLoading] = useState(false)
+  const [voidingPayment, setVoidingPayment] = useState<string | null>(null)
   // Search, filter & pagination state per tab
   const [businessSearch, setBusinessSearch] = useState('')
   const [businessStatusFilter, setBusinessStatusFilter] = useState('all')
@@ -684,6 +711,108 @@ export default function AdminDashboardPage() {
 
   const allRoles = ['admin', 'business', 'referrer'] as const
 
+  // --- Payment handlers ---
+  const openPaymentModal = (charge: ChargeDetail, fullPay = false) => {
+    const remaining = charge.platformAmount - (charge.paidAmount || 0)
+    setPaymentAmount(fullPay ? remaining.toFixed(2) : '')
+    setPaymentMethod('TRANSFER')
+    setPaymentNote('')
+    setPaymentModal({ open: true, charge })
+  }
+
+  const handleRegisterPayment = async () => {
+    const charge = paymentModal.charge
+    if (!charge) return
+    const amount = parseFloat(paymentAmount)
+    if (isNaN(amount) || amount <= 0) {
+      toast({ title: t('common.error'), description: t('admin.invalidAmount', 'Enter a valid amount'), variant: 'destructive' })
+      return
+    }
+    const remaining = charge.platformAmount - (charge.paidAmount || 0)
+    if (amount > remaining + 0.01) {
+      toast({ title: t('common.error'), description: t('admin.amountExceedsBalance', 'Amount exceeds remaining balance of {{amount}}', { amount: formatCurrency(remaining) }), variant: 'destructive' })
+      return
+    }
+    setPaymentSaving(true)
+    try {
+      const result = await apiPost<{ success: boolean; data: { newPaidAmount: number; newStatus: string; remaining: number } }>(`/api/admin/charges/${charge.id}/pay`, {
+        amount,
+        method: paymentMethod,
+        note: paymentNote || null,
+      })
+      if (!result.ok) throw new Error(result.error || 'Failed to register payment')
+      const { newPaidAmount, newStatus, remaining: newRemaining } = result.data!.data
+      // Update local state
+      const updatedCharge: ChargeDetail = { ...charge, paidAmount: newPaidAmount, status: newStatus as ChargeDetail['status'], paidAt: newStatus === 'PAID' ? new Date().toISOString() : charge.paidAt }
+      setRevenueBizCharges(prev => prev.map(c => c.id === charge.id ? updatedCharge : c))
+      setChargesCache(prev => {
+        const next = new Map(prev)
+        const bizCharges = next.get(charge.businessId)
+        if (bizCharges) next.set(charge.businessId, bizCharges.map(c => c.id === charge.id ? updatedCharge : c))
+        return next
+      })
+      setPaymentModal({ open: false, charge: null })
+      toast({
+        title: t('common.success'),
+        description: newStatus === 'PAID'
+          ? t('admin.chargeFullyPaid', 'Charge fully paid')
+          : t('admin.paymentRegistered', 'Payment of {{amount}} registered — {{remaining}} remaining', { amount: formatCurrency(amount), remaining: formatCurrency(newRemaining) }),
+      })
+    } catch (error) {
+      toast({ title: t('common.error'), description: error instanceof Error ? error.message : 'Failed', variant: 'destructive' })
+    } finally {
+      setPaymentSaving(false)
+    }
+  }
+
+  const loadChargePayments = async (chargeId: string) => {
+    if (expandedChargePayments === chargeId) {
+      setExpandedChargePayments(null)
+      setChargePayments([])
+      return
+    }
+    setExpandedChargePayments(chargeId)
+    setChargePaymentsLoading(true)
+    try {
+      const result = await apiGet<{ success: boolean; data: { payments: ChargePayment[] } }>(`/api/admin/charges/${chargeId}/payments`)
+      if (result.ok && result.data?.data) {
+        setChargePayments(result.data.data.payments)
+      }
+    } catch { /* ignore */ } finally {
+      setChargePaymentsLoading(false)
+    }
+  }
+
+  const handleVoidPayment = async (chargeId: string, paymentId: string, paymentAmount: number) => {
+    setVoidingPayment(paymentId)
+    try {
+      const result = await apiPost<{ success: boolean; data: { newPaidAmount: number; newStatus: string; remaining: number } }>(`/api/admin/charges/${chargeId}/void-payment`, { paymentId })
+      if (!result.ok) throw new Error(result.error || 'Failed to void payment')
+      const { newPaidAmount, newStatus } = result.data!.data
+      // Update charge in local state
+      setRevenueBizCharges(prev => prev.map(c => c.id === chargeId ? { ...c, paidAmount: newPaidAmount, status: newStatus as ChargeDetail['status'], paidAt: null } : c))
+      setChargesCache(prev => {
+        const next = new Map(prev)
+        Array.from(next.entries()).forEach(([bizId, charges]) => {
+          const idx = charges.findIndex(c => c.id === chargeId)
+          if (idx !== -1) {
+            const updated = [...charges]
+            updated[idx] = { ...updated[idx], paidAmount: newPaidAmount, status: newStatus as ChargeDetail['status'], paidAt: null }
+            next.set(bizId, updated)
+          }
+        })
+        return next
+      })
+      // Refresh payment list
+      setChargePayments(prev => prev.map(p => p.id === paymentId ? { ...p, status: 'VOIDED' as const, voidedAt: new Date().toISOString() } : p))
+      toast({ title: t('common.success'), description: t('admin.paymentVoided', 'Payment voided — {{amount}} returned to balance', { amount: formatCurrency(paymentAmount) }) })
+    } catch (error) {
+      toast({ title: t('common.error'), description: error instanceof Error ? error.message : 'Failed', variant: 'destructive' })
+    } finally {
+      setVoidingPayment(null)
+    }
+  }
+
   // --- Filtered & paginated lists ---
   const filteredBusinesses = businesses.filter((b) => {
     const matchesStatus = businessStatusFilter === 'all' || b.status === businessStatusFilter
@@ -959,55 +1088,167 @@ export default function AdminDashboardPage() {
                     {t('admin.noCharges', 'No charges found for this business')}
                   </p>
                 ) : (
-                  <div className="space-y-2">
-                    {revenueBizCharges.map((charge) => (
-                      <div
-                        key={charge.id}
-                        className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border border-border bg-background gap-2"
-                      >
-                        <div className="flex-1 space-y-0.5">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-medium text-sm">
-                              {t('admin.chargeId', 'Charge')} #{charge.id.slice(0, 7).toUpperCase()}
-                            </span>
-                            <Badge variant={charge.status === 'PAID' ? 'default' : charge.status === 'OWED' ? 'destructive' : 'secondary'}>
-                              {charge.status}
-                            </Badge>
+                  <div className="space-y-3">
+                    {/* Summary bar */}
+                    {(() => {
+                      const totalPlatform = revenueBizCharges.reduce((s, c) => s + c.platformAmount, 0)
+                      const totalPaidAmt = revenueBizCharges.reduce((s, c) => s + (c.paidAmount || 0), 0)
+                      const pctPaid = totalPlatform > 0 ? Math.round((totalPaidAmt / totalPlatform) * 100) : 0
+                      return (
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-lg bg-muted/50">
+                          <div className="flex items-center gap-4 text-sm flex-wrap">
+                            <span className="font-medium">{revenueBizCharges.length} {t('admin.charges', 'charges')}</span>
+                            <span className="text-muted-foreground">{t('admin.totalCharge', 'Total')}: {formatCurrency(totalPlatform)}</span>
+                            <span className="text-green-600 font-medium">{t('admin.paid', 'Paid')}: {formatCurrency(totalPaidAmt)}</span>
+                            <span className="text-red-600 font-medium">{t('admin.owes', 'Owes')}: {formatCurrency(totalPlatform - totalPaidAmt)}</span>
                           </div>
-                          <p className="text-xs text-muted-foreground">
-                            {formatDate(new Date(charge.createdAt))}
-                            {charge.paidAt && ` - ${t('admin.paidOn', 'Paid')} ${formatDate(new Date(charge.paidAt))}`}
-                          </p>
-                          {charge.visit && (
-                            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                              <span className="flex items-center gap-1">
-                                <UserIcon className="h-3 w-3" />
-                                {t('admin.visitAttribution', 'Via')}: {charge.visit.attributionType === 'REFERRER' ? t('admin.promoter') : t('admin.platform')}
-                              </span>
-                              {charge.visit.isNewCustomer && (
-                                <Badge variant="outline" className="text-[10px] py-0">
-                                  {t('admin.newCustomer', 'New Customer')}
+                          {totalPlatform > 0 && (
+                            <div className="flex items-center gap-2 min-w-[160px]">
+                              <div className="flex-1 h-2 rounded-full bg-muted">
+                                <div className="h-2 rounded-full bg-green-500 transition-all" style={{ width: `${pctPaid}%` }} />
+                              </div>
+                              <span className="text-xs text-muted-foreground whitespace-nowrap">{pctPaid}%</span>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })()}
+
+                    {revenueBizCharges.map((charge) => {
+                      const remaining = charge.platformAmount - (charge.paidAmount || 0)
+                      const paidPct = charge.platformAmount > 0 ? Math.round(((charge.paidAmount || 0) / charge.platformAmount) * 100) : 0
+                      const isExpanded = expandedChargePayments === charge.id
+
+                      return (
+                        <div key={charge.id} className={`rounded-xl border transition-colors ${charge.status === 'PAID' ? 'border-green-200 dark:border-green-900' : charge.status === 'PARTIAL' ? 'border-amber-200 dark:border-amber-900' : 'border-border'} bg-background`}>
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-3">
+                            {/* Left: info */}
+                            <div className="flex-1 space-y-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                {/* Color dot */}
+                                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${charge.status === 'PAID' ? 'bg-green-500' : charge.status === 'PARTIAL' ? 'bg-amber-500' : charge.status === 'VOID' ? 'bg-gray-400' : 'bg-red-500'}`} />
+                                <span className="font-medium text-sm">
+                                  {t('admin.chargeId', 'Charge')} #{charge.id.slice(0, 7).toUpperCase()}
+                                </span>
+                                <Badge variant={charge.status === 'PAID' ? 'success' : charge.status === 'PARTIAL' ? 'warning' : charge.status === 'OWED' ? 'destructive' : 'secondary'}>
+                                  {charge.status}
                                 </Badge>
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                {formatDate(new Date(charge.createdAt))}
+                                {charge.paidAt && ` — ${t('admin.paidOn', 'Paid')} ${formatDate(new Date(charge.paidAt))}`}
+                              </p>
+                              {charge.visit && (
+                                <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                  <span className="flex items-center gap-1">
+                                    <UserIcon className="h-3 w-3" />
+                                    {t('admin.visitAttribution', 'Via')}: {charge.visit.attributionType === 'REFERRER' ? t('admin.promoter') : t('admin.platform')}
+                                  </span>
+                                  {charge.visit.isNewCustomer && (
+                                    <Badge variant="outline" className="text-[10px] py-0">
+                                      {t('admin.newCustomer', 'New Customer')}
+                                    </Badge>
+                                  )}
+                                </div>
+                              )}
+                              {/* Partial progress */}
+                              {charge.status === 'PARTIAL' && (
+                                <div className="flex items-center gap-2 mt-1">
+                                  <div className="w-32 h-1.5 rounded-full bg-muted">
+                                    <div className="h-1.5 rounded-full bg-amber-500 transition-all" style={{ width: `${paidPct}%` }} />
+                                  </div>
+                                  <span className="text-[10px] text-amber-600 font-medium">
+                                    {formatCurrency(charge.paidAmount || 0)} / {formatCurrency(charge.platformAmount)} ({paidPct}%)
+                                  </span>
+                                </div>
+                              )}
+                              <div className="text-[11px] text-muted-foreground space-x-2">
+                                <span>{t('admin.totalCharge', 'Total')}: {formatCurrency(charge.amount)}</span>
+                                {charge.referrerAmount > 0 && (
+                                  <span>{t('admin.referrerPortion', 'Promoter')}: {formatCurrency(charge.referrerAmount)}</span>
+                                )}
+                                {charge.consumerRewardAmount > 0 && (
+                                  <span>{t('admin.consumerReward', 'Reward')}: {formatCurrency(charge.consumerRewardAmount)}</span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Right: amount + actions */}
+                            <div className="flex flex-col items-end gap-2">
+                              <div className="text-right">
+                                <span className={`text-lg font-bold ${charge.status === 'PAID' ? 'text-green-600' : charge.status === 'PARTIAL' ? 'text-amber-600' : 'text-red-600'}`}>
+                                  {charge.status === 'PAID' ? formatCurrency(charge.platformAmount) : formatCurrency(remaining)}
+                                </span>
+                                <p className="text-[10px] text-muted-foreground">
+                                  {charge.status === 'PAID' ? t('admin.paid', 'Paid') : t('admin.remaining', 'remaining')}
+                                </p>
+                              </div>
+                              {/* Action buttons */}
+                              {charge.status !== 'PAID' && charge.status !== 'VOID' && (
+                                <div className="flex items-center gap-1.5">
+                                  <Button size="sm" className="h-8 text-xs bg-green-600 hover:bg-green-700 text-white" onClick={() => openPaymentModal(charge, true)}>
+                                    <CheckCircle className="h-3 w-3 mr-1" />
+                                    {t('admin.markPaid', 'Mark Paid')}
+                                  </Button>
+                                  <Button size="sm" variant="outline" className="h-8 text-xs border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:hover:bg-amber-950" onClick={() => openPaymentModal(charge)}>
+                                    <DollarSign className="h-3 w-3 mr-1" />
+                                    {t('admin.partialPay', 'Partial')}
+                                  </Button>
+                                </div>
+                              )}
+                              {/* History toggle */}
+                              {(charge.status === 'PARTIAL' || charge.status === 'PAID') && (
+                                <Button size="sm" variant="ghost" className="h-7 text-[11px] text-muted-foreground" onClick={() => loadChargePayments(charge.id)}>
+                                  {isExpanded ? <ChevronUp className="h-3 w-3 mr-1" /> : <ChevronDown className="h-3 w-3 mr-1" />}
+                                  {t('admin.paymentHistory', 'History')}
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Expanded payment history */}
+                          {isExpanded && (
+                            <div className="border-t px-4 py-3 bg-muted/20">
+                              {chargePaymentsLoading ? (
+                                <div className="text-center py-4 text-muted-foreground">
+                                  <Loader2 className="h-4 w-4 animate-spin mx-auto mb-1" />
+                                  <span className="text-xs">{t('common.loading')}</span>
+                                </div>
+                              ) : chargePayments.length === 0 ? (
+                                <p className="text-center text-xs text-muted-foreground py-3">{t('admin.noPayments', 'No payments recorded')}</p>
+                              ) : (
+                                <div className="space-y-1.5">
+                                  <div className="grid grid-cols-[1fr_80px_80px_1fr_80px] gap-2 text-[10px] text-muted-foreground font-medium uppercase tracking-wider px-2 pb-1">
+                                    <span>{t('admin.date', 'Date')}</span>
+                                    <span>{t('admin.amount', 'Amount')}</span>
+                                    <span>{t('admin.method', 'Method')}</span>
+                                    <span>{t('admin.note', 'Note')}</span>
+                                    <span className="text-right">{t('admin.action', 'Action')}</span>
+                                  </div>
+                                  {chargePayments.map((payment) => (
+                                    <div key={payment.id} className={`grid grid-cols-[1fr_80px_80px_1fr_80px] gap-2 items-center text-xs px-2 py-1.5 rounded-md ${payment.status === 'VOIDED' ? 'opacity-50 line-through bg-muted/30' : 'bg-background'}`}>
+                                      <span className="text-foreground">{formatDateTime(new Date(payment.createdAt))}</span>
+                                      <span className={payment.status === 'VOIDED' ? 'text-muted-foreground' : 'text-green-600 font-semibold'}>{formatCurrency(payment.amount)}</span>
+                                      <Badge variant="outline" className="text-[9px] py-0 px-1.5 w-fit">{payment.method}</Badge>
+                                      <span className="text-muted-foreground truncate">{payment.note || '—'}</span>
+                                      <div className="text-right">
+                                        {payment.status === 'ACTIVE' ? (
+                                          <Button size="sm" variant="ghost" className="h-6 text-[10px] text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 px-2" disabled={voidingPayment === payment.id} onClick={() => handleVoidPayment(charge.id, payment.id, payment.amount)}>
+                                            {voidingPayment === payment.id ? <Loader2 className="h-3 w-3 animate-spin" /> : t('admin.void', 'Void')}
+                                          </Button>
+                                        ) : (
+                                          <span className="text-[10px] text-muted-foreground">{t('admin.voided', 'Voided')}</span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
                               )}
                             </div>
                           )}
                         </div>
-                        <div className="flex flex-col items-end gap-0.5">
-                          <span className={`text-base font-bold ${charge.status === 'OWED' ? 'text-red-600' : 'text-green-600'}`}>
-                            {formatCurrency(charge.platformAmount)}
-                          </span>
-                          <div className="text-[11px] text-muted-foreground text-right space-x-2">
-                            <span>{t('admin.totalCharge', 'Total')}: {formatCurrency(charge.amount)}</span>
-                            {charge.referrerAmount > 0 && (
-                              <span>{t('admin.referrerPortion', 'Promoter')}: {formatCurrency(charge.referrerAmount)}</span>
-                            )}
-                            {charge.consumerRewardAmount > 0 && (
-                              <span>{t('admin.consumerReward', 'Reward')}: {formatCurrency(charge.consumerRewardAmount)}</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 )}
               </div>
@@ -2050,6 +2291,104 @@ export default function AdminDashboardPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Payment Modal */}
+      <Dialog open={paymentModal.open} onOpenChange={(open) => { if (!open) setPaymentModal({ open: false, charge: null }) }}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{t('admin.registerPayment', 'Register Payment')}</DialogTitle>
+            <DialogDescription>
+              {t('admin.chargeId', 'Charge')} #{paymentModal.charge?.id.slice(0, 7).toUpperCase()} — {stats?.revenueByBusiness?.find(b => b.businessId === paymentModal.charge?.businessId)?.businessName || ''}
+            </DialogDescription>
+          </DialogHeader>
+
+          {paymentModal.charge && (() => {
+            const charge = paymentModal.charge!
+            const paidSoFar = charge.paidAmount || 0
+            const remaining = charge.platformAmount - paidSoFar
+            return (
+              <div className="space-y-4">
+                {/* Summary */}
+                <div className="grid grid-cols-3 gap-3 p-3 rounded-lg bg-muted/50 text-sm">
+                  <div>
+                    <p className="text-muted-foreground text-xs">{t('admin.platform', 'Platform')}</p>
+                    <p className="font-bold">{formatCurrency(charge.platformAmount)}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs">{t('admin.paid', 'Paid')}</p>
+                    <p className="font-bold text-green-600">{formatCurrency(paidSoFar)}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs">{t('admin.remaining', 'Remaining')}</p>
+                    <p className="font-bold text-red-600">{formatCurrency(remaining)}</p>
+                  </div>
+                </div>
+
+                {/* Amount */}
+                <div className="space-y-2">
+                  <Label>{t('admin.paymentAmount', 'Payment Amount')}</Label>
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      max={remaining}
+                      placeholder="0.00"
+                      value={paymentAmount}
+                      onChange={(e) => setPaymentAmount(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                  {/* Quick amounts */}
+                  <div className="flex gap-2 flex-wrap">
+                    {[25, 50, 75, 100].map(pct => {
+                      const val = Math.round(remaining * pct) / 100
+                      return (
+                        <Button key={pct} size="sm" variant={paymentAmount === val.toFixed(2) ? 'default' : 'outline'} className="h-7 text-xs" onClick={() => setPaymentAmount(val.toFixed(2))}>
+                          {pct}%
+                        </Button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Payment method */}
+                <div className="space-y-2">
+                  <Label>{t('admin.paymentMethod', 'Payment Method')}</Label>
+                  <div className="flex gap-2 flex-wrap">
+                    {([['TRANSFER', 'Transferencia'], ['ZELLE', 'Zelle'], ['CASH', 'Efectivo'], ['CHECK', 'Cheque'], ['OTHER', 'Otro']] as [PaymentMethod, string][]).map(([val, label]) => (
+                      <Button key={val} size="sm" variant={paymentMethod === val ? 'default' : 'outline'} className="h-8 text-xs" onClick={() => setPaymentMethod(val)}>
+                        {label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Note */}
+                <div className="space-y-2">
+                  <Label>{t('admin.note', 'Note')} <span className="text-muted-foreground">({t('common.optional', 'optional')})</span></Label>
+                  <Input
+                    placeholder={t('admin.paymentNotePlaceholder', 'e.g. Ref #12345')}
+                    value={paymentNote}
+                    onChange={(e) => setPaymentNote(e.target.value)}
+                  />
+                </div>
+              </div>
+            )
+          })()}
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setPaymentModal({ open: false, charge: null })} disabled={paymentSaving}>
+              {t('common.cancel', 'Cancel')}
+            </Button>
+            <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={handleRegisterPayment} disabled={paymentSaving || !paymentAmount}>
+              {paymentSaving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <CheckCircle className="h-4 w-4 mr-1" />}
+              {t('admin.registerPaymentBtn', 'Register Payment')} {paymentAmount ? `— ${formatCurrency(parseFloat(paymentAmount) || 0)}` : ''}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

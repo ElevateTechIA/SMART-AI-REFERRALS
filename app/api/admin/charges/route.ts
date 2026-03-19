@@ -82,6 +82,7 @@ export async function GET(request: NextRequest) {
         referrerAmount: data.referrerAmount,
         consumerRewardAmount: data.consumerRewardAmount,
         status: data.status,
+        paidAmount: data.paidAmount || 0,
         createdAt: data.createdAt?.toDate?.() || data.createdAt,
         updatedAt: data.updatedAt?.toDate?.() || data.updatedAt,
         paidAt: data.paidAt?.toDate?.() || data.paidAt || null,

@@ -1,0 +1,63 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getAdminDb, verifyAdmin } from '@/lib/firebase/admin'
+
+export const dynamic = 'force-dynamic'
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { chargeId: string } }
+) {
+  try {
+    const authResult = await verifyAdmin(request)
+    if (!authResult.success) {
+      return NextResponse.json(
+        { error: authResult.error },
+        { status: authResult.status }
+      )
+    }
+
+    const { chargeId } = params
+
+    if (!chargeId) {
+      return NextResponse.json(
+        { error: 'chargeId is required' },
+        { status: 400 }
+      )
+    }
+
+    const db = getAdminDb()
+    const paymentsSnapshot = await db
+      .collection('charge_payments')
+      .where('chargeId', '==', chargeId)
+      .orderBy('createdAt', 'desc')
+      .get()
+
+    const payments = paymentsSnapshot.docs.map((doc) => {
+      const data = doc.data()
+      return {
+        id: doc.id,
+        chargeId: data.chargeId,
+        businessId: data.businessId,
+        amount: data.amount,
+        method: data.method,
+        note: data.note,
+        registeredBy: data.registeredBy,
+        status: data.status,
+        voidedAt: data.voidedAt?.toDate?.() || null,
+        voidedBy: data.voidedBy,
+        createdAt: data.createdAt?.toDate?.() || data.createdAt,
+      }
+    })
+
+    return NextResponse.json({
+      success: true,
+      data: { payments },
+    })
+  } catch (error) {
+    console.error('Error fetching payments:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch payments' },
+      { status: 500 }
+    )
+  }
+}
