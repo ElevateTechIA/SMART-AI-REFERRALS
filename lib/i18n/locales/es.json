@@ -242,6 +242,7 @@
     "newCustomer": "Cliente Nuevo",
     "totalCharge": "Total",
     "referrerPortion": "Promotor",
+    "consumerReward": "Recompensa",
     "fraudAlerts": "Alertas de Fraude ({{count}})",
     "fraudAlertsDesc": "Alertas de fraude potencial sin resolver requieren atención",
     "unresolved": "Sin resolver",

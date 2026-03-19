@@ -228,6 +228,7 @@ export default function AdminDashboardPage() {
   const [selectedRevenueBiz, setSelectedRevenueBiz] = useState<string | null>(null)
   const [revenueBizCharges, setRevenueBizCharges] = useState<ChargeDetail[]>([])
   const [revenueBizChargesLoading, setRevenueBizChargesLoading] = useState(false)
+  const [chargesCache, setChargesCache] = useState<Map<string, ChargeDetail[]>>(new Map())
   // Search, filter & pagination state per tab
   const [businessSearch, setBusinessSearch] = useState('')
   const [businessStatusFilter, setBusinessStatusFilter] = useState('all')
@@ -882,11 +883,17 @@ export default function AdminDashboardPage() {
                       return
                     }
                     setSelectedRevenueBiz(biz.businessId)
+                    const cached = chargesCache.get(biz.businessId)
+                    if (cached) {
+                      setRevenueBizCharges(cached)
+                      return
+                    }
                     setRevenueBizChargesLoading(true)
                     try {
                       const response = await apiGet<{ success: boolean; data: { charges: ChargeDetail[] } }>(`/api/admin/charges?businessId=${biz.businessId}`)
                       if (response.ok && response.data?.data) {
                         setRevenueBizCharges(response.data.data.charges)
+                        setChargesCache(prev => new Map(prev).set(biz.businessId, response.data!.data.charges))
                       }
                     } catch { /* ignore */ } finally {
                       setRevenueBizChargesLoading(false)
@@ -989,10 +996,13 @@ export default function AdminDashboardPage() {
                           <span className={`text-base font-bold ${charge.status === 'OWED' ? 'text-red-600' : 'text-green-600'}`}>
                             {formatCurrency(charge.platformAmount)}
                           </span>
-                          <div className="text-[11px] text-muted-foreground text-right">
+                          <div className="text-[11px] text-muted-foreground text-right space-x-2">
                             <span>{t('admin.totalCharge', 'Total')}: {formatCurrency(charge.amount)}</span>
                             {charge.referrerAmount > 0 && (
-                              <span className="ml-2">{t('admin.referrerPortion', 'Promoter')}: {formatCurrency(charge.referrerAmount)}</span>
+                              <span>{t('admin.referrerPortion', 'Promoter')}: {formatCurrency(charge.referrerAmount)}</span>
+                            )}
+                            {charge.consumerRewardAmount > 0 && (
+                              <span>{t('admin.consumerReward', 'Reward')}: {formatCurrency(charge.consumerRewardAmount)}</span>
                             )}
                           </div>
                         </div>

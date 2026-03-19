@@ -242,6 +242,7 @@
     "newCustomer": "New Customer",
     "totalCharge": "Total",
     "referrerPortion": "Promoter",
+    "consumerReward": "Reward",
     "fraudAlerts": "Fraud Alerts ({{count}})",
     "fraudAlertsDesc": "Unresolved potential fraud flags require attention",
     "unresolved": "Unresolved",
