@@ -713,6 +713,23 @@ export default function AdminDashboardPage() {
 
   const allRoles = ['admin', 'business', 'referrer'] as const
 
+  // Update stats.revenueByBusiness when a payment changes
+  const updateBizRevenue = (businessId: string, paidDelta: number) => {
+    setStats(prev => {
+      if (!prev?.revenueByBusiness) return prev
+      return {
+        ...prev,
+        totalPaid: (prev.totalPaid || 0) + paidDelta,
+        totalOwed: (prev.totalOwed || 0) - paidDelta,
+        revenueByBusiness: prev.revenueByBusiness.map(b =>
+          b.businessId === businessId
+            ? { ...b, paid: b.paid + paidDelta, owed: Math.max(0, b.owed - paidDelta) }
+            : b
+        ),
+      }
+    })
+  }
+
   // --- Payment handlers ---
   const togglePaymentForm = (charge: ChargeDetail, fullPay = false) => {
     if (paymentFormChargeId === charge.id) {
@@ -756,6 +773,7 @@ export default function AdminDashboardPage() {
         if (bizCharges) next.set(charge.businessId, bizCharges.map(c => c.id === charge.id ? updatedCharge : c))
         return next
       })
+      updateBizRevenue(charge.businessId, amount)
       setPaymentFormChargeId(null)
       toast({
         title: t('common.success'),
@@ -810,6 +828,9 @@ export default function AdminDashboardPage() {
       })
       // Refresh payment list
       setChargePayments(prev => prev.map(p => p.id === paymentId ? { ...p, status: 'VOIDED' as const, voidedAt: new Date().toISOString() } : p))
+      // Update biz revenue (find businessId from charges)
+      const voidedCharge = revenueBizCharges.find(c => c.id === chargeId)
+      if (voidedCharge) updateBizRevenue(voidedCharge.businessId, -paymentAmount)
       toast({ title: t('common.success'), description: t('admin.paymentVoided', 'Payment voided — {{amount}} returned to balance', { amount: formatCurrency(paymentAmount) }) })
     } catch (error) {
       toast({ title: t('common.error'), description: error instanceof Error ? error.message : 'Failed', variant: 'destructive' })
@@ -841,6 +862,7 @@ export default function AdminDashboardPage() {
           if (bizCharges) next.set(charge.businessId, bizCharges.map(c => c.id === charge.id ? updatedCharge : c))
           return next
         })
+        updateBizRevenue(charge.businessId, remaining)
       }
       toast({ title: t('common.success'), description: t('admin.allChargesPaid', 'All charges marked as paid') })
     } catch (error) {
