@@ -240,6 +240,7 @@ export default function AdminDashboardPage() {
   const [splitSaving, setSplitSaving] = useState(false)
   const [autoApproveUsers, setAutoApproveUsers] = useState(false)
   const [autoApproveSaving, setAutoApproveSaving] = useState(false)
+  const [revenueFilter, setRevenueFilter] = useState<'all' | 'pending' | 'paid'>('all')
   const [selectedRevenueBiz, setSelectedRevenueBiz] = useState<string | null>(null)
   const [revenueBizCharges, setRevenueBizCharges] = useState<ChargeDetail[]>([])
   const [revenueBizChargesLoading, setRevenueBizChargesLoading] = useState(false)
@@ -1002,8 +1003,33 @@ export default function AdminDashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Filter buttons */}
+            <div className="flex gap-2">
+              {([['all', t('admin.allBusinesses', 'All')], ['pending', t('admin.pendingPayment', 'Pending')], ['paid', t('admin.fullyPaid', 'Paid')]] as const).map(([value, label]) => (
+                <Button
+                  key={value}
+                  size="sm"
+                  variant={revenueFilter === value ? 'default' : 'outline'}
+                  className="h-8 text-xs"
+                  onClick={() => setRevenueFilter(value as 'all' | 'pending' | 'paid')}
+                >
+                  {label}
+                  <span className="ml-1.5 text-[10px] opacity-70">
+                    ({value === 'all'
+                      ? stats.revenueByBusiness!.length
+                      : value === 'pending'
+                        ? stats.revenueByBusiness!.filter(b => b.owed > 0).length
+                        : stats.revenueByBusiness!.filter(b => b.owed === 0).length
+                    })
+                  </span>
+                </Button>
+              ))}
+            </div>
+
             <div className="flex gap-3 overflow-x-auto pb-2 -mx-2 px-2 snap-x snap-mandatory">
-              {stats.revenueByBusiness.map((biz) => (
+              {stats.revenueByBusiness
+                .filter(biz => revenueFilter === 'all' ? true : revenueFilter === 'pending' ? biz.owed > 0 : biz.owed === 0)
+                .map((biz) => (
                 <div
                   key={biz.businessId}
                   className={`flex flex-col items-center text-center p-4 rounded-xl border transition-colors cursor-pointer w-[200px] flex-shrink-0 snap-start ${selectedRevenueBiz === biz.businessId ? 'border-foreground/40 bg-muted/60 ring-1 ring-foreground/20' : 'border-border bg-muted/30 hover:bg-muted/60'}`}
