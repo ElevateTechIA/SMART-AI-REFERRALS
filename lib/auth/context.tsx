@@ -7,6 +7,7 @@ import {
   onAuthStateChanged,
   signInWithPopup,
   signInWithRedirect,
+  signInWithEmailAndPassword,
   getRedirectResult,
   signOut as firebaseSignOut,
 } from 'firebase/auth'
@@ -19,6 +20,7 @@ interface AuthContextType {
   user: User | null
   loading: boolean
   signInWithGoogle: (role?: UserRole) => Promise<void>
+  signInWithEmail: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
   refreshUser: () => Promise<void>
 }
@@ -188,6 +190,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const signInWithEmail = async (email: string, password: string) => {
+    const result = await signInWithEmailAndPassword(auth, email, password)
+    const existingUser = await fetchUserData(result.user)
+    if (existingUser) {
+      setUser(existingUser)
+    }
+  }
+
   const signOut = async () => {
     await firebaseSignOut(auth)
     setUser(null)
@@ -219,6 +229,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         loading,
         signInWithGoogle,
+        signInWithEmail,
         signOut,
         refreshUser,
       }}

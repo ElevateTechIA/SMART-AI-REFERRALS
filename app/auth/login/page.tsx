@@ -10,6 +10,7 @@ import { GoogleAuthButton } from '@/components/auth/google-auth-button'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { Loader2 } from 'lucide-react'
+import { TestLoginPanel } from '@/components/auth/test-login-panel'
 
 function LoginContent() {
   const [loading, setLoading] = useState(false)
@@ -73,6 +74,7 @@ function LoginContent() {
           </p>
         </CardFooter>
       </Card>
+      <TestLoginPanel />
     </AuthPageLayout>
   )
 }
