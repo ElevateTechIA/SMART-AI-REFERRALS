@@ -20,13 +20,12 @@ export async function GET(request: NextRequest) {
     const db = getAdminDb()
 
     let query: FirebaseFirestore.Query = db.collection('earnings')
-      .orderBy('createdAt', 'desc')
 
     if (status) {
       query = query.where('status', '==', status)
     }
 
-    const snapshot = await query.limit(limit).get()
+    const snapshot = await query.get()
 
     // Batch fetch all unique users and businesses to avoid N+1 queries
     const userIds = new Set<string>()
@@ -62,7 +61,36 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const earnings = snapshot.docs.map(doc => {
+    // If fetching PENDING, check which charges are PAID to filter
+    // Only show earnings for approval if the business has paid the related charge
+    let paidChargeVisitIds: Set<string> | null = null
+    if (status === 'PENDING') {
+      const visitIds = new Set<string>()
+      for (const doc of snapshot.docs) {
+        const data = doc.data()
+        if (data.visitId) visitIds.add(data.visitId)
+      }
+
+      if (visitIds.size > 0) {
+        paidChargeVisitIds = new Set<string>()
+        // Fetch charges for these visits in batches of 10
+        const visitIdArray = Array.from(visitIds)
+        for (let i = 0; i < visitIdArray.length; i += 10) {
+          const batch = visitIdArray.slice(i, i + 10)
+          const chargesSnap = await db.collection('charges')
+            .where('visitId', 'in', batch)
+            .get()
+          for (const cDoc of chargesSnap.docs) {
+            const cData = cDoc.data()
+            if (cData.status === 'PAID') {
+              paidChargeVisitIds.add(cData.visitId)
+            }
+          }
+        }
+      }
+    }
+
+    let earnings = snapshot.docs.map(doc => {
       const data = doc.data()
       return {
         id: doc.id,
@@ -75,15 +103,28 @@ export async function GET(request: NextRequest) {
         amount: data.amount || 0,
         type: data.type,
         status: data.status,
+        businessPaid: paidChargeVisitIds ? paidChargeVisitIds.has(data.visitId) : true,
         createdAt: data.createdAt?.toDate()?.toISOString() || null,
         approvedAt: data.approvedAt?.toDate()?.toISOString() || null,
         paidAt: data.paidAt?.toDate()?.toISOString() || null,
       }
     })
 
+    // For PENDING status, only return earnings where business has paid
+    if (status === 'PENDING' && paidChargeVisitIds) {
+      earnings = earnings.filter(e => e.businessPaid)
+    }
+
+    // Sort by createdAt descending in memory and apply limit
+    earnings.sort((a, b) => {
+      const da = a.createdAt ? new Date(a.createdAt).getTime() : 0
+      const db2 = b.createdAt ? new Date(b.createdAt).getTime() : 0
+      return db2 - da
+    })
+
     return NextResponse.json({
       success: true,
-      data: earnings,
+      data: earnings.slice(0, limit),
     })
   } catch (error) {
     console.error('Error fetching admin earnings:', error)

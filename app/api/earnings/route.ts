@@ -42,6 +42,8 @@ export async function GET(request: NextRequest) {
     // Calculate stats
     let totalEarnings = 0
     let pendingEarnings = 0
+    let approvedEarnings = 0
+    let paidEarnings = 0
     let completedEarnings = 0
     let thisMonthEarnings = 0
     let totalCount = 0
@@ -72,7 +74,12 @@ export async function GET(request: NextRequest) {
       if (data.status === 'PENDING') {
         pendingEarnings += amount
         pendingCount++
-      } else if (data.status === 'APPROVED' || data.status === 'PAID') {
+      } else if (data.status === 'APPROVED') {
+        approvedEarnings += amount
+        completedEarnings += amount
+        completedCount++
+      } else if (data.status === 'PAID') {
+        paidEarnings += amount
         completedEarnings += amount
         completedCount++
       }
@@ -163,16 +170,28 @@ export async function GET(request: NextRequest) {
       return dateB - dateA
     })
 
+    // Check if user has a pending payout request
+    const payoutSnapshot = await db.collection('payout_requests')
+      .where('userId', '==', userId)
+      .get()
+    const hasPendingPayout = payoutSnapshot.docs.some(d => {
+      const s = d.data().status
+      return s === 'REQUESTED' || s === 'PROCESSING'
+    })
+
     return NextResponse.json({
       success: true,
       stats: {
         totalEarnings: Math.round(totalEarnings * 100) / 100,
         pendingEarnings: Math.round(pendingEarnings * 100) / 100,
+        approvedEarnings: Math.round(approvedEarnings * 100) / 100,
+        paidEarnings: Math.round(paidEarnings * 100) / 100,
         completedEarnings: Math.round(completedEarnings * 100) / 100,
         thisMonth: Math.round(thisMonthEarnings * 100) / 100,
         totalCount,
         pendingCount,
         completedCount,
+        hasPendingPayout,
       },
       transactions,
     })

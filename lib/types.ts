@@ -177,6 +177,27 @@ export interface Earning {
   paidAt?: Date
 }
 
+// Payout Request Status
+export type PayoutRequestStatus = 'REQUESTED' | 'PROCESSING' | 'COMPLETED' | 'REJECTED'
+
+// Payout Request (User cashout request)
+export interface PayoutRequest {
+  id: string
+  userId: string
+  amount: number
+  earningIds: string[]
+  status: PayoutRequestStatus
+  paymentMethod?: string
+  adminNote?: string
+  processedBy?: string
+  createdAt: Date
+  updatedAt: Date
+  completedAt?: Date
+}
+
+// Minimum cashout amount in USD
+export const MIN_CASHOUT_AMOUNT = 50
+
 // Charge Status
 export type ChargeStatus = 'OWED' | 'PAID' | 'VOID'
 

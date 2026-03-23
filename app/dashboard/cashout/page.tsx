@@ -4,13 +4,15 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/lib/auth/context'
-import { apiGet, apiPut } from '@/lib/api-client'
+import { apiGet, apiPost, apiPut } from '@/lib/api-client'
 import { formatCurrency } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/components/ui/use-toast'
+import { Badge } from '@/components/ui/badge'
+import { MIN_CASHOUT_AMOUNT } from '@/lib/types'
 import {
   ChevronLeft,
   DollarSign,
@@ -21,13 +23,28 @@ import {
   Eye,
   EyeOff,
   Check,
+  Wallet,
+  AlertCircle,
 } from 'lucide-react'
 
 interface EarningsStats {
   totalEarnings: number
   pendingEarnings: number
+  approvedEarnings: number
+  paidEarnings: number
   completedEarnings: number
   thisMonth: number
+  hasPendingPayout: boolean
+}
+
+interface PayoutRequestItem {
+  id: string
+  amount: number
+  status: 'REQUESTED' | 'PROCESSING' | 'COMPLETED' | 'REJECTED'
+  paymentMethod: string | null
+  adminNote: string | null
+  createdAt: string
+  completedAt: string | null
 }
 
 export default function CashoutPage() {
@@ -39,9 +56,15 @@ export default function CashoutPage() {
   const [stats, setStats] = useState<EarningsStats>({
     totalEarnings: 0,
     pendingEarnings: 0,
+    approvedEarnings: 0,
+    paidEarnings: 0,
     completedEarnings: 0,
     thisMonth: 0,
+    hasPendingPayout: false,
   })
+  const [requestingCashout, setRequestingCashout] = useState(false)
+  const [payoutRequests, setPayoutRequests] = useState<PayoutRequestItem[]>([])
+  const [loadingPayouts, setLoadingPayouts] = useState(true)
 
   const [bankInfo, setBankInfo] = useState({
     bankName: '',
@@ -69,6 +92,52 @@ export default function CashoutPage() {
     }
     fetchStats()
   }, [user])
+
+  // Load payout requests
+  useEffect(() => {
+    const fetchPayouts = async () => {
+      if (!user) return
+      try {
+        const result = await apiGet<{ success: boolean; data: PayoutRequestItem[] }>('/api/cashout')
+        if (result.ok && result.data?.data) {
+          setPayoutRequests(result.data.data)
+        }
+      } catch { /* ignore */ } finally {
+        setLoadingPayouts(false)
+      }
+    }
+    fetchPayouts()
+  }, [user])
+
+  const handleRequestCashout = async () => {
+    setRequestingCashout(true)
+    try {
+      const result = await apiPost<{ success: boolean; data: { payoutRequestId: string; amount: number } }>('/api/cashout', {})
+      if (result.ok && result.data?.success) {
+        toast({
+          title: t('cashout.cashoutRequested', 'Cashout request submitted'),
+          description: `${formatCurrency(result.data.data.amount)} ${t('cashout.cashoutRequestedDesc', 'will be processed soon')}`,
+        })
+        // Refresh stats and payouts
+        const [statsRes, payoutsRes] = await Promise.all([
+          apiGet<{ success: boolean; stats: EarningsStats }>('/api/earnings'),
+          apiGet<{ success: boolean; data: PayoutRequestItem[] }>('/api/cashout'),
+        ])
+        if (statsRes.ok && statsRes.data) setStats(statsRes.data.stats)
+        if (payoutsRes.ok && payoutsRes.data?.data) setPayoutRequests(payoutsRes.data.data)
+      } else {
+        toast({
+          title: t('common.error'),
+          description: result.error || t('cashout.cashoutFailed', 'Failed to submit request'),
+          variant: 'destructive',
+        })
+      }
+    } catch {
+      toast({ title: t('common.error'), description: t('cashout.cashoutFailed', 'Failed to submit request'), variant: 'destructive' })
+    } finally {
+      setRequestingCashout(false)
+    }
+  }
 
   // Load existing bank info
   useEffect(() => {
@@ -174,8 +243,13 @@ export default function CashoutPage() {
               <span className="text-sm text-muted-foreground">{t('cashout.availableBalance')}</span>
             </div>
             <p className="text-3xl font-bold text-foreground">
-              {formatCurrency(stats.completedEarnings)}
+              {formatCurrency(stats.approvedEarnings)}
             </p>
+            {stats.paidEarnings > 0 && (
+              <p className="text-xs text-muted-foreground mt-1">
+                {t('cashout.alreadyCashedOut', 'Already cashed out')}: {formatCurrency(stats.paidEarnings)}
+              </p>
+            )}
           </div>
 
           <div className="bg-card backdrop-blur-sm rounded-xl p-6 shadow-xl">
@@ -206,6 +280,84 @@ export default function CashoutPage() {
             {t('cashout.thisMonthLabel')}: {formatCurrency(stats.thisMonth)}
           </p>
         </div>
+
+        {/* Request Cashout */}
+        <div className="bg-card backdrop-blur-sm rounded-xl p-6 shadow-xl">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'color-mix(in srgb, var(--theme-primary) 15%, transparent)' }}>
+              <Wallet className="h-6 w-6 text-theme-primary" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground">{t('cashout.requestCashout', 'Request Cashout')}</h3>
+              <p className="text-sm text-muted-foreground">
+                {t('cashout.minimumRequired', 'Minimum {{amount}} required', { amount: formatCurrency(MIN_CASHOUT_AMOUNT) })}
+              </p>
+            </div>
+          </div>
+
+          {!hasBankInfo ? (
+            <div className="flex items-center gap-2 text-sm text-theme-warning p-3 rounded-lg bg-theme-warning/10">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              {t('cashout.noBankInfo', 'Please add bank information below first')}
+            </div>
+          ) : stats.hasPendingPayout ? (
+            <div className="flex items-center gap-2 text-sm text-theme-warning p-3 rounded-lg bg-theme-warning/10">
+              <Clock className="h-4 w-4 flex-shrink-0" />
+              {t('cashout.pendingCashoutExists', 'You already have a pending cashout request')}
+            </div>
+          ) : stats.approvedEarnings < MIN_CASHOUT_AMOUNT ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground p-3 rounded-lg bg-muted/50">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              {t('cashout.needMore', 'You need {{amount}} more to cash out', { amount: formatCurrency(MIN_CASHOUT_AMOUNT - stats.approvedEarnings) })}
+            </div>
+          ) : (
+            <Button
+              onClick={handleRequestCashout}
+              disabled={requestingCashout}
+              className="w-full h-11 rounded-xl font-semibold"
+              style={{ background: 'var(--theme-primary)', color: '#111' }}
+            >
+              {requestingCashout ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t('cashout.requesting', 'Requesting...')}</>
+              ) : (
+                <>{t('cashout.requestCashoutBtn', 'Request Cashout')} — {formatCurrency(stats.approvedEarnings)}</>
+              )}
+            </Button>
+          )}
+        </div>
+
+        {/* Payout History */}
+        {!loadingPayouts && payoutRequests.length > 0 && (
+          <div className="bg-card backdrop-blur-sm rounded-xl p-6 shadow-xl">
+            <h3 className="font-semibold text-foreground mb-4">{t('cashout.payoutHistory', 'Payout History')}</h3>
+            <div className="space-y-3">
+              {payoutRequests.map(payout => (
+                <div key={payout.id} className="flex items-center justify-between p-3 rounded-lg border border-border">
+                  <div className="space-y-0.5">
+                    <p className="font-medium text-sm">{formatCurrency(payout.amount)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(payout.createdAt).toLocaleDateString()}
+                      {payout.completedAt && ` — ${t('cashout.completed', 'Completed')} ${new Date(payout.completedAt).toLocaleDateString()}`}
+                    </p>
+                    {payout.paymentMethod && (
+                      <p className="text-xs text-muted-foreground">{t('cashout.via', 'Via')}: {payout.paymentMethod}</p>
+                    )}
+                  </div>
+                  <Badge variant={
+                    payout.status === 'COMPLETED' ? 'default' :
+                    payout.status === 'REJECTED' ? 'destructive' :
+                    'secondary'
+                  }>
+                    {payout.status === 'REQUESTED' ? t('cashout.statusRequested', 'Requested') :
+                     payout.status === 'PROCESSING' ? t('cashout.statusProcessing', 'Processing') :
+                     payout.status === 'COMPLETED' ? t('cashout.statusCompleted', 'Completed') :
+                     t('cashout.statusRejected', 'Rejected')}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Bank Information */}
         <div className="bg-card backdrop-blur-sm rounded-xl p-6 shadow-xl">

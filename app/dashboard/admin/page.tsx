@@ -60,6 +60,7 @@ import {
   ChevronLeft,
   ChevronRight,
   User as UserIcon,
+  Check,
 } from 'lucide-react'
 
 const ITEMS_PER_PAGE = 10
@@ -149,7 +150,8 @@ interface ChargeDetail {
   platformAmount: number
   referrerAmount: number
   consumerRewardAmount: number
-  status: 'OWED' | 'PAID' | 'VOID'
+  paidAmount: number
+  status: 'OWED' | 'PAID' | 'PARTIAL' | 'VOID'
   createdAt: string
   updatedAt: string
   paidAt: string | null
@@ -163,6 +165,39 @@ interface ChargeDetail {
     createdAt: string
     updatedAt: string
   } | null
+}
+
+type PaymentMethod = 'CASH' | 'TRANSFER' | 'ZELLE' | 'CHECK' | 'OTHER'
+
+interface ChargePayment {
+  id: string
+  chargeId: string
+  businessId: string
+  amount: number
+  method: string
+  note: string
+  status: 'COMPLETED' | 'VOIDED'
+  createdAt: string
+  createdBy: string
+}
+
+interface AdminPayoutRequest {
+  id: string
+  userId: string
+  userName: string
+  userEmail: string
+  amount: number
+  earningIds: string[]
+  status: 'REQUESTED' | 'PROCESSING' | 'COMPLETED' | 'REJECTED'
+  paymentMethod: string | null
+  adminNote: string | null
+  processedBy: string | null
+  hasBankInfo: boolean
+  bankLast4: string | null
+  bankName: string | null
+  createdAt: string
+  updatedAt: string
+  completedAt: string | null
 }
 
 interface AdminStats {
@@ -229,6 +264,35 @@ export default function AdminDashboardPage() {
   const [revenueBizCharges, setRevenueBizCharges] = useState<ChargeDetail[]>([])
   const [revenueBizChargesLoading, setRevenueBizChargesLoading] = useState(false)
   const [chargesCache, setChargesCache] = useState<Map<string, ChargeDetail[]>>(new Map())
+  // Payment inline form state
+  const [payingChargeId, setPayingChargeId] = useState<string | null>(null)
+  const [paymentAmount, setPaymentAmount] = useState('')
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('TRANSFER')
+  const [paymentNote, setPaymentNote] = useState('')
+  const [paymentSaving, setPaymentSaving] = useState(false)
+  // Payment history
+  const [expandedChargePayments, setExpandedChargePayments] = useState<string | null>(null)
+  const [chargePayments, setChargePayments] = useState<ChargePayment[]>([])
+  const [chargePaymentsLoading, setChargePaymentsLoading] = useState(false)
+  const [voidingPayment, setVoidingPayment] = useState<string | null>(null)
+  // Pay All
+  const [payAllBizSaving, setPayAllBizSaving] = useState(false)
+  const [payAllMethod, setPayAllMethod] = useState<PaymentMethod>('TRANSFER')
+  // Revenue filter
+  const [revenueFilter, setRevenueFilter] = useState<'all' | 'pending' | 'paid'>('all')
+  // Admin payouts
+  const [adminPayouts, setAdminPayouts] = useState<AdminPayoutRequest[]>([])
+  const [payoutSearch, setPayoutSearch] = useState('')
+  const [payoutStatusFilter, setPayoutStatusFilter] = useState('all')
+  const [payoutPage, setPayoutPage] = useState(1)
+  const [payoutProcessing, setPayoutProcessing] = useState<string | null>(null)
+  const [payoutMethod, setPayoutMethod] = useState<PaymentMethod>('TRANSFER')
+  const [payoutNote, setPayoutNote] = useState('')
+  const [expandedPayoutId, setExpandedPayoutId] = useState<string | null>(null)
+  // Pending earnings for approval
+  const [pendingEarnings, setPendingEarnings] = useState<Array<{ id: string; userId: string; userName: string; businessId: string; businessName: string; amount: number; type: string; createdAt: string }>>([])
+  const [approvingEarnings, setApprovingEarnings] = useState(false)
+  const [pendingEarningsPage, setPendingEarningsPage] = useState(1)
   // Search, filter & pagination state per tab
   const [businessSearch, setBusinessSearch] = useState('')
   const [businessStatusFilter, setBusinessStatusFilter] = useState('all')
@@ -331,6 +395,18 @@ export default function AdminDashboardPage() {
               }))
             )
           }
+        }
+
+        // Fetch pending earnings
+        const earningsResult = await apiGet<{ success: boolean; data: Array<{ id: string; userId: string; userName: string; businessId: string; businessName: string; amount: number; type: string; createdAt: string }> }>('/api/admin/earnings?status=PENDING')
+        if (earningsResult.ok && earningsResult.data?.data) {
+          setPendingEarnings(earningsResult.data.data)
+        }
+
+        // Fetch payout requests
+        const payoutsResult = await apiGet<{ success: boolean; data: AdminPayoutRequest[] }>('/api/admin/payouts')
+        if (payoutsResult.ok && payoutsResult.data?.data) {
+          setAdminPayouts(payoutsResult.data.data)
         }
 
         // Fetch app settings (auto-approve flag)
@@ -739,6 +815,198 @@ export default function AdminDashboardPage() {
   const supportTotalPages = Math.max(1, Math.ceil(filteredTickets.length / ITEMS_PER_PAGE))
   const paginatedTickets = filteredTickets.slice((supportPage - 1) * ITEMS_PER_PAGE, supportPage * ITEMS_PER_PAGE)
 
+  // --- Payment handlers ---
+  const handleRegisterPayment = async (charge: ChargeDetail) => {
+    const amt = parseFloat(paymentAmount)
+    if (isNaN(amt) || amt <= 0) {
+      toast({ title: t('admin.invalidAmount', 'Invalid amount'), variant: 'destructive' })
+      return
+    }
+    const remaining = charge.platformAmount - (charge.paidAmount || 0)
+    if (amt > remaining + 0.01) {
+      toast({ title: t('admin.amountExceedsBalance', 'Amount exceeds remaining balance'), variant: 'destructive' })
+      return
+    }
+    setPaymentSaving(true)
+    try {
+      const res = await apiPost<{ success: boolean; data: { newPaidAmount: number; newStatus: string; paidAt: string | null } }>(
+        `/api/admin/charges/${charge.id}/pay`,
+        { amount: amt, method: paymentMethod, note: paymentNote }
+      )
+      if (res.ok && res.data?.success) {
+        const updated = { ...charge, paidAmount: res.data.data.newPaidAmount, status: res.data.data.newStatus as ChargeDetail['status'], paidAt: res.data.data.paidAt }
+        setRevenueBizCharges(prev => prev.map(c => c.id === charge.id ? updated : c))
+        // Update cache
+        setChargesCache(prev => {
+          const next = new Map(prev)
+          const cached = next.get(charge.businessId)
+          if (cached) next.set(charge.businessId, cached.map(c => c.id === charge.id ? updated : c))
+          return next
+        })
+        // Update stats
+        if (stats) {
+          setStats({
+            ...stats,
+            revenueByBusiness: stats.revenueByBusiness?.map(b =>
+              b.businessId === charge.businessId ? { ...b, paid: b.paid + amt, owed: Math.max(0, b.owed - amt) } : b
+            ),
+          })
+        }
+        setPayingChargeId(null)
+        setPaymentAmount('')
+        setPaymentNote('')
+        toast({ title: t('admin.paymentRegistered', 'Payment registered') })
+      }
+    } catch { /* ignore */ } finally {
+      setPaymentSaving(false)
+    }
+  }
+
+  const loadChargePayments = async (chargeId: string) => {
+    if (expandedChargePayments === chargeId) {
+      setExpandedChargePayments(null)
+      return
+    }
+    setExpandedChargePayments(chargeId)
+    setChargePaymentsLoading(true)
+    try {
+      const res = await apiGet<{ success: boolean; data: ChargePayment[] }>(`/api/admin/charges/${chargeId}/payments`)
+      if (res.ok && res.data?.data) {
+        setChargePayments(res.data.data)
+      }
+    } catch { /* ignore */ } finally {
+      setChargePaymentsLoading(false)
+    }
+  }
+
+  const handleVoidPayment = async (chargeId: string, paymentId: string) => {
+    setVoidingPayment(paymentId)
+    try {
+      const res = await apiPost<{ success: boolean; data: { newPaidAmount: number; newStatus: string } }>(
+        `/api/admin/charges/${chargeId}/void-payment`,
+        { paymentId }
+      )
+      if (res.ok && res.data?.success) {
+        setChargePayments(prev => prev.map(p => p.id === paymentId ? { ...p, status: 'VOIDED' } : p))
+        const charge = revenueBizCharges.find(c => c.id === chargeId)
+        if (charge) {
+          const updated = { ...charge, paidAmount: res.data.data.newPaidAmount, status: res.data.data.newStatus as ChargeDetail['status'] }
+          if (updated.status !== 'PAID') (updated as Record<string, unknown>).paidAt = null
+          setRevenueBizCharges(prev => prev.map(c => c.id === chargeId ? updated : c))
+          setChargesCache(prev => {
+            const next = new Map(prev)
+            const cached = next.get(charge.businessId)
+            if (cached) next.set(charge.businessId, cached.map(c => c.id === chargeId ? updated : c))
+            return next
+          })
+          const voidedPayment = chargePayments.find(p => p.id === paymentId)
+          if (stats && voidedPayment) {
+            setStats({
+              ...stats,
+              revenueByBusiness: stats.revenueByBusiness?.map(b =>
+                b.businessId === charge.businessId ? { ...b, paid: Math.max(0, b.paid - voidedPayment.amount), owed: b.owed + voidedPayment.amount } : b
+              ),
+            })
+          }
+        }
+        toast({ title: t('admin.paymentVoided', 'Payment voided') })
+      }
+    } catch { /* ignore */ } finally {
+      setVoidingPayment(null)
+    }
+  }
+
+  const handlePayAllBiz = async (businessId: string) => {
+    const owedCharges = revenueBizCharges.filter(c => c.status === 'OWED' || c.status === 'PARTIAL')
+    if (owedCharges.length === 0) return
+    setPayAllBizSaving(true)
+    try {
+      for (const charge of owedCharges) {
+        const remaining = charge.platformAmount - (charge.paidAmount || 0)
+        if (remaining <= 0) continue
+        await apiPost(`/api/admin/charges/${charge.id}/pay`, { amount: remaining, method: payAllMethod, note: 'Pay All' })
+      }
+      // Reload charges for this business
+      const response = await apiGet<{ success: boolean; data: { charges: ChargeDetail[] } }>(`/api/admin/charges?businessId=${businessId}`)
+      if (response.ok && response.data?.data) {
+        setRevenueBizCharges(response.data.data.charges)
+        setChargesCache(prev => new Map(prev).set(businessId, response.data!.data.charges))
+      }
+      // Reload stats
+      const statsResult = await apiGet<{ success: boolean; data: AdminStats }>('/api/admin/stats')
+      if (statsResult.ok && statsResult.data?.success) setStats(statsResult.data.data)
+      toast({ title: t('admin.chargeFullyPaid', 'All charges marked as paid') })
+    } catch { /* ignore */ } finally {
+      setPayAllBizSaving(false)
+    }
+  }
+
+  // --- Payout handlers ---
+  const handleProcessPayout = async (payoutId: string, status: 'COMPLETED' | 'REJECTED') => {
+    setPayoutProcessing(payoutId)
+    try {
+      const res = await apiPut<{ success: boolean }>(`/api/admin/payouts/${payoutId}`, {
+        status,
+        paymentMethod: payoutMethod,
+        adminNote: payoutNote,
+      })
+      if (res.ok && res.data?.success) {
+        setAdminPayouts(prev => prev.map(p => p.id === payoutId ? { ...p, status, paymentMethod: status === 'COMPLETED' ? payoutMethod : null, completedAt: new Date().toISOString() } : p))
+        setExpandedPayoutId(null)
+        setPayoutNote('')
+        toast({ title: status === 'COMPLETED' ? t('admin.payoutCompleted', 'Payout completed') : t('admin.payoutRejected', 'Payout rejected') })
+      }
+    } catch { /* ignore */ } finally {
+      setPayoutProcessing(null)
+    }
+  }
+
+  const handleApproveEarnings = async (earningIds: string[], label: string) => {
+    setApprovingEarnings(true)
+    try {
+      const res = await apiPost<{ success: boolean; data: { approved: number } }>('/api/admin/earnings/approve-bulk', { earningIds })
+      if (res.ok && res.data?.success) {
+        // Reload pending earnings from API to ensure sync
+        const refreshed = await apiGet<{ success: boolean; data: typeof pendingEarnings }>('/api/admin/earnings?status=PENDING')
+        if (refreshed.ok && refreshed.data?.data) {
+          setPendingEarnings(refreshed.data.data)
+        } else {
+          setPendingEarnings(prev => prev.filter(e => !earningIds.includes(e.id)))
+        }
+        toast({ title: t('admin.earningsApproved', 'Earnings approved'), description: `${res.data.data.approved} ${label}` })
+      }
+    } catch { /* ignore */ } finally {
+      setApprovingEarnings(false)
+    }
+  }
+
+  // Group pending earnings by user
+  const pendingByUser = pendingEarnings.reduce((acc, e) => {
+    if (!acc[e.userId]) acc[e.userId] = { userName: e.userName, earnings: [], total: 0 }
+    acc[e.userId].earnings.push(e)
+    acc[e.userId].total += e.amount
+    return acc
+  }, {} as Record<string, { userName: string; earnings: typeof pendingEarnings; total: number }>)
+
+  // Filter payouts
+  const filteredPayouts = adminPayouts.filter(p => {
+    if (payoutStatusFilter !== 'all' && p.status !== payoutStatusFilter) return false
+    if (payoutSearch) {
+      const s = payoutSearch.toLowerCase()
+      return p.userName?.toLowerCase().includes(s) || p.userEmail?.toLowerCase().includes(s)
+    }
+    return true
+  })
+  const payoutTotalPages = Math.max(1, Math.ceil(filteredPayouts.length / ITEMS_PER_PAGE))
+  const paginatedPayouts = filteredPayouts.slice((payoutPage - 1) * ITEMS_PER_PAGE, payoutPage * ITEMS_PER_PAGE)
+
+  // Filter revenue businesses
+  const filteredRevenueBiz = stats?.revenueByBusiness?.filter(biz => {
+    if (revenueFilter === 'pending') return biz.owed > 0
+    if (revenueFilter === 'paid') return biz.owed === 0 && biz.paid > 0
+    return true
+  }) || []
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -866,13 +1134,34 @@ export default function AdminDashboardPage() {
               <DollarSign className="h-5 w-5 text-primary" />
               {t('admin.revenueBreakdown', 'Revenue by Business')}
             </CardTitle>
-            <CardDescription>
-              {t('admin.revenueBreakdownDesc', 'Detailed breakdown of who owes and payment status')}
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <CardDescription>
+                {t('admin.revenueBreakdownDesc', 'Detailed breakdown of who owes and payment status')}
+              </CardDescription>
+              <Button size="sm" variant="outline" className="text-xs h-7"
+                onClick={() => window.open('/api/admin/export/payments', '_blank')}>
+                {t('admin.exportCSV', 'Export CSV')}
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Filter tabs */}
+            <div className="flex gap-2">
+              {(['all', 'pending', 'paid'] as const).map(f => {
+                const count = f === 'all' ? stats.revenueByBusiness!.length
+                  : f === 'pending' ? stats.revenueByBusiness!.filter(b => b.owed > 0).length
+                  : stats.revenueByBusiness!.filter(b => b.owed === 0 && b.paid > 0).length
+                return (
+                  <Button key={f} size="sm" variant={revenueFilter === f ? 'default' : 'outline'}
+                    onClick={() => { setRevenueFilter(f); setSelectedRevenueBiz(null); setRevenueBizCharges([]); setPayingChargeId(null); setExpandedChargePayments(null) }}>
+                    {f === 'all' ? t('admin.allBusinesses', 'All Businesses') : f === 'pending' ? t('admin.pending', 'Pending') : t('admin.paid', 'Paid')} ({count})
+                  </Button>
+                )
+              })}
+            </div>
+
             <div className="flex gap-3 overflow-x-auto pb-2 -mx-2 px-2 snap-x snap-mandatory">
-              {stats.revenueByBusiness.map((biz) => (
+              {filteredRevenueBiz.map((biz) => (
                 <div
                   key={biz.businessId}
                   className={`flex flex-col items-center text-center p-4 rounded-xl border transition-colors cursor-pointer w-[200px] flex-shrink-0 snap-start ${selectedRevenueBiz === biz.businessId ? 'border-foreground/40 bg-muted/60 ring-1 ring-foreground/20' : 'border-border bg-muted/30 hover:bg-muted/60'}`}
@@ -883,6 +1172,8 @@ export default function AdminDashboardPage() {
                       return
                     }
                     setSelectedRevenueBiz(biz.businessId)
+                    setPayingChargeId(null)
+                    setExpandedChargePayments(null)
                     const cached = chargesCache.get(biz.businessId)
                     if (cached) {
                       setRevenueBizCharges(cached)
@@ -900,46 +1191,33 @@ export default function AdminDashboardPage() {
                     }
                   }}
                 >
-                  {/* Business Logo */}
                   <div className="h-14 w-14 rounded-xl overflow-hidden bg-muted border border-border mb-2">
                     {biz.businessLogo ? (
-                      <img
-                        src={biz.businessLogo}
-                        alt={biz.businessName}
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={biz.businessLogo} alt={biz.businessName} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-primary/10">
                         <Building2 className="h-6 w-6 text-primary" />
                       </div>
                     )}
                   </div>
-
-                  {/* Name */}
                   <p className="font-semibold text-sm text-foreground truncate w-full">{biz.businessName}</p>
-
-                  {/* Total */}
                   <p className="text-lg font-bold text-foreground mt-1">{formatCurrency(biz.total)}</p>
-
-                  {/* Charge count */}
                   <p className="text-xs text-muted-foreground">
                     {t('admin.chargeCount', '{{count}} charges', { count: biz.chargeCount })}
                   </p>
-
-                  {/* Owed / Paid */}
                   <div className="flex flex-col items-center gap-0.5 mt-1.5">
                     {biz.owed > 0 && (
-                      <span className="text-xs font-medium text-red-600">
+                      <span className="text-xs font-medium text-theme-error">
                         {t('admin.owes', 'Owes')}: {formatCurrency(biz.owed)}
                       </span>
                     )}
                     {biz.paid > 0 && (
-                      <span className="text-xs text-green-600">
+                      <span className="text-xs text-theme-success">
                         {t('admin.paid', 'Paid')}: {formatCurrency(biz.paid)}
                       </span>
                     )}
                     {biz.owed === 0 && biz.paid > 0 && (
-                      <CheckCircle className="h-3.5 w-3.5 text-green-600 mt-0.5" />
+                      <CheckCircle className="h-3.5 w-3.5 text-theme-success mt-0.5" />
                     )}
                   </div>
                 </div>
@@ -948,7 +1226,7 @@ export default function AdminDashboardPage() {
 
             {/* Inline charge details */}
             {selectedRevenueBiz && (
-              <div className="border-t pt-4">
+              <div className="border-t pt-4 space-y-3">
                 {revenueBizChargesLoading ? (
                   <div className="text-center py-6 text-muted-foreground">
                     <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />
@@ -959,56 +1237,231 @@ export default function AdminDashboardPage() {
                     {t('admin.noCharges', 'No charges found for this business')}
                   </p>
                 ) : (
-                  <div className="space-y-2">
-                    {revenueBizCharges.map((charge) => (
-                      <div
-                        key={charge.id}
-                        className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border border-border bg-background gap-2"
-                      >
-                        <div className="flex-1 space-y-0.5">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-medium text-sm">
-                              {t('admin.chargeId', 'Charge')} #{charge.id.slice(0, 7).toUpperCase()}
-                            </span>
-                            <Badge variant={charge.status === 'PAID' ? 'default' : charge.status === 'OWED' ? 'destructive' : 'secondary'}>
-                              {charge.status}
-                            </Badge>
+                  <>
+                    {/* Summary bar */}
+                    {(() => {
+                      const totalPlatform = revenueBizCharges.reduce((s, c) => s + c.platformAmount, 0)
+                      const totalPaidAmt = revenueBizCharges.reduce((s, c) => s + (c.paidAmount || 0), 0)
+                      const pct = totalPlatform > 0 ? Math.round((totalPaidAmt / totalPlatform) * 100) : 0
+                      const hasOwed = revenueBizCharges.some(c => c.status === 'OWED' || c.status === 'PARTIAL')
+                      return (
+                        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                          <div className="flex items-center gap-4 text-sm">
+                            <span className="font-medium">{revenueBizCharges.length} {t('admin.charges', 'charges')}</span>
+                            <span>{t('admin.totalCharge', 'Total')}: {formatCurrency(totalPlatform)}</span>
+                            <span className="text-theme-success">{t('admin.paid', 'Paid')}: {formatCurrency(totalPaidAmt)}</span>
+                            <span className="text-theme-error">{t('admin.owes', 'Owed')}: {formatCurrency(totalPlatform - totalPaidAmt)}</span>
                           </div>
-                          <p className="text-xs text-muted-foreground">
-                            {formatDate(new Date(charge.createdAt))}
-                            {charge.paidAt && ` - ${t('admin.paidOn', 'Paid')} ${formatDate(new Date(charge.paidAt))}`}
-                          </p>
-                          {charge.visit && (
-                            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                              <span className="flex items-center gap-1">
-                                <UserIcon className="h-3 w-3" />
-                                {t('admin.visitAttribution', 'Via')}: {charge.visit.attributionType === 'REFERRER' ? t('admin.promoter') : t('admin.platform')}
-                              </span>
-                              {charge.visit.isNewCustomer && (
-                                <Badge variant="outline" className="text-[10px] py-0">
-                                  {t('admin.newCustomer', 'New Customer')}
-                                </Badge>
-                              )}
+                          <div className="flex items-center gap-2">
+                            <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
+                              <div className="h-full bg-theme-success rounded-full transition-all" style={{ width: `${pct}%` }} />
+                            </div>
+                            <span className="text-xs text-muted-foreground">{pct}%</span>
+                          </div>
+                          {hasOwed && (
+                            <div className="flex items-center gap-2">
+                              <Select value={payAllMethod} onValueChange={(v) => setPayAllMethod(v as PaymentMethod)}>
+                                <SelectTrigger className="w-[130px] h-8 text-xs">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="CASH">Cash</SelectItem>
+                                  <SelectItem value="TRANSFER">Transfer</SelectItem>
+                                  <SelectItem value="ZELLE">Zelle</SelectItem>
+                                  <SelectItem value="CHECK">Check</SelectItem>
+                                  <SelectItem value="OTHER">Other</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <Button size="sm" disabled={payAllBizSaving} onClick={() => {
+                                if (confirm(t('admin.payAllConfirm', 'Are you sure you want to mark all charges as paid?'))) {
+                                  handlePayAllBiz(selectedRevenueBiz!)
+                                }
+                              }}>
+                                {payAllBizSaving ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <DollarSign className="h-3 w-3 mr-1" />}
+                                {t('admin.payAll', 'Pay All')}
+                              </Button>
                             </div>
                           )}
                         </div>
-                        <div className="flex flex-col items-end gap-0.5">
-                          <span className={`text-base font-bold ${charge.status === 'OWED' ? 'text-red-600' : 'text-green-600'}`}>
-                            {formatCurrency(charge.platformAmount)}
-                          </span>
-                          <div className="text-[11px] text-muted-foreground text-right space-x-2">
-                            <span>{t('admin.totalCharge', 'Total')}: {formatCurrency(charge.amount)}</span>
-                            {charge.referrerAmount > 0 && (
-                              <span>{t('admin.referrerPortion', 'Promoter')}: {formatCurrency(charge.referrerAmount)}</span>
+                      )
+                    })()}
+
+                    {/* Charge rows */}
+                    <div className="space-y-2">
+                      {revenueBizCharges.map((charge) => {
+                        const remaining = charge.platformAmount - (charge.paidAmount || 0)
+                        const paidPct = charge.platformAmount > 0 ? Math.round(((charge.paidAmount || 0) / charge.platformAmount) * 100) : 0
+                        return (
+                          <div key={charge.id} className="rounded-lg border border-border bg-background">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 gap-2">
+                              <div className="flex-1 space-y-0.5">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className={`h-2 w-2 rounded-full ${charge.status === 'PAID' ? 'bg-theme-success' : charge.status === 'PARTIAL' ? 'bg-theme-warning' : 'bg-theme-error'}`} />
+                                  <span className="font-medium text-sm">
+                                    {t('admin.chargeId', 'Charge')} #{charge.id.slice(0, 7).toUpperCase()}
+                                  </span>
+                                  <Badge variant={charge.status === 'PAID' ? 'default' : charge.status === 'OWED' ? 'destructive' : 'secondary'}>
+                                    {charge.status}
+                                  </Badge>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                  {formatDate(new Date(charge.createdAt))}
+                                  {charge.paidAt && ` — ${t('admin.paidOn', 'Paid')} ${formatDate(new Date(charge.paidAt))}`}
+                                </p>
+                                {charge.visit && (
+                                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                    <span className="flex items-center gap-1">
+                                      <UserIcon className="h-3 w-3" />
+                                      {t('admin.visitAttribution', 'Via')}: {charge.visit.attributionType === 'REFERRER' ? t('admin.promoter') : t('admin.platform')}
+                                    </span>
+                                    {charge.visit.isNewCustomer && (
+                                      <Badge variant="outline" className="text-[10px] py-0">{t('admin.newCustomer', 'New Customer')}</Badge>
+                                    )}
+                                  </div>
+                                )}
+                                {/* Progress bar for partial */}
+                                {charge.status === 'PARTIAL' && (
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <div className="w-20 h-1.5 bg-muted rounded-full overflow-hidden">
+                                      <div className="h-full bg-theme-warning rounded-full" style={{ width: `${paidPct}%` }} />
+                                    </div>
+                                    <span className="text-[10px] text-muted-foreground">{paidPct}%</span>
+                                  </div>
+                                )}
+                                <div className="text-[11px] text-muted-foreground space-x-2">
+                                  <span>{t('admin.totalCharge', 'Total')}: {formatCurrency(charge.amount)}</span>
+                                  {charge.referrerAmount > 0 && <span>{t('admin.referrerPortion', 'Promoter')}: {formatCurrency(charge.referrerAmount)}</span>}
+                                  {charge.consumerRewardAmount > 0 && <span>{t('admin.consumerReward', 'Reward')}: {formatCurrency(charge.consumerRewardAmount)}</span>}
+                                </div>
+                              </div>
+                              <div className="flex flex-col items-end gap-1">
+                                <span className={`text-base font-bold ${charge.status === 'PAID' ? 'text-theme-success' : charge.status === 'PARTIAL' ? 'text-theme-warning' : 'text-theme-error'}`}>
+                                  {formatCurrency(charge.platformAmount)}
+                                </span>
+                                {charge.status === 'PAID' ? (
+                                  <span className="text-xs text-theme-success">{t('admin.paid', 'Paid')}</span>
+                                ) : (
+                                  <span className="text-xs text-theme-error">{t('admin.remaining', 'Remaining')}: {formatCurrency(remaining)}</span>
+                                )}
+                                <div className="flex gap-1 mt-1">
+                                  {charge.status !== 'PAID' && (
+                                    <>
+                                      <Button size="sm" variant="default" className="text-xs h-7 px-2"
+                                        onClick={() => {
+                                          setPayingChargeId(charge.id)
+                                          setPaymentAmount(remaining.toFixed(2))
+                                          setPaymentMethod('TRANSFER')
+                                          setPaymentNote('')
+                                        }}>
+                                        {t('admin.markPaid', 'Mark Paid')}
+                                      </Button>
+                                      <Button size="sm" variant="outline" className="text-xs h-7 px-2"
+                                        onClick={() => {
+                                          setPayingChargeId(charge.id)
+                                          setPaymentAmount('')
+                                          setPaymentMethod('TRANSFER')
+                                          setPaymentNote('')
+                                        }}>
+                                        {t('admin.partialPay', 'Partial')}
+                                      </Button>
+                                    </>
+                                  )}
+                                  <Button size="sm" variant="ghost" className="text-xs h-7 px-2"
+                                    onClick={() => loadChargePayments(charge.id)}>
+                                    {expandedChargePayments === charge.id ? <ChevronUp className="h-3 w-3 mr-1" /> : <ChevronDown className="h-3 w-3 mr-1" />}
+                                    {t('admin.paymentHistory', 'History')}
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Inline payment form */}
+                            {payingChargeId === charge.id && (
+                              <div className="border-t px-3 py-3 bg-muted/30 space-y-3">
+                                <p className="text-sm font-medium">{t('admin.registerPayment', 'Register Payment')}</p>
+                                <div className="flex flex-wrap gap-3 items-end">
+                                  <div className="space-y-1">
+                                    <Label className="text-xs">{t('admin.paymentAmount', 'Amount')}</Label>
+                                    <Input type="number" step="0.01" min="0.01" max={remaining}
+                                      value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)}
+                                      className="w-32 h-8 text-sm" placeholder="0.00" />
+                                    <div className="flex gap-1">
+                                      {[25, 50, 75, 100].map(pct => (
+                                        <button key={pct} type="button" className="text-[10px] px-1.5 py-0.5 rounded bg-muted hover:bg-muted/80 text-muted-foreground"
+                                          onClick={() => setPaymentAmount((remaining * pct / 100).toFixed(2))}>
+                                          {pct}%
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Label className="text-xs">{t('admin.paymentMethod', 'Method')}</Label>
+                                    <Select value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as PaymentMethod)}>
+                                      <SelectTrigger className="w-[120px] h-8 text-xs"><SelectValue /></SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="CASH">Cash</SelectItem>
+                                        <SelectItem value="TRANSFER">Transfer</SelectItem>
+                                        <SelectItem value="ZELLE">Zelle</SelectItem>
+                                        <SelectItem value="CHECK">Check</SelectItem>
+                                        <SelectItem value="OTHER">Other</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  <div className="space-y-1 flex-1 min-w-[120px]">
+                                    <Label className="text-xs">{t('admin.note', 'Note')}</Label>
+                                    <Input value={paymentNote} onChange={(e) => setPaymentNote(e.target.value)}
+                                      className="h-8 text-sm" placeholder={t('admin.paymentNotePlaceholder', 'Optional note...')} />
+                                  </div>
+                                  <div className="flex gap-1">
+                                    <Button size="sm" className="h-8" disabled={paymentSaving} onClick={() => handleRegisterPayment(charge)}>
+                                      {paymentSaving && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
+                                      {t('common.save', 'Save')}
+                                    </Button>
+                                    <Button size="sm" variant="ghost" className="h-8" onClick={() => setPayingChargeId(null)}>
+                                      <X className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
                             )}
-                            {charge.consumerRewardAmount > 0 && (
-                              <span>{t('admin.consumerReward', 'Reward')}: {formatCurrency(charge.consumerRewardAmount)}</span>
+
+                            {/* Payment history */}
+                            {expandedChargePayments === charge.id && (
+                              <div className="border-t px-3 py-3 bg-muted/20">
+                                {chargePaymentsLoading ? (
+                                  <div className="text-center py-3"><Loader2 className="h-4 w-4 animate-spin mx-auto" /></div>
+                                ) : chargePayments.length === 0 ? (
+                                  <p className="text-xs text-muted-foreground text-center py-2">{t('admin.noPayments', 'No payments recorded')}</p>
+                                ) : (
+                                  <div className="space-y-1">
+                                    {chargePayments.map(p => (
+                                      <div key={p.id} className={`flex items-center justify-between text-xs p-2 rounded ${p.status === 'VOIDED' ? 'opacity-50 line-through' : ''}`}>
+                                        <div className="flex items-center gap-3">
+                                          <span>{formatDate(new Date(p.createdAt))}</span>
+                                          <span className="font-medium">{formatCurrency(p.amount)}</span>
+                                          <Badge variant="outline" className="text-[10px] py-0">{p.method}</Badge>
+                                          {p.note && <span className="text-muted-foreground">{p.note}</span>}
+                                        </div>
+                                        {p.status !== 'VOIDED' ? (
+                                          <Button size="sm" variant="ghost" className="h-6 text-[10px] text-theme-error hover:text-theme-error"
+                                            disabled={voidingPayment === p.id}
+                                            onClick={() => handleVoidPayment(charge.id, p.id)}>
+                                            {voidingPayment === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : t('admin.void', 'Void')}
+                                          </Button>
+                                        ) : (
+                                          <span className="text-[10px] text-muted-foreground">{t('admin.voided', 'Voided')}</span>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
                             )}
                           </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                        )
+                      })}
+                    </div>
+                  </>
                 )}
               </div>
             )}
@@ -1062,6 +1515,14 @@ export default function AdminDashboardPage() {
               {supportTickets.filter((t) => t.status === 'open').length > 0 && (
                 <Badge variant="destructive" className="ml-1.5 h-5 min-w-5 px-1 text-[10px]">
                   {supportTickets.filter((t) => t.status === 'open').length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="payouts">
+              {t('admin.tabPayouts', 'Payouts')}
+              {(adminPayouts.filter(p => p.status === 'REQUESTED').length + pendingEarnings.length) > 0 && (
+                <Badge variant="destructive" className="ml-1.5 h-5 min-w-5 px-1 text-[10px]">
+                  {adminPayouts.filter(p => p.status === 'REQUESTED').length + pendingEarnings.length}
                 </Badge>
               )}
             </TabsTrigger>
@@ -1918,6 +2379,193 @@ export default function AdminDashboardPage() {
                     )
                   })}
                   <Pagination page={supportPage} totalPages={supportTotalPages} onPageChange={setSupportPage} />
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Payouts Tab */}
+        <TabsContent value="payouts" className="mt-4 space-y-4">
+          {/* Pending Earnings Approval */}
+          {pendingEarnings.length > 0 && (
+            <Card className="border-theme-warning/30">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <DollarSign className="h-5 w-5 text-theme-warning" />
+                  {t('admin.pendingEarnings', 'Pending Earnings')}
+                  <Badge variant="secondary">{pendingEarnings.length}</Badge>
+                </CardTitle>
+                <CardDescription>{t('admin.pendingEarningsDesc', 'Approve earnings after confirming the business has paid')}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {/* Approve All button */}
+                <div className="flex justify-end mb-2">
+                  <Button size="sm" disabled={approvingEarnings}
+                    onClick={() => handleApproveEarnings(pendingEarnings.map(e => e.id), t('admin.allEarnings', 'all earnings'))}>
+                    {approvingEarnings && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
+                    {t('admin.approveAll', 'Approve All')} ({pendingEarnings.length})
+                  </Button>
+                </div>
+
+                {/* Grouped by user (paginated) */}
+                {Object.entries(pendingByUser).slice((pendingEarningsPage - 1) * ITEMS_PER_PAGE, pendingEarningsPage * ITEMS_PER_PAGE).map(([userId, { userName, earnings, total }]) => (
+                  <div key={userId} className="rounded-lg border border-border bg-background p-3">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm">{userName}</span>
+                          <Badge variant="outline" className="text-[10px] py-0">
+                            {earnings.length} {t('admin.earnings', 'earnings')}
+                          </Badge>
+                        </div>
+                        <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                          {earnings.map(e => (
+                            <span key={e.id} className="flex items-center gap-1">
+                              <span className="h-1.5 w-1.5 rounded-full bg-theme-warning" />
+                              {formatCurrency(e.amount)} — {e.businessName}
+                              <Badge variant="outline" className="text-[9px] py-0 ml-0.5">
+                                {e.type === 'REFERRER_COMMISSION' ? 'Promoter' : 'Reward'}
+                              </Badge>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg font-bold text-foreground">{formatCurrency(total)}</span>
+                        <Button size="sm" className="text-xs h-7" disabled={approvingEarnings}
+                          onClick={() => handleApproveEarnings(earnings.map(e => e.id), userName)}>
+                          {t('admin.approve', 'Approve')}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <Pagination page={pendingEarningsPage} totalPages={Math.max(1, Math.ceil(Object.keys(pendingByUser).length / ITEMS_PER_PAGE))} onPageChange={setPendingEarningsPage} />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Payout Requests */}
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('admin.userPayouts', 'User Payouts')}</CardTitle>
+              <CardDescription>{t('admin.managePayouts', 'Review and process user cashout requests')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <SearchAndFilter
+                search={payoutSearch} onSearchChange={(v) => { setPayoutSearch(v); setPayoutPage(1) }}
+                statusFilter={payoutStatusFilter} onStatusChange={(v) => { setPayoutStatusFilter(v); setPayoutPage(1) }}
+                searchPlaceholder={t('admin.searchPayoutsPlaceholder', 'Search by name or email...')}
+                statuses={[
+                  { value: 'REQUESTED', label: t('admin.requested', 'Requested') },
+                  { value: 'PROCESSING', label: t('admin.processing', 'Processing') },
+                  { value: 'COMPLETED', label: t('admin.completed', 'Completed') },
+                  { value: 'REJECTED', label: t('admin.rejected', 'Rejected') },
+                ]}
+              />
+
+              {filteredPayouts.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">{t('admin.noPayoutRequests', 'No payout requests')}</p>
+              ) : (
+                <div className="space-y-2 mt-4">
+                  {paginatedPayouts.map(payout => (
+                    <div key={payout.id} className="rounded-lg border border-border bg-background">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-2">
+                        <div className="flex-1 space-y-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-medium text-sm">{payout.userName}</span>
+                            <span className="text-xs text-muted-foreground">{payout.userEmail}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span>{formatDate(new Date(payout.createdAt))}</span>
+                            {payout.hasBankInfo ? (
+                              <Badge variant="outline" className="text-[10px] py-0 text-theme-success border-theme-success/30">
+                                <Check className="h-2.5 w-2.5 mr-0.5" />
+                                {payout.bankName} ••{payout.bankLast4}
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-[10px] py-0 text-theme-error border-theme-error/30">
+                                {t('admin.noBankConfigured', 'No bank info')}
+                              </Badge>
+                            )}
+                            <span>{payout.earningIds.length} {t('admin.earnings', 'earnings')}</span>
+                          </div>
+                          {payout.completedAt && (
+                            <p className="text-xs text-muted-foreground">
+                              {payout.status === 'COMPLETED' ? t('admin.paidOn', 'Paid') : t('admin.rejected', 'Rejected')}: {formatDate(new Date(payout.completedAt))}
+                              {payout.paymentMethod && ` — ${payout.paymentMethod}`}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                          <span className="text-lg font-bold text-foreground">{formatCurrency(payout.amount)}</span>
+                          <Badge variant={
+                            payout.status === 'COMPLETED' ? 'default' :
+                            payout.status === 'REJECTED' ? 'destructive' :
+                            'secondary'
+                          }>
+                            {payout.status}
+                          </Badge>
+                          {(payout.status === 'REQUESTED' || payout.status === 'PROCESSING') && (
+                            <div className="flex gap-1 mt-1">
+                              <Button size="sm" variant="default" className="text-xs h-7 px-2"
+                                onClick={() => {
+                                  setExpandedPayoutId(expandedPayoutId === payout.id ? null : payout.id)
+                                  setPayoutMethod('TRANSFER')
+                                  setPayoutNote('')
+                                }}>
+                                {t('admin.markPaid', 'Mark Paid')}
+                              </Button>
+                              <Button size="sm" variant="outline" className="text-xs h-7 px-2 text-theme-error"
+                                disabled={payoutProcessing === payout.id}
+                                onClick={() => handleProcessPayout(payout.id, 'REJECTED')}>
+                                {payoutProcessing === payout.id ? <Loader2 className="h-3 w-3 animate-spin" /> : t('admin.reject', 'Reject')}
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Inline payment form */}
+                      {expandedPayoutId === payout.id && (
+                        <div className="border-t px-4 py-3 bg-muted/30 space-y-3">
+                          <p className="text-sm font-medium">{t('admin.processPayout', 'Process Payout')}</p>
+                          <div className="flex flex-wrap gap-3 items-end">
+                            <div className="space-y-1">
+                              <Label className="text-xs">{t('admin.paymentMethod', 'Method')}</Label>
+                              <Select value={payoutMethod} onValueChange={(v) => setPayoutMethod(v as PaymentMethod)}>
+                                <SelectTrigger className="w-[130px] h-8 text-xs"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="CASH">Cash</SelectItem>
+                                  <SelectItem value="TRANSFER">Transfer</SelectItem>
+                                  <SelectItem value="ZELLE">Zelle</SelectItem>
+                                  <SelectItem value="CHECK">Check</SelectItem>
+                                  <SelectItem value="OTHER">Other</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-1 flex-1 min-w-[120px]">
+                              <Label className="text-xs">{t('admin.note', 'Note')}</Label>
+                              <Input value={payoutNote} onChange={(e) => setPayoutNote(e.target.value)}
+                                className="h-8 text-sm" placeholder={t('admin.paymentNotePlaceholder', 'Optional note...')} />
+                            </div>
+                            <div className="flex gap-1">
+                              <Button size="sm" className="h-8" disabled={payoutProcessing === payout.id}
+                                onClick={() => handleProcessPayout(payout.id, 'COMPLETED')}>
+                                {payoutProcessing === payout.id && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
+                                {t('admin.confirmPayment', 'Confirm Payment')} — {formatCurrency(payout.amount)}
+                              </Button>
+                              <Button size="sm" variant="ghost" className="h-8" onClick={() => setExpandedPayoutId(null)}>
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  <Pagination page={payoutPage} totalPages={payoutTotalPages} onPageChange={setPayoutPage} />
                 </div>
               )}
             </CardContent>

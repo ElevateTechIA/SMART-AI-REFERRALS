@@ -138,8 +138,10 @@ interface Transaction {
 interface EarningsStats {
   totalEarnings: number
   pendingEarnings: number
+  approvedEarnings: number
   completedEarnings: number
   thisMonth: number
+  hasPendingPayout: boolean
 }
 
 interface EarningsResponse {
@@ -171,7 +173,7 @@ export default function VisitsPage() {
   const [businessReviews, setBusinessReviews] = useState<Record<string, DisplayReview[]>>({})
   const [loadingReviews, setLoadingReviews] = useState<Record<string, boolean>>({})
   const [earningsStats, setEarningsStats] = useState<EarningsStats>({
-    totalEarnings: 0, pendingEarnings: 0, completedEarnings: 0, thisMonth: 0,
+    totalEarnings: 0, pendingEarnings: 0, approvedEarnings: 0, completedEarnings: 0, thisMonth: 0, hasPendingPayout: false,
   })
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [selectedPeriod, setSelectedPeriod] = useState('all')
@@ -395,9 +397,12 @@ export default function VisitsPage() {
           </p>
         </div>
         <Link href="/dashboard/cashout">
-          <Button className="gap-2">
+          <Button className="gap-2 relative">
             <DollarSign className="h-4 w-4" />
             {t('cashout.cashOutButton')}
+            {earningsStats.approvedEarnings >= 50 && !earningsStats.hasPendingPayout && (
+              <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-theme-success animate-pulse" />
+            )}
           </Button>
         </Link>
       </div>
