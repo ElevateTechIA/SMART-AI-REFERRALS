@@ -51,6 +51,9 @@ export async function POST(
 
     const chargeRef = db.collection('charges').doc(chargeId)
     const chargeDoc = await chargeRef.get()
+    if (!chargeDoc.exists) {
+      return NextResponse.json({ error: 'Charge not found' }, { status: 404 })
+    }
     const chargeData = chargeDoc.data()!
     const platformAmount = chargeData.platformAmount || chargeData.amount
 

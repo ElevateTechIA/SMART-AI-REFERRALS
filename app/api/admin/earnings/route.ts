@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
         amount: data.amount || 0,
         type: data.type,
         status: data.status,
-        businessPaid: paidChargeVisitIds ? paidChargeVisitIds.has(data.visitId) : true,
+        businessPaid: paidChargeVisitIds ? (data.visitId ? paidChargeVisitIds.has(data.visitId) : false) : true,
         createdAt: data.createdAt?.toDate()?.toISOString() || null,
         approvedAt: data.approvedAt?.toDate()?.toISOString() || null,
         paidAt: data.paidAt?.toDate()?.toISOString() || null,

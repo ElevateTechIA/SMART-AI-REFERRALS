@@ -829,7 +829,7 @@ export default function AdminDashboardPage() {
     }
     setPaymentSaving(true)
     try {
-      const res = await apiPost<{ success: boolean; data: { newPaidAmount: number; newStatus: string; paidAt: string | null } }>(
+      const res = await apiPost<{ success: boolean; data: { newPaidAmount: number; newStatus: string; paidAt: string | null; earningsApproved: number } }>(
         `/api/admin/charges/${charge.id}/pay`,
         { amount: amt, method: paymentMethod, note: paymentNote }
       )
@@ -854,8 +854,13 @@ export default function AdminDashboardPage() {
         }
         setPayingChargeId(null)
         setPaymentAmount('')
+        setPaymentMethod('TRANSFER')
         setPaymentNote('')
-        toast({ title: t('admin.paymentRegistered', 'Payment registered') })
+        const approved = res.data.data.earningsApproved || 0
+        toast({
+          title: t('admin.paymentRegistered', 'Payment registered'),
+          description: approved > 0 ? t('admin.earningsAutoApproved', '{{count}} earnings auto-approved', { count: approved }) : undefined,
+        })
       }
     } catch { /* ignore */ } finally {
       setPaymentSaving(false)
@@ -921,10 +926,12 @@ export default function AdminDashboardPage() {
     if (owedCharges.length === 0) return
     setPayAllBizSaving(true)
     try {
+      let failed = 0
       for (const charge of owedCharges) {
         const remaining = charge.platformAmount - (charge.paidAmount || 0)
         if (remaining <= 0) continue
-        await apiPost(`/api/admin/charges/${charge.id}/pay`, { amount: remaining, method: payAllMethod, note: 'Pay All' })
+        const res = await apiPost(`/api/admin/charges/${charge.id}/pay`, { amount: remaining, method: payAllMethod, note: 'Pay All' })
+        if (!res.ok) failed++
       }
       // Reload charges for this business
       const response = await apiGet<{ success: boolean; data: { charges: ChargeDetail[] } }>(`/api/admin/charges?businessId=${businessId}`)
@@ -932,10 +939,18 @@ export default function AdminDashboardPage() {
         setRevenueBizCharges(response.data.data.charges)
         setChargesCache(prev => new Map(prev).set(businessId, response.data!.data.charges))
       }
-      // Reload stats
-      const statsResult = await apiGet<{ success: boolean; data: AdminStats }>('/api/admin/stats')
+      // Reload stats and pending earnings
+      const [statsResult, earningsResult] = await Promise.all([
+        apiGet<{ success: boolean; data: AdminStats }>('/api/admin/stats'),
+        apiGet<{ success: boolean; data: typeof pendingEarnings }>('/api/admin/earnings?status=PENDING'),
+      ])
       if (statsResult.ok && statsResult.data?.success) setStats(statsResult.data.data)
-      toast({ title: t('admin.chargeFullyPaid', 'All charges marked as paid') })
+      if (earningsResult.ok && earningsResult.data?.data) setPendingEarnings(earningsResult.data.data)
+      if (failed > 0) {
+        toast({ title: t('admin.somePaymentsFailed', 'Some payments failed'), description: `${failed} ${t('admin.failed', 'failed')}`, variant: 'destructive' })
+      } else {
+        toast({ title: t('admin.chargeFullyPaid', 'All charges marked as paid') })
+      }
     } catch { /* ignore */ } finally {
       setPayAllBizSaving(false)
     }
@@ -954,6 +969,7 @@ export default function AdminDashboardPage() {
         setAdminPayouts(prev => prev.map(p => p.id === payoutId ? { ...p, status, paymentMethod: status === 'COMPLETED' ? payoutMethod : null, completedAt: new Date().toISOString() } : p))
         setExpandedPayoutId(null)
         setPayoutNote('')
+        setPayoutMethod('TRANSFER')
         toast({ title: status === 'COMPLETED' ? t('admin.payoutCompleted', 'Payout completed') : t('admin.payoutRejected', 'Payout rejected') })
       }
     } catch { /* ignore */ } finally {
@@ -1180,6 +1196,7 @@ export default function AdminDashboardPage() {
                       return
                     }
                     setRevenueBizChargesLoading(true)
+                    setRevenueBizCharges([])
                     try {
                       const response = await apiGet<{ success: boolean; data: { charges: ChargeDetail[] } }>(`/api/admin/charges?businessId=${biz.businessId}`)
                       if (response.ok && response.data?.data) {
@@ -1265,11 +1282,11 @@ export default function AdminDashboardPage() {
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="CASH">Cash</SelectItem>
-                                  <SelectItem value="TRANSFER">Transfer</SelectItem>
-                                  <SelectItem value="ZELLE">Zelle</SelectItem>
-                                  <SelectItem value="CHECK">Check</SelectItem>
-                                  <SelectItem value="OTHER">Other</SelectItem>
+                                  <SelectItem value="CASH">{t('admin.methodCash', 'Cash')}</SelectItem>
+                                  <SelectItem value="TRANSFER">{t('admin.methodTransfer', 'Transfer')}</SelectItem>
+                                  <SelectItem value="ZELLE">{t('admin.methodZelle', 'Zelle')}</SelectItem>
+                                  <SelectItem value="CHECK">{t('admin.methodCheck', 'Check')}</SelectItem>
+                                  <SelectItem value="OTHER">{t('admin.methodOther', 'Other')}</SelectItem>
                                 </SelectContent>
                               </Select>
                               <Button size="sm" disabled={payAllBizSaving} onClick={() => {
@@ -1399,11 +1416,11 @@ export default function AdminDashboardPage() {
                                     <Select value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as PaymentMethod)}>
                                       <SelectTrigger className="w-[120px] h-8 text-xs"><SelectValue /></SelectTrigger>
                                       <SelectContent>
-                                        <SelectItem value="CASH">Cash</SelectItem>
-                                        <SelectItem value="TRANSFER">Transfer</SelectItem>
-                                        <SelectItem value="ZELLE">Zelle</SelectItem>
-                                        <SelectItem value="CHECK">Check</SelectItem>
-                                        <SelectItem value="OTHER">Other</SelectItem>
+                                        <SelectItem value="CASH">{t('admin.methodCash', 'Cash')}</SelectItem>
+                                        <SelectItem value="TRANSFER">{t('admin.methodTransfer', 'Transfer')}</SelectItem>
+                                        <SelectItem value="ZELLE">{t('admin.methodZelle', 'Zelle')}</SelectItem>
+                                        <SelectItem value="CHECK">{t('admin.methodCheck', 'Check')}</SelectItem>
+                                        <SelectItem value="OTHER">{t('admin.methodOther', 'Other')}</SelectItem>
                                       </SelectContent>
                                     </Select>
                                   </div>
@@ -1998,10 +2015,10 @@ export default function AdminDashboardPage() {
                 statusFilter={visitStatusFilter}
                 onStatusChange={(v) => { setVisitStatusFilter(v); setVisitPage(1) }}
                 statuses={[
-                  { value: 'CREATED', label: 'Created' },
-                  { value: 'CHECKED_IN', label: 'Checked In' },
-                  { value: 'CONVERTED', label: 'Converted' },
-                  { value: 'REJECTED', label: 'Rejected' },
+                  { value: 'CREATED', label: t('admin.visitCreated', 'Created') },
+                  { value: 'CHECKED_IN', label: t('admin.visitCheckedIn', 'Checked In') },
+                  { value: 'CONVERTED', label: t('admin.visitConverted', 'Converted') },
+                  { value: 'REJECTED', label: t('admin.visitRejected', 'Rejected') },
                 ]}
                 searchPlaceholder={t('admin.searchVisitPlaceholder')}
               />
@@ -2387,6 +2404,11 @@ export default function AdminDashboardPage() {
 
         {/* Payouts Tab */}
         <TabsContent value="payouts" className="mt-4 space-y-4">
+          {/* Flow explanation */}
+          <div className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-3">
+            {t('admin.payoutsFlowExplanation', 'Flow: Business pays → earnings appear here for approval → user requests cashout → you process the payout.')}
+          </div>
+
           {/* Pending Earnings Approval */}
           {pendingEarnings.length > 0 && (
             <Card className="border-theme-warning/30">
@@ -2537,11 +2559,11 @@ export default function AdminDashboardPage() {
                               <Select value={payoutMethod} onValueChange={(v) => setPayoutMethod(v as PaymentMethod)}>
                                 <SelectTrigger className="w-[130px] h-8 text-xs"><SelectValue /></SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="CASH">Cash</SelectItem>
-                                  <SelectItem value="TRANSFER">Transfer</SelectItem>
-                                  <SelectItem value="ZELLE">Zelle</SelectItem>
-                                  <SelectItem value="CHECK">Check</SelectItem>
-                                  <SelectItem value="OTHER">Other</SelectItem>
+                                  <SelectItem value="CASH">{t('admin.methodCash', 'Cash')}</SelectItem>
+                                  <SelectItem value="TRANSFER">{t('admin.methodTransfer', 'Transfer')}</SelectItem>
+                                  <SelectItem value="ZELLE">{t('admin.methodZelle', 'Zelle')}</SelectItem>
+                                  <SelectItem value="CHECK">{t('admin.methodCheck', 'Check')}</SelectItem>
+                                  <SelectItem value="OTHER">{t('admin.methodOther', 'Other')}</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>

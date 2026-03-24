@@ -245,8 +245,11 @@ export default function CashoutPage() {
             <p className="text-3xl font-bold text-foreground">
               {formatCurrency(stats.approvedEarnings)}
             </p>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              {t('cashout.availableBalanceHelp', 'Approved earnings ready to cash out')}
+            </p>
             {stats.paidEarnings > 0 && (
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-[11px] text-muted-foreground">
                 {t('cashout.alreadyCashedOut', 'Already cashed out')}: {formatCurrency(stats.paidEarnings)}
               </p>
             )}
@@ -261,6 +264,9 @@ export default function CashoutPage() {
             </div>
             <p className="text-3xl font-bold text-foreground">
               {formatCurrency(stats.pendingEarnings)}
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              {t('cashout.pendingBalanceHelp', 'Awaiting confirmation — available once the business payment is verified')}
             </p>
           </div>
         </div>
@@ -296,7 +302,7 @@ export default function CashoutPage() {
           </div>
 
           {!hasBankInfo ? (
-            <div className="flex items-center gap-2 text-sm text-theme-warning p-3 rounded-lg bg-theme-warning/10">
+            <div className="flex items-center gap-2 text-sm text-theme-error p-3 rounded-lg bg-theme-error/10">
               <AlertCircle className="h-4 w-4 flex-shrink-0" />
               {t('cashout.noBankInfo', 'Please add bank information below first')}
             </div>

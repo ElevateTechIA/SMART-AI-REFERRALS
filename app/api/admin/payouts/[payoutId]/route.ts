@@ -53,15 +53,30 @@ export async function PUT(
         updatedAt: now,
       })
 
-      // Mark all associated earnings as PAID
+      // Mark associated earnings as PAID (chunk to stay under 500 batch limit)
       const earningIds = payoutData.earningIds || []
-      for (const earningId of earningIds) {
-        const earningRef = db.collection('earnings').doc(earningId)
-        batch.update(earningRef, {
+      const firstChunk = earningIds.slice(0, 400) // leave room for payout update
+      for (const earningId of firstChunk) {
+        batch.update(db.collection('earnings').doc(earningId), {
           status: 'PAID',
           paidAt: now,
           updatedAt: now,
         })
+      }
+      await batch.commit()
+
+      // Process remaining in separate batches if needed
+      for (let i = 400; i < earningIds.length; i += 400) {
+        const extraBatch = db.batch()
+        const slice = earningIds.slice(i, i + 400)
+        for (const earningId of slice) {
+          extraBatch.update(db.collection('earnings').doc(earningId), {
+            status: 'PAID',
+            paidAt: now,
+            updatedAt: now,
+          })
+        }
+        await extraBatch.commit()
       }
     } else {
       // REJECTED - don't change earnings status
@@ -71,9 +86,8 @@ export async function PUT(
         processedBy: authResult.uid,
         updatedAt: now,
       })
+      await batch.commit()
     }
-
-    await batch.commit()
 
     await logAdminAction({
       action: status === 'COMPLETED' ? 'PAYOUT_COMPLETED' : 'PAYOUT_REJECTED',
