@@ -71,16 +71,23 @@ export default function BusinessLandingPage() {
             </div>
 
             <div className="flex justify-center lg:justify-end">
-              <div className="relative w-full max-w-[280px] sm:max-w-[320px] lg:max-w-[360px]">
+              <div className="relative w-full max-w-[200px] sm:max-w-[220px] lg:max-w-[260px]">
                 <Image
-                  src="/dashboard/assets/mobile-smart-ref.png"
+                  src="/dashboard/assets/device.png"
+                  alt="iPhone Frame"
+                  width={956}
+                  height={1936}
+                  className="w-full h-auto relative z-0"
+                />
+                <Image
+                  src="/dashboard/assets/Business.png"
                   alt="Eliv App"
                   width={400}
                   height={800}
-                  className="w-full h-auto rounded-[2.5rem] shadow-2xl"
+                  className="absolute top-[1.5%] left-[4.2%] w-[91.5%] h-[97%] object-fill rounded-[2rem] z-10"
                 />
-                <div className="absolute -top-4 -right-4 w-20 h-20 rounded-full blur-2xl animate-pulse" style={{ background: 'color-mix(in srgb, var(--theme-secondary) 20%, transparent)' }}></div>
-                <div className="absolute -bottom-4 -left-4 w-32 h-32 rounded-full blur-2xl animate-pulse delay-1000" style={{ background: 'color-mix(in srgb, var(--theme-accent) 20%, transparent)' }}></div>
+                <div className="absolute -top-4 -right-4 w-20 h-20 rounded-full blur-2xl animate-pulse z-0" style={{ background: 'color-mix(in srgb, var(--theme-secondary) 20%, transparent)' }}></div>
+                <div className="absolute -bottom-4 -left-4 w-32 h-32 rounded-full blur-2xl animate-pulse delay-1000 z-0" style={{ background: 'color-mix(in srgb, var(--theme-accent) 20%, transparent)' }}></div>
               </div>
             </div>
           </div>

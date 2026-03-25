@@ -66,8 +66,8 @@ export default function LandingPage() {
         </nav>
 
         {/* Hero Section - Hook + Immediate CTAs */}
-        <div className="min-h-[calc(100vh-5rem)] md:min-h-[56rem] flex items-center">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-12 grid lg:grid-cols-2 gap-6 lg:gap-16 items-center w-full">
+        <div className="flex items-center">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 md:py-8 grid lg:grid-cols-2 gap-6 lg:gap-16 items-center w-full">
             <div className="space-y-6 md:space-y-8 text-center lg:text-left max-w-2xl mx-auto lg:mx-0">
               <div>
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 md:mb-6 leading-tight text-gray-900">
@@ -83,7 +83,7 @@ export default function LandingPage() {
                 <Link href="/promoters">
                   <Button
                     size="lg"
-                    className="text-white hover:opacity-90 px-6 md:px-8 py-4 md:py-6 text-base md:text-lg font-semibold rounded-xl shadow-lg w-full sm:w-auto"
+                    className="text-gray-900 hover:opacity-90 px-6 md:px-8 py-4 md:py-6 text-base md:text-lg font-semibold rounded-xl shadow-lg w-full sm:w-auto"
                     style={{ background: 'var(--theme-primary)' }}
                   >
                     {t('landing.startEarningFree')}
@@ -105,16 +105,23 @@ export default function LandingPage() {
             </div>
 
             <div className="flex justify-center lg:justify-end">
-              <div className="relative w-full max-w-[240px] sm:max-w-[280px] md:max-w-[320px] lg:max-w-[360px]">
+              <div className="relative w-full max-w-[200px] sm:max-w-[220px] lg:max-w-[260px]">
                 <Image
-                  src="/dashboard/assets/mobile-smart-ref.png"
+                  src="/dashboard/assets/device.png"
+                  alt="iPhone Frame"
+                  width={956}
+                  height={1936}
+                  className="w-full h-auto relative z-0"
+                />
+                <Image
+                  src="/dashboard/assets/referrals.png"
                   alt="Eliv App"
                   width={400}
                   height={800}
-                  className="w-full h-auto rounded-[2rem] md:rounded-[2.5rem] shadow-2xl"
+                  className="absolute top-[1.5%] left-[4.2%] w-[91.5%] h-[97%] object-fill rounded-[2rem] z-10"
                 />
-                <div className="absolute -top-2 md:-top-4 -right-2 md:-right-4 w-12 md:w-20 h-12 md:h-20 rounded-full blur-2xl animate-pulse" style={{ background: 'color-mix(in srgb, var(--theme-primary) 20%, transparent)' }}></div>
-                <div className="absolute -bottom-2 md:-bottom-4 -left-2 md:-left-4 w-16 md:w-32 h-16 md:h-32 rounded-full blur-2xl animate-pulse delay-1000" style={{ background: 'color-mix(in srgb, var(--theme-accent) 20%, transparent)' }}></div>
+                <div className="absolute -top-2 md:-top-4 -right-2 md:-right-4 w-12 md:w-20 h-12 md:h-20 rounded-full blur-2xl animate-pulse z-0" style={{ background: 'color-mix(in srgb, var(--theme-primary) 20%, transparent)' }}></div>
+                <div className="absolute -bottom-2 md:-bottom-4 -left-2 md:-left-4 w-16 md:w-32 h-16 md:h-32 rounded-full blur-2xl animate-pulse delay-1000 z-0" style={{ background: 'color-mix(in srgb, var(--theme-accent) 20%, transparent)' }}></div>
               </div>
             </div>
           </div>
@@ -195,7 +202,7 @@ export default function LandingPage() {
                 <Link href="/promoters">
                   <Button
                     size="lg"
-                    className="w-full text-white hover:opacity-90 py-4 md:py-6 text-base md:text-lg font-semibold rounded-xl shadow-lg"
+                    className="w-full text-gray-900 hover:opacity-90 py-4 md:py-6 text-base md:text-lg font-semibold rounded-xl shadow-lg"
                     style={{ background: 'var(--theme-primary)' }}
                   >
                     {t('landing.startEarningFree')}
@@ -257,7 +264,7 @@ export default function LandingPage() {
             <Link href="/dashboard">
               <Button
                 size="lg"
-                className="text-white hover:opacity-90 px-6 md:px-8 py-4 md:py-6 text-base md:text-lg font-semibold rounded-xl shadow-lg"
+                className="text-gray-900 hover:opacity-90 px-6 md:px-8 py-4 md:py-6 text-base md:text-lg font-semibold rounded-xl shadow-lg"
                 style={{ background: 'var(--theme-primary)' }}
               >
                 {t('landing.previewDashboard')}
@@ -280,7 +287,7 @@ export default function LandingPage() {
               <Link href="/promoters">
                 <Button
                   size="lg"
-                  className="text-white hover:opacity-90 px-6 md:px-8 py-4 md:py-6 text-base md:text-lg font-semibold rounded-xl shadow-lg w-full sm:w-auto"
+                  className="text-gray-900 hover:opacity-90 px-6 md:px-8 py-4 md:py-6 text-base md:text-lg font-semibold rounded-xl shadow-lg w-full sm:w-auto"
                   style={{ background: 'var(--theme-primary)' }}
                 >
                   {t('landing.startEarningFree')}
@@ -355,7 +362,7 @@ export default function LandingPage() {
                 onClick={() => {
                   navigator.clipboard.writeText(process.env.NEXT_PUBLIC_APP_URL || 'https://elivapp.com')
                 }}
-                className="flex-1 text-white hover:opacity-90 rounded-xl text-sm md:text-base"
+                className="flex-1 text-gray-900 hover:opacity-90 rounded-xl text-sm md:text-base"
                 style={{ background: 'var(--theme-primary)' }}
               >
                 {t('landing.copyLink')}
