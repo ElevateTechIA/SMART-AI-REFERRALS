@@ -34,9 +34,11 @@ import {
 
 } from 'lucide-react'
 
+import { DateFilter, Pagination, filterByDate, paginate, type DateRange } from '@/components/list-controls'
 import { ReceiptDialog } from '@/components/receipt/receipt-dialog'
 import { ReviewDialog } from '@/components/review-dialog'
 import { generateCheckInQRImage, getDaysRemaining } from '@/lib/qr-checkin'
+import { useTheme } from '@/lib/theme/theme-provider'
 
 const GRADIENTS = [
   'from-rose-500 via-pink-500 to-teal-500',
@@ -160,6 +162,7 @@ export default function VisitsPage() {
   const { user } = useAuth()
   const { toast } = useToast()
   const { t } = useTranslation()
+  const { theme } = useTheme()
   const [visits, setVisits] = useState<(Visit & { business?: Business })[]>([])
   const [rewards, setRewards] = useState<Earning[]>([])
   const [loading, setLoading] = useState(true)
@@ -177,6 +180,18 @@ export default function VisitsPage() {
   })
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [selectedPeriod, setSelectedPeriod] = useState('all')
+
+  // Transactions date filter & pagination
+  const [txDateRange, setTxDateRange] = useState<DateRange>('all')
+  const [txStartDate, setTxStartDate] = useState('')
+  const [txEndDate, setTxEndDate] = useState('')
+  const [txPage, setTxPage] = useState(1)
+
+  // Rewards date filter & pagination
+  const [rewardsDateRange, setRewardsDateRange] = useState<DateRange>('all')
+  const [rewardsStartDate, setRewardsStartDate] = useState('')
+  const [rewardsEndDate, setRewardsEndDate] = useState('')
+  const [rewardsPage, setRewardsPage] = useState(1)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -429,24 +444,24 @@ export default function VisitsPage() {
             <p className="text-xs text-muted-foreground">{t('visits.pendingCount', { count: stats.pending })}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className={theme === 'eliv' ? 'bg-[#d6fd79] border-[#d6fd79]' : ''}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('visits.pendingRewards')}</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className={`text-sm font-medium ${theme === 'eliv' ? 'text-black' : ''}`}>{t('visits.pendingRewards')}</CardTitle>
+            <Clock className={`h-4 w-4 ${theme === 'eliv' ? 'text-black/60' : 'text-muted-foreground'}`} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.pendingRewards)}</div>
-            <p className="text-xs text-muted-foreground">{t('visits.awaitingConfirmation')}</p>
+            <div className={`text-2xl font-bold ${theme === 'eliv' ? 'text-black' : ''}`}>{formatCurrency(stats.pendingRewards)}</div>
+            <p className={`text-xs ${theme === 'eliv' ? 'text-black/60' : 'text-muted-foreground'}`}>{t('visits.awaitingConfirmation')}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className={theme === 'eliv' ? 'bg-[#d6fd79] border-[#d6fd79]' : ''}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('visits.totalRewards')}</CardTitle>
-            <Gift className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className={`text-sm font-medium ${theme === 'eliv' ? 'text-black' : ''}`}>{t('visits.totalRewards')}</CardTitle>
+            <Gift className={`h-4 w-4 ${theme === 'eliv' ? 'text-black/60' : 'text-muted-foreground'}`} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalRewards)}</div>
-            <p className="text-xs text-muted-foreground">{t('visits.earnedFromVisits')}</p>
+            <div className={`text-2xl font-bold ${theme === 'eliv' ? 'text-black' : ''}`}>{formatCurrency(stats.totalRewards)}</div>
+            <p className={`text-xs ${theme === 'eliv' ? 'text-black/60' : 'text-muted-foreground'}`}>{t('visits.earnedFromVisits')}</p>
           </CardContent>
         </Card>
       </div>
@@ -518,44 +533,61 @@ export default function VisitsPage() {
 
           {/* Transaction History */}
           {transactions.length > 0 ? (
-            <div>
-              <h3 className="text-sm font-semibold text-theme-textPrimary mb-3">{t('earnings.transactionHistory')}</h3>
-              <div className="space-y-2">
-                {transactions.map((tx) => (
-                  <div key={tx.id} className="flex items-center gap-3 py-3 border-b border-theme-cardBorder last:border-0">
-                    <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 border border-theme-cardBorder">
-                      {tx.businessLogo ? (
-                        <img src={tx.businessLogo} alt={tx.business} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center" style={{ background: tx.status === 'completed' ? 'color-mix(in srgb, #22c55e 20%, transparent)' : tx.status === 'pending' ? 'color-mix(in srgb, #eab308 20%, transparent)' : 'color-mix(in srgb, var(--theme-primary) 20%, transparent)' }}>
-                          <DollarSign className={`h-4 w-4 ${tx.status === 'completed' ? 'text-green-400' : tx.status === 'pending' ? 'text-yellow-400' : 'text-theme-primary'}`} />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-theme-textPrimary truncate">{tx.business}</p>
-                      <p className="text-xs text-theme-textMuted">
-                        {new Date(tx.date).toLocaleDateString()}
-                        {' · '}
-                        {tx.type === 'referral' ? t('earnings.typeReferral') : t('earnings.typeReward')}
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                      <p className="text-sm font-bold text-theme-textPrimary">+{formatCurrency(tx.amount)}</p>
-                      <Badge className={
-                        tx.status === 'completed' ? 'bg-green-500 text-white' :
-                        tx.status === 'pending' ? 'bg-yellow-500 text-white' :
-                        'bg-theme-primary text-gray-900'
-                      }>
-                        {tx.status === 'completed' ? t('earnings.statusCompleted') :
-                         tx.status === 'pending' ? t('earnings.statusPending') :
-                         t('earnings.statusProcessing')}
-                      </Badge>
-                    </div>
+            (() => {
+              const filteredTx = filterByDate(transactions, txDateRange, (tx) => tx.date, txStartDate, txEndDate)
+              const { paged: pagedTx, totalPages: txTotalPages } = paginate(filteredTx, txPage)
+              return (
+                <div>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                    <h3 className="text-sm font-semibold text-theme-textPrimary">{t('earnings.transactionHistory')}</h3>
+                    <DateFilter
+                      value={txDateRange}
+                      onChange={(v) => { setTxDateRange(v); setTxPage(1) }}
+                      startDate={txStartDate}
+                      endDate={txEndDate}
+                      onStartChange={(v) => { setTxStartDate(v); setTxPage(1) }}
+                      onEndChange={(v) => { setTxEndDate(v); setTxPage(1) }}
+                    />
                   </div>
-                ))}
-              </div>
-            </div>
+                  <div className="space-y-2">
+                    {pagedTx.map((tx) => (
+                      <div key={tx.id} className="flex items-center gap-3 py-3 border-b border-theme-cardBorder last:border-0">
+                        <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 border border-theme-cardBorder">
+                          {tx.businessLogo ? (
+                            <img src={tx.businessLogo} alt={tx.business} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center" style={{ background: tx.status === 'completed' ? 'color-mix(in srgb, #22c55e 20%, transparent)' : tx.status === 'pending' ? 'color-mix(in srgb, #eab308 20%, transparent)' : 'color-mix(in srgb, var(--theme-primary) 20%, transparent)' }}>
+                              <DollarSign className={`h-4 w-4 ${tx.status === 'completed' ? 'text-green-400' : tx.status === 'pending' ? 'text-yellow-400' : 'text-theme-primary'}`} />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-theme-textPrimary truncate">{tx.business}</p>
+                          <p className="text-xs text-theme-textMuted">
+                            {new Date(tx.date).toLocaleDateString()}
+                            {' · '}
+                            {tx.type === 'referral' ? t('earnings.typeReferral') : t('earnings.typeReward')}
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                          <p className="text-sm font-bold text-theme-textPrimary">+{formatCurrency(tx.amount)}</p>
+                          <Badge className={
+                            tx.status === 'completed' ? 'bg-green-500 text-white' :
+                            tx.status === 'pending' ? 'bg-yellow-500 text-white' :
+                            'bg-theme-primary text-gray-900'
+                          }>
+                            {tx.status === 'completed' ? t('earnings.statusCompleted') :
+                             tx.status === 'pending' ? t('earnings.statusPending') :
+                             t('earnings.statusProcessing')}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <Pagination page={txPage} totalPages={txTotalPages} onPageChange={setTxPage} />
+                </div>
+              )
+            })()
           ) : (
             <div className="text-center py-6">
               <DollarSign className="h-10 w-10 text-theme-textMuted mx-auto mb-3" />
@@ -1209,61 +1241,80 @@ export default function VisitsPage() {
 
       {/* Rewards History */}
       {rewards.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('visits.rewardsHistory')}</CardTitle>
-            <CardDescription>{t('visits.rewardsHistoryDesc')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="divide-y">
-              {rewards.map((reward) => {
-                const visit = visits.find((v) => v.id === reward.visitId)
-                return (
-                  <div
-                    key={reward.id}
-                    className="py-4 flex items-center justify-between"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-xl overflow-hidden flex-shrink-0 bg-muted border border-border">
-                        {visit?.business?.images?.[visit.business.images.length - 1] ? (
-                          <img src={visit.business.images[visit.business.images.length - 1]} alt={visit?.business?.name || ''} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-green-100">
-                            <Gift className="h-5 w-5 text-green-600" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-medium truncate">{visit?.business?.name || t('visits.rewardFromVisit')}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {formatDate(reward.createdAt)}
-                          {' · '}
-                          {t('visits.rewardFromVisit')}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                      <span className="font-bold">
-                        +{formatCurrency(reward.amount)}
-                      </span>
-                      <Badge
-                        variant={
-                          reward.status === 'PAID'
-                            ? 'success'
-                            : reward.status === 'APPROVED'
-                            ? 'default'
-                            : 'secondary'
-                        }
-                      >
-                        {reward.status === 'PAID' ? t('promotions.earningStatusPaid') : reward.status === 'APPROVED' ? t('promotions.earningStatusApproved') : t('promotions.earningStatusPending')}
-                      </Badge>
-                    </div>
+        (() => {
+          const filteredRewards = filterByDate(rewards, rewardsDateRange, (r) => r.createdAt, rewardsStartDate, rewardsEndDate)
+          const { paged: pagedRewards, totalPages: rewardsTotalPages } = paginate(filteredRewards, rewardsPage)
+          return (
+            <Card>
+              <CardHeader>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <div>
+                    <CardTitle>{t('visits.rewardsHistory')}</CardTitle>
+                    <CardDescription>{t('visits.rewardsHistoryDesc')}</CardDescription>
                   </div>
-                )
-              })}
-            </div>
-          </CardContent>
-        </Card>
+                  <DateFilter
+                    value={rewardsDateRange}
+                    onChange={(v) => { setRewardsDateRange(v); setRewardsPage(1) }}
+                    startDate={rewardsStartDate}
+                    endDate={rewardsEndDate}
+                    onStartChange={(v) => { setRewardsStartDate(v); setRewardsPage(1) }}
+                    onEndChange={(v) => { setRewardsEndDate(v); setRewardsPage(1) }}
+                  />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="divide-y">
+                  {pagedRewards.map((reward) => {
+                    const visit = visits.find((v) => v.id === reward.visitId)
+                    return (
+                      <div
+                        key={reward.id}
+                        className="py-4 flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-xl overflow-hidden flex-shrink-0 bg-muted border border-border">
+                            {visit?.business?.images?.[visit.business.images.length - 1] ? (
+                              <img src={visit.business.images[visit.business.images.length - 1]} alt={visit?.business?.name || ''} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-green-100">
+                                <Gift className="h-5 w-5 text-green-600" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-medium truncate">{visit?.business?.name || t('visits.rewardFromVisit')}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {formatDate(reward.createdAt)}
+                              {' · '}
+                              {t('visits.rewardFromVisit')}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                          <span className="font-bold">
+                            +{formatCurrency(reward.amount)}
+                          </span>
+                          <Badge
+                            variant={
+                              reward.status === 'PAID'
+                                ? 'success'
+                                : reward.status === 'APPROVED'
+                                ? 'default'
+                                : 'secondary'
+                            }
+                          >
+                            {reward.status === 'PAID' ? t('promotions.earningStatusPaid') : reward.status === 'APPROVED' ? t('promotions.earningStatusApproved') : t('promotions.earningStatusPending')}
+                          </Badge>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+                <Pagination page={rewardsPage} totalPages={rewardsTotalPages} onPageChange={setRewardsPage} />
+              </CardContent>
+            </Card>
+          )
+        })()
       )}
 
       {/* Receipt Dialog */}

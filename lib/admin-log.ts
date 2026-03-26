@@ -7,6 +7,7 @@ export type AdminAction =
   | 'EARNINGS_APPROVED'
   | 'PAYOUT_COMPLETED'
   | 'PAYOUT_REJECTED'
+  | 'PAYMENT_BATCH_CREATED'
 
 export async function logAdminAction(params: {
   action: AdminAction

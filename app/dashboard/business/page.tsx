@@ -379,24 +379,24 @@ export default function BusinessDashboardPage() {
         </Card>
         {isAdmin && (
           <>
-            <Card>
+            <Card className={theme === 'eliv' ? 'bg-[#d6fd79] border-[#d6fd79]' : ''}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t('businessDashboard.amountOwed')}</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className={`text-sm font-medium ${theme === 'eliv' ? 'text-black' : ''}`}>{t('businessDashboard.amountOwed')}</CardTitle>
+                <DollarSign className={`h-4 w-4 ${theme === 'eliv' ? 'text-black/60' : 'text-muted-foreground'}`} />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(stats.totalOwed)}</div>
-                <p className="text-xs text-muted-foreground">{t('businessDashboard.toPlatform')}</p>
+                <div className={`text-2xl font-bold ${theme === 'eliv' ? 'text-black' : ''}`}>{formatCurrency(stats.totalOwed)}</div>
+                <p className={`text-xs ${theme === 'eliv' ? 'text-black/60' : 'text-muted-foreground'}`}>{t('businessDashboard.toPlatform')}</p>
               </CardContent>
             </Card>
-            <Card>
+            <Card className={theme === 'eliv' ? 'bg-[#d6fd79] border-[#d6fd79]' : ''}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t('businessDashboard.totalPaid')}</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className={`text-sm font-medium ${theme === 'eliv' ? 'text-black' : ''}`}>{t('businessDashboard.totalPaid')}</CardTitle>
+                <DollarSign className={`h-4 w-4 ${theme === 'eliv' ? 'text-black/60' : 'text-muted-foreground'}`} />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(stats.totalPaid)}</div>
-                <p className="text-xs text-muted-foreground">{t('businessDashboard.allTime')}</p>
+                <div className={`text-2xl font-bold ${theme === 'eliv' ? 'text-black' : ''}`}>{formatCurrency(stats.totalPaid)}</div>
+                <p className={`text-xs ${theme === 'eliv' ? 'text-black/60' : 'text-muted-foreground'}`}>{t('businessDashboard.allTime')}</p>
               </CardContent>
             </Card>
           </>

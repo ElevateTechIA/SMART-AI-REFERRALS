@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { DateFilter, Pagination, filterByDate, paginate, type DateRange } from '@/components/list-controls'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
@@ -52,6 +53,12 @@ function ReferralsContent() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
+
+  // Earnings list controls
+  const [earningsDateRange, setEarningsDateRange] = useState<DateRange>('all')
+  const [earningsStartDate, setEarningsStartDate] = useState('')
+  const [earningsEndDate, setEarningsEndDate] = useState('')
+  const [earningsPage, setEarningsPage] = useState(1)
 
   const toggleFavorite = useCallback((businessId: string) => {
     setFavorites(prev => {
@@ -395,57 +402,77 @@ function ReferralsContent() {
           <CardDescription className="text-xs sm:text-sm">{t('promotions.earningsLedgerDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
-          {earnings.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8 text-sm">
-              {t('promotions.noEarnings')}
-            </p>
-          ) : (
-            <div className="divide-y">
-              {earnings.map((earning) => {
-                const biz = businesses.find((b) => b.id === earning.businessId)
-                const bizImg = biz?.images?.[biz.images.length - 1]
-                return (
-                  <div
-                    key={earning.id}
-                    className="flex items-center gap-3 sm:gap-4 py-3 sm:py-4"
-                  >
-                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden flex-shrink-0 bg-muted border border-border">
-                      {bizImg ? (
-                        <img src={bizImg} alt={biz?.name || ''} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-primary/10">
-                          <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm sm:text-base truncate">{biz?.name || t('promotions.commissionEarned')}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatDate(earning.createdAt)}
-                        {' · '}
-                        {earning.type === 'REFERRER_COMMISSION' ? t('earnings.typeReferral') : t('earnings.typeReward')}
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                      <span className="font-bold text-sm sm:text-base">+{formatCurrency(earning.amount)}</span>
-                      <Badge
-                        className="text-[10px] sm:text-xs"
-                        variant={
-                          earning.status === 'PAID'
-                            ? 'success'
-                            : earning.status === 'APPROVED'
-                            ? 'default'
-                            : 'secondary'
-                        }
+          <div className="mb-4">
+            <DateFilter
+              value={earningsDateRange}
+              onChange={(v) => { setEarningsDateRange(v); setEarningsPage(1) }}
+              startDate={earningsStartDate}
+              endDate={earningsEndDate}
+              onStartChange={(v) => { setEarningsStartDate(v); setEarningsPage(1) }}
+              onEndChange={(v) => { setEarningsEndDate(v); setEarningsPage(1) }}
+            />
+          </div>
+          {(() => {
+            const filtered = filterByDate(earnings, earningsDateRange, (e) => e.createdAt, earningsStartDate, earningsEndDate)
+            const { paged, totalPages } = paginate(filtered, earningsPage)
+            if (filtered.length === 0) {
+              return (
+                <p className="text-center text-muted-foreground py-8 text-sm">
+                  {t('promotions.noEarnings')}
+                </p>
+              )
+            }
+            return (
+              <>
+                <div className="divide-y">
+                  {paged.map((earning) => {
+                    const biz = businesses.find((b) => b.id === earning.businessId)
+                    const bizImg = biz?.images?.[biz.images.length - 1]
+                    return (
+                      <div
+                        key={earning.id}
+                        className="flex items-center gap-3 sm:gap-4 py-3 sm:py-4"
                       >
-                        {t(`promotions.earningStatus${earning.status.charAt(0) + earning.status.slice(1).toLowerCase()}`)}
-                      </Badge>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden flex-shrink-0 bg-muted border border-border">
+                          {bizImg ? (
+                            <img src={bizImg} alt={biz?.name || ''} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-primary/10">
+                              <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm sm:text-base truncate">{biz?.name || t('promotions.commissionEarned')}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {formatDate(earning.createdAt)}
+                            {' · '}
+                            {earning.type === 'REFERRER_COMMISSION' ? t('earnings.typeReferral') : t('earnings.typeReward')}
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                          <span className="font-bold text-sm sm:text-base">+{formatCurrency(earning.amount)}</span>
+                          <Badge
+                            className="text-[10px] sm:text-xs"
+                            variant={
+                              earning.status === 'PAID'
+                                ? 'success'
+                                : earning.status === 'APPROVED'
+                                ? 'default'
+                                : 'secondary'
+                            }
+                          >
+                            {t(`promotions.earningStatus${earning.status.charAt(0) + earning.status.slice(1).toLowerCase()}`)}
+                          </Badge>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+                <Pagination page={earningsPage} totalPages={totalPages} onPageChange={setEarningsPage} />
+              </>
+            )
+          })()}
         </CardContent>
       </Card>
     </div>
@@ -460,61 +487,81 @@ function ReferralList({
   businesses: (Business & { offer?: Offer })[]
 }) {
   const { t } = useTranslation()
+  const [dateRange, setDateRange] = useState<DateRange>('all')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+  const [page, setPage] = useState(1)
 
-  if (referrals.length === 0) {
-    return (
-      <p className="text-center text-muted-foreground py-8">
-        {t('promotions.noPromotions')}
-      </p>
-    )
-  }
+  const filtered = filterByDate(referrals, dateRange, (r) => r.createdAt, startDate, endDate)
+  const { paged, totalPages } = paginate(filtered, page)
 
   return (
-    <div className="divide-y max-h-80 overflow-auto">
-      {referrals.map((referral) => {
-        const business = businesses.find((b) => b.id === referral.businessId)
-        return (
-          <div
-            key={referral.id}
-            className="flex items-center justify-between py-3"
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="h-8 w-8 rounded-xl overflow-hidden flex-shrink-0 bg-muted border border-border">
-                {business?.images?.[business.images.length - 1] ? (
-                  <img src={business.images[business.images.length - 1]} alt={business?.name || ''} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Building2 className="h-4 w-4 text-muted-foreground" />
+    <div>
+      <div className="mb-4">
+        <DateFilter
+          value={dateRange}
+          onChange={(v) => { setDateRange(v); setPage(1) }}
+          startDate={startDate}
+          endDate={endDate}
+          onStartChange={(v) => { setStartDate(v); setPage(1) }}
+          onEndChange={(v) => { setEndDate(v); setPage(1) }}
+        />
+      </div>
+      {filtered.length === 0 ? (
+        <p className="text-center text-muted-foreground py-8">
+          {t('promotions.noPromotions')}
+        </p>
+      ) : (
+        <>
+          <div className="divide-y">
+            {paged.map((referral) => {
+              const business = businesses.find((b) => b.id === referral.businessId)
+              return (
+                <div
+                  key={referral.id}
+                  className="flex items-center justify-between py-3"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="h-8 w-8 rounded-xl overflow-hidden flex-shrink-0 bg-muted border border-border">
+                      {business?.images?.[business.images.length - 1] ? (
+                        <img src={business.images[business.images.length - 1]} alt={business?.name || ''} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Building2 className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-medium truncate">{business?.name || t('common.unknown')}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatDate(referral.createdAt)}
+                      </p>
+                    </div>
                   </div>
-                )}
-              </div>
-              <div className="min-w-0">
-                <p className="font-medium truncate">{business?.name || t('common.unknown')}</p>
-                <p className="text-xs text-muted-foreground">
-                  {formatDate(referral.createdAt)}
-                </p>
-              </div>
-            </div>
-            <Badge
-              variant={
-                referral.status === 'CONVERTED'
-                  ? 'success'
-                  : referral.status === 'REJECTED'
-                  ? 'destructive'
-                  : 'secondary'
-              }
-            >
-              {referral.status === 'CONVERTED'
-                ? t('promotions.statusConverted')
-                : referral.status === 'CHECKED_IN'
-                ? t('promotions.statusCheckedIn')
-                : referral.status === 'REJECTED'
-                ? t('promotions.statusRejected')
-                : t('promotions.statusPending')}
-            </Badge>
+                  <Badge
+                    variant={
+                      referral.status === 'CONVERTED'
+                        ? 'success'
+                        : referral.status === 'REJECTED'
+                        ? 'destructive'
+                        : 'secondary'
+                    }
+                  >
+                    {referral.status === 'CONVERTED'
+                      ? t('promotions.statusConverted')
+                      : referral.status === 'CHECKED_IN'
+                      ? t('promotions.statusCheckedIn')
+                      : referral.status === 'REJECTED'
+                      ? t('promotions.statusRejected')
+                      : t('promotions.statusPending')}
+                  </Badge>
+                </div>
+              )
+            })}
           </div>
-        )
-      })}
+          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+        </>
+      )}
     </div>
   )
 }

@@ -43,6 +43,13 @@
     "verified": "Verificado",
     "extracted": "Extraído"
   },
+  "filters": {
+    "allTime": "Todo el Tiempo",
+    "thisMonth": "Este Mes",
+    "lastMonth": "Mes Pasado",
+    "thisYear": "Este Año",
+    "custom": "Rango Personalizado"
+  },
   "nav": {
     "dashboard": "Panel",
     "referrals": "Referidos",
@@ -391,6 +398,7 @@
     "markPaid": "Marcar Pagado",
     "partialPay": "Parcial",
     "paymentHistory": "Historial",
+    "paymentBatches": "Registros de Pago",
     "registerPayment": "Registrar Pago",
     "paymentAmount": "Monto",
     "paymentMethod": "Método",
@@ -843,8 +851,8 @@
     "bankInfoIncomplete": "Por favor completa toda la información bancaria o déjala toda vacía"
   },
   "landing": {
-    "heroTitle": "Convierte Tus Recomendaciones En",
-    "heroTitleHighlight": "Ingresos",
+    "heroTitle": "Gana Dinero Recomendando Tus",
+    "heroTitleHighlight": "Lugares Favoritos",
     "heroSubtitle": "Gana comisiones verificadas recomendando las mejores experiencias a tu red. Pagos rápidos, seguimiento en tiempo real y sin límites en tu crecimiento.",
     "startEarningFree": "Únete a la Red",
     "listYourBusiness": "Registra Tu Negocio",
@@ -892,9 +900,9 @@
     "chatWithUs": "Chatea con nosotros"
   },
   "promotersLanding": {
-    "heroTitle": "Gana Dinero Recomendando",
-    "heroTitleHighlight": "Negocios Locales.",
-    "heroSubtitle": "Comparte un link, tus amigos visitan, tu ganas comision. Asi de simple.",
+    "heroTitle": "Gana por Recomendar Tus",
+    "heroTitleHighlight": "Lugares Favoritos.",
+    "heroSubtitle": "Tus recomendaciones tienen valor. Es hora de que te recompensen por ellas.",
     "cta": "Empieza a Ganar Gratis",
     "howItWorks": "Como Funciona",
     "step1Title": "1. Elige un Negocio",

@@ -68,6 +68,7 @@ export async function POST(
       amount = body.amount
       method = body.method
       note = body.note
+      if (body.receiptUrl) receiptUrl = body.receiptUrl
     }
 
     if (!amount || amount <= 0) {
@@ -163,6 +164,7 @@ export async function POST(
         newStatus,
         paidAt: newStatus === 'PAID' ? now.toISOString() : null,
         earningsApproved,
+        receiptUrl: receiptUrl || null,
       },
     })
   } catch (error) {

@@ -15,6 +15,8 @@ import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { apiGet, apiPost, apiPut, apiUpload } from '@/lib/api-client'
 import type { Business, User, Visit, FraudFlag, Offer, ConsumerRewardType, Receipt, SupportTicket } from '@/lib/types'
+import { DateFilter, filterByDate, type DateRange } from '@/components/list-controls'
+import { useTheme } from '@/lib/theme/theme-provider'
 
 /** Safely render **bold** markdown as React elements (no dangerouslySetInnerHTML) */
 function SafeBoldText({ text, boldColor, textColor }: { text: string; boldColor: string; textColor: string }) {
@@ -184,6 +186,19 @@ interface ChargePayment {
   createdBy: string
 }
 
+interface PaymentBatch {
+  id: string
+  businessId: string
+  totalAmount: number
+  method: string
+  note: string
+  receiptUrl: string | null
+  chargeIds: string[]
+  status: string
+  createdAt: string
+  createdBy: string
+}
+
 interface AdminPayoutRequest {
   id: string
   userId: string
@@ -233,6 +248,7 @@ export default function AdminDashboardPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { t } = useTranslation()
+  const { theme } = useTheme()
   const initialTab = searchParams.get('tab') || 'businesses'
 
   const [stats, setStats] = useState<AdminStats | null>(null)
@@ -267,12 +283,14 @@ export default function AdminDashboardPage() {
   const [revenueBizCharges, setRevenueBizCharges] = useState<ChargeDetail[]>([])
   const [revenueBizChargesLoading, setRevenueBizChargesLoading] = useState(false)
   const [chargesCache, setChargesCache] = useState<Map<string, ChargeDetail[]>>(new Map())
+  const [paymentBatches, setPaymentBatches] = useState<PaymentBatch[]>([])
   // Payment inline form state
   const [payingChargeId, setPayingChargeId] = useState<string | null>(null)
   const [paymentAmount, setPaymentAmount] = useState('')
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('TRANSFER')
   const [paymentNote, setPaymentNote] = useState('')
   const [paymentSaving, setPaymentSaving] = useState(false)
+  const [paymentFile, setPaymentFile] = useState<File | null>(null)
   // Payment history
   const [expandedChargePayments, setExpandedChargePayments] = useState<string | null>(null)
   const [chargePayments, setChargePayments] = useState<ChargePayment[]>([])
@@ -285,6 +303,9 @@ export default function AdminDashboardPage() {
   const [payAllFile, setPayAllFile] = useState<File | null>(null)
   // Revenue filter
   const [revenueFilter, setRevenueFilter] = useState<'all' | 'pending' | 'paid'>('all')
+  const [chargesDateRange, setChargesDateRange] = useState<DateRange>('all')
+  const [chargesStartDate, setChargesStartDate] = useState('')
+  const [chargesEndDate, setChargesEndDate] = useState('')
   // Admin payouts
   const [adminPayouts, setAdminPayouts] = useState<AdminPayoutRequest[]>([])
   const [payoutSearch, setPayoutSearch] = useState('')
@@ -834,10 +855,22 @@ export default function AdminDashboardPage() {
     }
     setPaymentSaving(true)
     try {
-      const res = await apiPost<{ success: boolean; data: { newPaidAmount: number; newStatus: string; paidAt: string | null; earningsApproved: number } }>(
-        `/api/admin/charges/${charge.id}/pay`,
-        { amount: amt, method: paymentMethod, note: paymentNote }
-      )
+      let res
+      if (paymentFile) {
+        const formData = new FormData()
+        formData.append('amount', String(amt))
+        formData.append('method', paymentMethod)
+        formData.append('note', paymentNote)
+        formData.append('file', paymentFile)
+        res = await apiUpload<{ success: boolean; data: { newPaidAmount: number; newStatus: string; paidAt: string | null; earningsApproved: number } }>(
+          `/api/admin/charges/${charge.id}/pay`, formData
+        )
+      } else {
+        res = await apiPost<{ success: boolean; data: { newPaidAmount: number; newStatus: string; paidAt: string | null; earningsApproved: number } }>(
+          `/api/admin/charges/${charge.id}/pay`,
+          { amount: amt, method: paymentMethod, note: paymentNote }
+        )
+      }
       if (res.ok && res.data?.success) {
         const updated = { ...charge, paidAmount: res.data.data.newPaidAmount, status: res.data.data.newStatus as ChargeDetail['status'], paidAt: res.data.data.paidAt }
         setRevenueBizCharges(prev => prev.map(c => c.id === charge.id ? updated : c))
@@ -861,6 +894,7 @@ export default function AdminDashboardPage() {
         setPaymentAmount('')
         setPaymentMethod('TRANSFER')
         setPaymentNote('')
+        setPaymentFile(null)
         const approved = res.data.data.earningsApproved || 0
         toast({
           title: t('admin.paymentRegistered', 'Payment registered'),
@@ -927,39 +961,57 @@ export default function AdminDashboardPage() {
   }
 
   const handlePayAllBiz = async (businessId: string) => {
-    const owedCharges = revenueBizCharges.filter(c => c.status === 'OWED' || c.status === 'PARTIAL')
+    const dateFiltered = filterByDate(revenueBizCharges, chargesDateRange, (c) => c.createdAt, chargesStartDate, chargesEndDate)
+    const owedCharges = dateFiltered.filter(c => c.status === 'OWED' || c.status === 'PARTIAL')
     if (owedCharges.length === 0) return
     setPayAllBizSaving(true)
     try {
       let failed = 0
-      for (let i = 0; i < owedCharges.length; i++) {
-        const charge = owedCharges[i]
+      const noteText = payAllNote || t('admin.payAll', 'Pay All')
+      const paidChargeIds: string[] = []
+      let totalPaidAmount = 0
+
+      for (const charge of owedCharges) {
         const remaining = charge.platformAmount - (charge.paidAmount || 0)
         if (remaining <= 0) continue
-        const noteText = payAllNote || t('admin.payAll', 'Pay All')
+        const res = await apiPost(`/api/admin/charges/${charge.id}/pay`, { amount: remaining, method: payAllMethod, note: noteText })
+        if (!res.ok) { failed++ } else {
+          paidChargeIds.push(charge.id)
+          totalPaidAmount += remaining
+        }
+      }
 
-        // Attach file only on the first charge payment
-        if (payAllFile && i === 0) {
+      // Create payment batch with optional receipt (global for this Pay All)
+      if (paidChargeIds.length > 0) {
+        if (payAllFile) {
           const formData = new FormData()
-          formData.append('amount', String(remaining))
+          formData.append('businessId', businessId)
+          formData.append('totalAmount', String(totalPaidAmount))
           formData.append('method', payAllMethod)
           formData.append('note', noteText)
+          formData.append('chargeIds', JSON.stringify(paidChargeIds))
           formData.append('file', payAllFile)
-          const res = await apiUpload(`/api/admin/charges/${charge.id}/pay`, formData)
-          if (!res.ok) failed++
+          await apiUpload('/api/admin/payment-batches', formData)
         } else {
-          const res = await apiPost(`/api/admin/charges/${charge.id}/pay`, { amount: remaining, method: payAllMethod, note: noteText })
-          if (!res.ok) failed++
+          await apiPost('/api/admin/payment-batches', {
+            businessId, totalAmount: totalPaidAmount, method: payAllMethod, note: noteText, chargeIds: paidChargeIds,
+          })
         }
       }
       // Reset Pay All fields
       setPayAllNote('')
       setPayAllFile(null)
-      // Reload charges for this business
-      const response = await apiGet<{ success: boolean; data: { charges: ChargeDetail[] } }>(`/api/admin/charges?businessId=${businessId}`)
-      if (response.ok && response.data?.data) {
-        setRevenueBizCharges(response.data.data.charges)
-        setChargesCache(prev => new Map(prev).set(businessId, response.data!.data.charges))
+      // Reload charges and batches for this business
+      const [chargesRes, batchesRes] = await Promise.all([
+        apiGet<{ success: boolean; data: { charges: ChargeDetail[] } }>(`/api/admin/charges?businessId=${businessId}`),
+        apiGet<{ success: boolean; data: PaymentBatch[] }>(`/api/admin/payment-batches?businessId=${businessId}`),
+      ])
+      if (chargesRes.ok && chargesRes.data?.data) {
+        setRevenueBizCharges(chargesRes.data.data.charges)
+        setChargesCache(prev => new Map(prev).set(businessId, chargesRes.data!.data.charges))
+      }
+      if (batchesRes.ok && batchesRes.data?.data) {
+        setPaymentBatches(batchesRes.data.data)
       }
       // Reload stats and pending earnings
       const [statsResult, earningsResult] = await Promise.all([
@@ -1135,13 +1187,13 @@ export default function AdminDashboardPage() {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className={theme === 'eliv' ? 'bg-[#d6fd79] border-[#d6fd79]' : ''}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('admin.totalRevenue')}</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className={`text-sm font-medium ${theme === 'eliv' ? 'text-black' : ''}`}>{t('admin.totalRevenue')}</CardTitle>
+              <DollarSign className={`h-4 w-4 ${theme === 'eliv' ? 'text-black/60' : 'text-muted-foreground'}`} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</div>
+              <div className={`text-2xl font-bold ${theme === 'eliv' ? 'text-black' : ''}`}>{formatCurrency(stats.totalRevenue)}</div>
               <div className="mt-2 space-y-1">
                 {stats.totalOwed > 0 ? (
                   <>
@@ -1219,11 +1271,18 @@ export default function AdminDashboardPage() {
                     }
                     setRevenueBizChargesLoading(true)
                     setRevenueBizCharges([])
+                    setPaymentBatches([])
                     try {
-                      const response = await apiGet<{ success: boolean; data: { charges: ChargeDetail[] } }>(`/api/admin/charges?businessId=${biz.businessId}`)
-                      if (response.ok && response.data?.data) {
-                        setRevenueBizCharges(response.data.data.charges)
-                        setChargesCache(prev => new Map(prev).set(biz.businessId, response.data!.data.charges))
+                      const [chargesRes, batchesRes] = await Promise.all([
+                        apiGet<{ success: boolean; data: { charges: ChargeDetail[] } }>(`/api/admin/charges?businessId=${biz.businessId}`),
+                        apiGet<{ success: boolean; data: PaymentBatch[] }>(`/api/admin/payment-batches?businessId=${biz.businessId}`),
+                      ])
+                      if (chargesRes.ok && chargesRes.data?.data) {
+                        setRevenueBizCharges(chargesRes.data.data.charges)
+                        setChargesCache(prev => new Map(prev).set(biz.businessId, chargesRes.data!.data.charges))
+                      }
+                      if (batchesRes.ok && batchesRes.data?.data) {
+                        setPaymentBatches(batchesRes.data.data)
                       }
                     } catch { /* ignore */ } finally {
                       setRevenueBizChargesLoading(false)
@@ -1277,16 +1336,23 @@ export default function AdminDashboardPage() {
                   </p>
                 ) : (
                   <>
+                    {/* Date filter for charges */}
+                    <div className="mb-3">
+                      <DateFilter value={chargesDateRange} onChange={(v) => { setChargesDateRange(v) }}
+                        startDate={chargesStartDate} endDate={chargesEndDate}
+                        onStartChange={setChargesStartDate} onEndChange={setChargesEndDate} />
+                    </div>
                     {/* Summary bar */}
                     {(() => {
-                      const totalPlatform = revenueBizCharges.reduce((s, c) => s + c.platformAmount, 0)
-                      const totalPaidAmt = revenueBizCharges.reduce((s, c) => s + (c.paidAmount || 0), 0)
+                      const dateFiltered = filterByDate(revenueBizCharges, chargesDateRange, (c) => c.createdAt, chargesStartDate, chargesEndDate)
+                      const totalPlatform = dateFiltered.reduce((s, c) => s + c.platformAmount, 0)
+                      const totalPaidAmt = dateFiltered.reduce((s, c) => s + (c.paidAmount || 0), 0)
                       const pct = totalPlatform > 0 ? Math.round((totalPaidAmt / totalPlatform) * 100) : 0
-                      const hasOwed = revenueBizCharges.some(c => c.status === 'OWED' || c.status === 'PARTIAL')
+                      const hasOwed = dateFiltered.some(c => c.status === 'OWED' || c.status === 'PARTIAL')
                       return (
                         <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                           <div className="flex items-center gap-4 text-sm">
-                            <span className="font-medium">{revenueBizCharges.length} {t('admin.charges', 'charges')}</span>
+                            <span className="font-medium">{dateFiltered.length} {t('admin.charges', 'charges')}</span>
                             <span>{t('admin.totalCharge', 'Total')}: {formatCurrency(totalPlatform)}</span>
                             <span className="text-theme-success">{t('admin.paid', 'Paid')}: {formatCurrency(totalPaidAmt)}</span>
                             <span className="text-theme-error">{t('admin.owes', 'Owed')}: {formatCurrency(totalPlatform - totalPaidAmt)}</span>
@@ -1352,9 +1418,31 @@ export default function AdminDashboardPage() {
                       )
                     })()}
 
+                    {/* Payment Batches (global receipts) */}
+                    {paymentBatches.length > 0 && (
+                      <div className="space-y-1.5 mb-3">
+                        <p className="text-xs font-medium text-muted-foreground">{t('admin.paymentBatches', 'Payment Records')}</p>
+                        {paymentBatches.map((batch) => (
+                          <div key={batch.id} className="flex items-center gap-3 text-xs px-3 py-2 rounded-lg border border-theme-cardBorder" style={{ background: 'var(--theme-cardBg)' }}>
+                            <span className="text-muted-foreground">{formatDate(new Date(batch.createdAt))}</span>
+                            <span className="font-medium">{formatCurrency(batch.totalAmount)}</span>
+                            <Badge variant="outline" className="text-[10px] py-0">{{ CASH: t('admin.methodCash'), TRANSFER: t('admin.methodTransfer'), ZELLE: t('admin.methodZelle'), CHECK: t('admin.methodCheck'), OTHER: t('admin.methodOther') }[batch.method] || batch.method}</Badge>
+                            {batch.note && <span className="text-muted-foreground truncate max-w-[200px]">{batch.note}</span>}
+                            <span className="text-muted-foreground">{batch.chargeIds.length} {t('admin.charges', 'charges')}</span>
+                            {batch.receiptUrl && (
+                              <a href={batch.receiptUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-theme-primary hover:underline ml-auto">
+                                <FileText className="h-3 w-3" />
+                                <span>{t('admin.receipt', 'Receipt')}</span>
+                              </a>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
                     {/* Charge rows */}
                     <div className="space-y-2">
-                      {revenueBizCharges.map((charge) => {
+                      {filterByDate(revenueBizCharges, chargesDateRange, (c) => c.createdAt, chargesStartDate, chargesEndDate).map((charge) => {
                         const remaining = charge.platformAmount - (charge.paidAmount || 0)
                         const paidPct = charge.platformAmount > 0 ? Math.round(((charge.paidAmount || 0) / charge.platformAmount) * 100) : 0
                         return (
@@ -1486,12 +1574,20 @@ export default function AdminDashboardPage() {
                                     <Input value={paymentNote} onChange={(e) => setPaymentNote(e.target.value)}
                                       className="h-8 text-sm" placeholder={t('admin.paymentNotePlaceholder', 'Optional note...')} />
                                   </div>
-                                  <div className="flex gap-1">
+                                  <div className="flex gap-1 items-center">
+                                    <Button size="sm" variant="outline" className="h-8 px-2" asChild>
+                                      <label className="cursor-pointer">
+                                        <Paperclip className="h-3 w-3" />
+                                        <span className="hidden sm:inline ml-1 text-xs">{paymentFile ? paymentFile.name.slice(0, 12) + (paymentFile.name.length > 12 ? '...' : '') : t('admin.receipt', 'Receipt')}</span>
+                                        <input type="file" className="hidden" accept="image/*,.pdf"
+                                          onChange={(e) => setPaymentFile(e.target.files?.[0] || null)} />
+                                      </label>
+                                    </Button>
                                     <Button size="sm" className="h-8" disabled={paymentSaving} onClick={() => handleRegisterPayment(charge)}>
                                       {paymentSaving && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
                                       {t('common.save', 'Save')}
                                     </Button>
-                                    <Button size="sm" variant="ghost" className="h-8" onClick={() => setPayingChargeId(null)}>
+                                    <Button size="sm" variant="ghost" className="h-8" onClick={() => { setPayingChargeId(null); setPaymentFile(null) }}>
                                       <X className="h-3 w-3" />
                                     </Button>
                                   </div>

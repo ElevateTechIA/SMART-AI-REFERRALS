@@ -60,6 +60,7 @@ export async function POST(
     const newStatus = newPaidAmount <= 0 ? 'OWED' : newPaidAmount >= platformAmount ? 'PAID' : 'PARTIAL'
     const now = new Date()
 
+    const previousStatus = chargeData.status
     const batch = db.batch()
     batch.update(paymentRef, { status: 'VOIDED', voidedAt: now, voidedBy: authResult.uid })
     batch.update(chargeRef, {
@@ -70,15 +71,33 @@ export async function POST(
     })
     await batch.commit()
 
+    // Revert auto-approved earnings back to PENDING when charge is no longer PAID
+    let earningsReverted = 0
+    if (previousStatus === 'PAID' && newStatus !== 'PAID' && chargeData.visitId) {
+      const earningsSnap = await db.collection('earnings')
+        .where('visitId', '==', chargeData.visitId)
+        .get()
+      if (earningsSnap.size > 0) {
+        const earningsBatch = db.batch()
+        for (const eDoc of earningsSnap.docs) {
+          if (eDoc.data().status === 'APPROVED') {
+            earningsBatch.update(eDoc.ref, { status: 'PENDING', updatedAt: now })
+            earningsReverted++
+          }
+        }
+        if (earningsReverted > 0) await earningsBatch.commit()
+      }
+    }
+
     await logAdminAction({
       action: 'CHARGE_VOID',
       adminUid: authResult.uid,
-      details: { chargeId, paymentId, newPaidAmount, newStatus },
+      details: { chargeId, paymentId, newPaidAmount, newStatus, earningsReverted },
     })
 
     return NextResponse.json({
       success: true,
-      data: { newPaidAmount, newStatus },
+      data: { newPaidAmount, newStatus, earningsReverted },
     })
   } catch (error) {
     console.error('Error voiding payment:', error)

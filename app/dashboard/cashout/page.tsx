@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/components/ui/use-toast'
 import { Badge } from '@/components/ui/badge'
 import { MIN_CASHOUT_AMOUNT } from '@/lib/types'
+import { Pagination, paginate } from '@/components/list-controls'
 import {
   ChevronLeft,
   DollarSign,
@@ -65,6 +66,7 @@ export default function CashoutPage() {
   const [requestingCashout, setRequestingCashout] = useState(false)
   const [payoutRequests, setPayoutRequests] = useState<PayoutRequestItem[]>([])
   const [loadingPayouts, setLoadingPayouts] = useState(true)
+  const [payoutPage, setPayoutPage] = useState(1)
 
   const [bankInfo, setBankInfo] = useState({
     bankName: '',
@@ -138,6 +140,11 @@ export default function CashoutPage() {
       setRequestingCashout(false)
     }
   }
+
+  // Reset pagination when data changes
+  useEffect(() => {
+    setPayoutPage(1)
+  }, [payoutRequests])
 
   // Load existing bank info
   useEffect(() => {
@@ -333,37 +340,41 @@ export default function CashoutPage() {
         </div>
 
         {/* Payout History */}
-        {!loadingPayouts && payoutRequests.length > 0 && (
-          <div className="bg-card backdrop-blur-sm rounded-xl p-6 shadow-xl">
-            <h3 className="font-semibold text-foreground mb-4">{t('cashout.payoutHistory', 'Payout History')}</h3>
-            <div className="space-y-3">
-              {payoutRequests.map(payout => (
-                <div key={payout.id} className="flex items-center justify-between p-3 rounded-lg border border-border">
-                  <div className="space-y-0.5">
-                    <p className="font-medium text-sm">{formatCurrency(payout.amount)}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(payout.createdAt).toLocaleDateString()}
-                      {payout.completedAt && ` — ${t('cashout.completed', 'Completed')} ${new Date(payout.completedAt).toLocaleDateString()}`}
-                    </p>
-                    {payout.paymentMethod && (
-                      <p className="text-xs text-muted-foreground">{t('cashout.via', 'Via')}: {{ CASH: t('admin.methodCash'), TRANSFER: t('admin.methodTransfer'), ZELLE: t('admin.methodZelle'), CHECK: t('admin.methodCheck'), OTHER: t('admin.methodOther') }[payout.paymentMethod] || payout.paymentMethod}</p>
-                    )}
+        {!loadingPayouts && payoutRequests.length > 0 && (() => {
+          const { paged, totalPages } = paginate(payoutRequests, payoutPage)
+          return (
+            <div className="bg-card backdrop-blur-sm rounded-xl p-6 shadow-xl">
+              <h3 className="font-semibold text-foreground mb-4">{t('cashout.payoutHistory', 'Payout History')}</h3>
+              <div className="space-y-3">
+                {paged.map(payout => (
+                  <div key={payout.id} className="flex items-center justify-between p-3 rounded-lg border border-border">
+                    <div className="space-y-0.5">
+                      <p className="font-medium text-sm">{formatCurrency(payout.amount)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(payout.createdAt).toLocaleDateString()}
+                        {payout.completedAt && ` — ${t('cashout.completed', 'Completed')} ${new Date(payout.completedAt).toLocaleDateString()}`}
+                      </p>
+                      {payout.paymentMethod && (
+                        <p className="text-xs text-muted-foreground">{t('cashout.via', 'Via')}: {{ CASH: t('admin.methodCash'), TRANSFER: t('admin.methodTransfer'), ZELLE: t('admin.methodZelle'), CHECK: t('admin.methodCheck'), OTHER: t('admin.methodOther') }[payout.paymentMethod] || payout.paymentMethod}</p>
+                      )}
+                    </div>
+                    <Badge variant={
+                      payout.status === 'COMPLETED' ? 'default' :
+                      payout.status === 'REJECTED' ? 'destructive' :
+                      'secondary'
+                    }>
+                      {payout.status === 'REQUESTED' ? t('cashout.statusRequested', 'Requested') :
+                       payout.status === 'PROCESSING' ? t('cashout.statusProcessing', 'Processing') :
+                       payout.status === 'COMPLETED' ? t('cashout.statusCompleted', 'Completed') :
+                       t('cashout.statusRejected', 'Rejected')}
+                    </Badge>
                   </div>
-                  <Badge variant={
-                    payout.status === 'COMPLETED' ? 'default' :
-                    payout.status === 'REJECTED' ? 'destructive' :
-                    'secondary'
-                  }>
-                    {payout.status === 'REQUESTED' ? t('cashout.statusRequested', 'Requested') :
-                     payout.status === 'PROCESSING' ? t('cashout.statusProcessing', 'Processing') :
-                     payout.status === 'COMPLETED' ? t('cashout.statusCompleted', 'Completed') :
-                     t('cashout.statusRejected', 'Rejected')}
-                  </Badge>
-                </div>
-              ))}
+                ))}
+              </div>
+              <Pagination page={payoutPage} totalPages={totalPages} onPageChange={setPayoutPage} />
             </div>
-          </div>
-        )}
+          )
+        })()}
 
         {/* Bank Information */}
         <div className="bg-card backdrop-blur-sm rounded-xl p-6 shadow-xl">

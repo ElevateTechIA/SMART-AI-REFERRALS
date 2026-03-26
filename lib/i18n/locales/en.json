@@ -43,6 +43,13 @@
     "verified": "Verified",
     "extracted": "Extracted"
   },
+  "filters": {
+    "allTime": "All Time",
+    "thisMonth": "This Month",
+    "lastMonth": "Last Month",
+    "thisYear": "This Year",
+    "custom": "Custom Range"
+  },
   "nav": {
     "dashboard": "Dashboard",
     "referrals": "Referrals",
@@ -391,6 +398,7 @@
     "markPaid": "Mark Paid",
     "partialPay": "Partial",
     "paymentHistory": "History",
+    "paymentBatches": "Payment Records",
     "registerPayment": "Register Payment",
     "paymentAmount": "Amount",
     "paymentMethod": "Method",
@@ -843,8 +851,8 @@
     "bankInfoIncomplete": "Please fill in all bank information fields or leave them all empty"
   },
   "landing": {
-    "heroTitle": "Turn Your Recommendations Into",
-    "heroTitleHighlight": "Revenue",
+    "heroTitle": "Make Money Recommending Your",
+    "heroTitleHighlight": "Favorite Places",
     "heroSubtitle": "Earn verified commissions by recommending the best experiences to your network. Fast payouts, real-time tracking, and no limits on your growth.",
     "startEarningFree": "Join the Network",
     "listYourBusiness": "List Your Business",
@@ -892,9 +900,9 @@
     "chatWithUs": "Chat with us"
   },
   "promotersLanding": {
-    "heroTitle": "Earn Money Recommending",
-    "heroTitleHighlight": "Local Businesses.",
-    "heroSubtitle": "Share a link, your friends visit, you earn commission. It's that simple.",
+    "heroTitle": "Get Paid to Recommend Your",
+    "heroTitleHighlight": "Favorite Places.",
+    "heroSubtitle": "Your recommendations are valuable. It's time you get rewarded for them.",
     "cta": "Start Earning Free",
     "howItWorks": "How It Works",
     "step1Title": "1. Choose a Business",
