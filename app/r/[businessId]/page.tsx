@@ -276,7 +276,7 @@ function ReferralPageContent() {
               <Badge
                 variant={business.status === 'active' ? 'success' : 'secondary'}
               >
-                {business.status}
+                {business.status === 'active' ? t('common.active', 'Active') : business.status === 'pending' ? t('common.pending', 'Pending') : t('common.suspended', 'Suspended')}
               </Badge>
             </div>
           </CardHeader>

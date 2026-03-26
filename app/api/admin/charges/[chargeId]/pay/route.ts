@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAdminDb, verifyAdmin } from '@/lib/firebase/admin'
+import { getAdminDb, getAdminStorage, verifyAdmin } from '@/lib/firebase/admin'
 import { logAdminAction } from '@/lib/admin-log'
 
 export const dynamic = 'force-dynamic'
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf']
 
 export async function POST(
   request: NextRequest,
@@ -15,8 +18,57 @@ export async function POST(
     }
 
     const { chargeId } = context.params
-    const body = await request.json()
-    const { amount, method, note } = body as { amount: number; method: string; note?: string }
+    const contentType = request.headers.get('content-type') || ''
+
+    let amount: number
+    let method: string
+    let note: string | undefined
+    let receiptUrl: string | undefined
+
+    if (contentType.includes('multipart/form-data')) {
+      // FormData: supports file upload
+      const formData = await request.formData()
+      amount = Number(formData.get('amount'))
+      method = formData.get('method') as string
+      note = (formData.get('note') as string) || undefined
+
+      const file = formData.get('file') as File | null
+      if (file && file.size > 0) {
+        if (!ALLOWED_TYPES.includes(file.type)) {
+          return NextResponse.json(
+            { error: 'Invalid file type. Allowed: JPEG, PNG, WebP, PDF' },
+            { status: 400 }
+          )
+        }
+        if (file.size > MAX_FILE_SIZE) {
+          return NextResponse.json({ error: 'File too large. Maximum 10MB' }, { status: 400 })
+        }
+
+        const bucket = getAdminStorage().bucket()
+        const extension = file.name.split('.').pop() || 'pdf'
+        const fileName = `receipt-${Date.now()}.${extension}`
+        const filePath = `payments/${chargeId}/${fileName}`
+
+        const buffer = Buffer.from(await file.arrayBuffer())
+        const fileRef = bucket.file(filePath)
+
+        await fileRef.save(buffer, {
+          metadata: {
+            contentType: file.type,
+            metadata: { uploadedBy: authResult.uid },
+          },
+        })
+
+        await fileRef.makePublic()
+        receiptUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`
+      }
+    } else {
+      // JSON body (backwards compatible)
+      const body = await request.json()
+      amount = body.amount
+      method = body.method
+      note = body.note
+    }
 
     if (!amount || amount <= 0) {
       return NextResponse.json({ error: 'Invalid amount' }, { status: 400 })
@@ -50,7 +102,7 @@ export async function POST(
 
     // Create payment record
     const paymentRef = db.collection('charge_payments').doc()
-    batch.set(paymentRef, {
+    const paymentData: Record<string, unknown> = {
       chargeId,
       businessId: chargeData.businessId,
       amount,
@@ -59,7 +111,11 @@ export async function POST(
       status: 'COMPLETED',
       createdAt: now,
       createdBy: authResult.uid,
-    })
+    }
+    if (receiptUrl) {
+      paymentData.receiptUrl = receiptUrl
+    }
+    batch.set(paymentRef, paymentData)
 
     // Update charge
     const chargeUpdate: Record<string, unknown> = {
@@ -96,7 +152,7 @@ export async function POST(
     await logAdminAction({
       action: 'CHARGE_PAYMENT',
       adminUid: authResult.uid,
-      details: { chargeId, amount, method, newStatus, earningsApproved },
+      details: { chargeId, amount, method, newStatus, earningsApproved, receiptUrl: receiptUrl || null },
     })
 
     return NextResponse.json({

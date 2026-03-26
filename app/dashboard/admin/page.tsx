@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Switch } from '@/components/ui/switch'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
-import { apiGet, apiPost, apiPut } from '@/lib/api-client'
+import { apiGet, apiPost, apiPut, apiUpload } from '@/lib/api-client'
 import type { Business, User, Visit, FraudFlag, Offer, ConsumerRewardType, Receipt, SupportTicket } from '@/lib/types'
 
 /** Safely render **bold** markdown as React elements (no dangerouslySetInnerHTML) */
@@ -61,6 +61,8 @@ import {
   ChevronRight,
   User as UserIcon,
   Check,
+  Paperclip,
+  FileText,
 } from 'lucide-react'
 
 const ITEMS_PER_PAGE = 10
@@ -176,6 +178,7 @@ interface ChargePayment {
   amount: number
   method: string
   note: string
+  receiptUrl?: string
   status: 'COMPLETED' | 'VOIDED'
   createdAt: string
   createdBy: string
@@ -278,6 +281,8 @@ export default function AdminDashboardPage() {
   // Pay All
   const [payAllBizSaving, setPayAllBizSaving] = useState(false)
   const [payAllMethod, setPayAllMethod] = useState<PaymentMethod>('TRANSFER')
+  const [payAllNote, setPayAllNote] = useState('')
+  const [payAllFile, setPayAllFile] = useState<File | null>(null)
   // Revenue filter
   const [revenueFilter, setRevenueFilter] = useState<'all' | 'pending' | 'paid'>('all')
   // Admin payouts
@@ -927,12 +932,29 @@ export default function AdminDashboardPage() {
     setPayAllBizSaving(true)
     try {
       let failed = 0
-      for (const charge of owedCharges) {
+      for (let i = 0; i < owedCharges.length; i++) {
+        const charge = owedCharges[i]
         const remaining = charge.platformAmount - (charge.paidAmount || 0)
         if (remaining <= 0) continue
-        const res = await apiPost(`/api/admin/charges/${charge.id}/pay`, { amount: remaining, method: payAllMethod, note: 'Pay All' })
-        if (!res.ok) failed++
+        const noteText = payAllNote || t('admin.payAll', 'Pay All')
+
+        // Attach file only on the first charge payment
+        if (payAllFile && i === 0) {
+          const formData = new FormData()
+          formData.append('amount', String(remaining))
+          formData.append('method', payAllMethod)
+          formData.append('note', noteText)
+          formData.append('file', payAllFile)
+          const res = await apiUpload(`/api/admin/charges/${charge.id}/pay`, formData)
+          if (!res.ok) failed++
+        } else {
+          const res = await apiPost(`/api/admin/charges/${charge.id}/pay`, { amount: remaining, method: payAllMethod, note: noteText })
+          if (!res.ok) failed++
+        }
       }
+      // Reset Pay All fields
+      setPayAllNote('')
+      setPayAllFile(null)
       // Reload charges for this business
       const response = await apiGet<{ success: boolean; data: { charges: ChargeDetail[] } }>(`/api/admin/charges?businessId=${businessId}`)
       if (response.ok && response.data?.data) {
@@ -1276,27 +1298,54 @@ export default function AdminDashboardPage() {
                             <span className="text-xs text-muted-foreground">{pct}%</span>
                           </div>
                           {hasOwed && (
-                            <div className="flex items-center gap-2">
-                              <Select value={payAllMethod} onValueChange={(v) => setPayAllMethod(v as PaymentMethod)}>
-                                <SelectTrigger className="w-[130px] h-8 text-xs">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="CASH">{t('admin.methodCash', 'Cash')}</SelectItem>
-                                  <SelectItem value="TRANSFER">{t('admin.methodTransfer', 'Transfer')}</SelectItem>
-                                  <SelectItem value="ZELLE">{t('admin.methodZelle', 'Zelle')}</SelectItem>
-                                  <SelectItem value="CHECK">{t('admin.methodCheck', 'Check')}</SelectItem>
-                                  <SelectItem value="OTHER">{t('admin.methodOther', 'Other')}</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <Button size="sm" disabled={payAllBizSaving} onClick={() => {
-                                if (confirm(t('admin.payAllConfirm', 'Are you sure you want to mark all charges as paid?'))) {
-                                  handlePayAllBiz(selectedRevenueBiz!)
-                                }
-                              }}>
-                                {payAllBizSaving ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <DollarSign className="h-3 w-3 mr-1" />}
-                                {t('admin.payAll', 'Pay All')}
-                              </Button>
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <Select value={payAllMethod} onValueChange={(v) => setPayAllMethod(v as PaymentMethod)}>
+                                  <SelectTrigger className="w-[130px] h-8 text-xs">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="CASH">{t('admin.methodCash', 'Cash')}</SelectItem>
+                                    <SelectItem value="TRANSFER">{t('admin.methodTransfer', 'Transfer')}</SelectItem>
+                                    <SelectItem value="ZELLE">{t('admin.methodZelle', 'Zelle')}</SelectItem>
+                                    <SelectItem value="CHECK">{t('admin.methodCheck', 'Check')}</SelectItem>
+                                    <SelectItem value="OTHER">{t('admin.methodOther', 'Other')}</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <Button size="sm" disabled={payAllBizSaving} onClick={() => {
+                                  if (confirm(t('admin.payAllConfirm', 'Are you sure you want to mark all charges as paid?'))) {
+                                    handlePayAllBiz(selectedRevenueBiz!)
+                                  }
+                                }}>
+                                  {payAllBizSaving ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <DollarSign className="h-3 w-3 mr-1" />}
+                                  {t('admin.payAll', 'Pay All')}
+                                </Button>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  value={payAllNote}
+                                  onChange={(e) => setPayAllNote(e.target.value)}
+                                  placeholder={t('admin.payAllNote', 'Note (optional)...')}
+                                  className="h-8 text-xs flex-1"
+                                />
+                                <label className="cursor-pointer">
+                                  <input
+                                    type="file"
+                                    accept="image/*,.pdf"
+                                    className="hidden"
+                                    onChange={(e) => setPayAllFile(e.target.files?.[0] || null)}
+                                  />
+                                  <div className={`flex items-center gap-1 h-8 px-3 text-xs rounded-md border transition-colors ${payAllFile ? 'bg-theme-primary/10 border-theme-primary text-foreground' : 'bg-background border-input text-muted-foreground hover:bg-accent'}`}>
+                                    <Paperclip className="h-3 w-3" />
+                                    <span className="hidden sm:inline">{payAllFile ? payAllFile.name.slice(0, 15) + (payAllFile.name.length > 15 ? '...' : '') : t('admin.attachReceipt', 'Receipt')}</span>
+                                  </div>
+                                </label>
+                                {payAllFile && (
+                                  <button onClick={() => setPayAllFile(null)} className="text-muted-foreground hover:text-foreground">
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           )}
                         </div>
@@ -1318,7 +1367,7 @@ export default function AdminDashboardPage() {
                                     {t('admin.chargeId', 'Charge')} #{charge.id.slice(0, 7).toUpperCase()}
                                   </span>
                                   <Badge variant={charge.status === 'PAID' ? 'default' : charge.status === 'OWED' ? 'destructive' : 'secondary'}>
-                                    {charge.status}
+                                    {charge.status === 'PAID' ? t('admin.paid') : charge.status === 'OWED' ? t('admin.owes') : charge.status === 'PARTIAL' ? t('admin.partialPay') : charge.status}
                                   </Badge>
                                 </div>
                                 <p className="text-xs text-muted-foreground">
@@ -1326,7 +1375,7 @@ export default function AdminDashboardPage() {
                                   {charge.paidAt && ` — ${t('admin.paidOn', 'Paid')} ${formatDate(new Date(charge.paidAt))}`}
                                 </p>
                                 {charge.visit && (
-                                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                  <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
                                     <span className="flex items-center gap-1">
                                       <UserIcon className="h-3 w-3" />
                                       {t('admin.visitAttribution', 'Via')}: {charge.visit.attributionType === 'REFERRER' ? t('admin.promoter') : t('admin.platform')}
@@ -1334,6 +1383,14 @@ export default function AdminDashboardPage() {
                                     {charge.visit.isNewCustomer && (
                                       <Badge variant="outline" className="text-[10px] py-0">{t('admin.newCustomer', 'New Customer')}</Badge>
                                     )}
+                                    {charge.visit.referrerUserId && (() => {
+                                      const referrer = users.find(u => u.id === charge.visit!.referrerUserId)
+                                      return referrer ? <span className="text-theme-primary">{t('admin.promoter')}: {referrer.name || referrer.email}</span> : null
+                                    })()}
+                                    {charge.visit.consumerUserId && (() => {
+                                      const consumer = users.find(u => u.id === charge.visit!.consumerUserId)
+                                      return consumer ? <span>{t('admin.consumer', 'Consumer')}: {consumer.name || consumer.email}</span> : null
+                                    })()}
                                   </div>
                                 )}
                                 {/* Progress bar for partial */}
@@ -1458,6 +1515,12 @@ export default function AdminDashboardPage() {
                                           <span className="font-medium">{formatCurrency(p.amount)}</span>
                                           <Badge variant="outline" className="text-[10px] py-0">{p.method}</Badge>
                                           {p.note && <span className="text-muted-foreground">{p.note}</span>}
+                                          {p.receiptUrl && (
+                                            <a href={p.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-theme-primary hover:underline flex items-center gap-0.5">
+                                              <FileText className="h-3 w-3" />
+                                              <span>{t('admin.receipt', 'Receipt')}</span>
+                                            </a>
+                                          )}
                                         </div>
                                         {p.status !== 'VOIDED' ? (
                                           <Button size="sm" variant="ghost" className="h-6 text-[10px] text-theme-error hover:text-theme-error"
@@ -1626,7 +1689,7 @@ export default function AdminDashboardPage() {
                                   : 'destructive'
                               }
                             >
-                              {business.status}
+                              {business.status === 'active' ? t('common.active', 'Active') : business.status === 'pending' ? t('common.pending', 'Pending') : t('common.suspended', 'Suspended')}
                             </Badge>
 
                             {business.status === 'pending' && (
@@ -2073,7 +2136,7 @@ export default function AdminDashboardPage() {
                                   : 'secondary'
                               }
                             >
-                              {visit.status}
+                              {visit.status === 'CREATED' ? t('admin.visitCreated') : visit.status === 'CHECKED_IN' ? t('admin.visitCheckedIn') : visit.status === 'CONVERTED' ? t('admin.visitConverted') : t('admin.visitRejected')}
                             </Badge>
                           </div>
                         </div>
@@ -2095,7 +2158,7 @@ export default function AdminDashboardPage() {
                                     : 'secondary'
                                 }
                               >
-                                {receipt.status}
+                                {receipt.status === 'VERIFIED' ? t('common.verified', 'Verified') : receipt.status === 'EXTRACTED' ? t('common.extracted', 'Extracted') : receipt.status === 'PROCESSING' ? t('admin.processing') : t('common.failed')}
                               </Badge>
                             </div>
 
@@ -2247,7 +2310,7 @@ export default function AdminDashboardPage() {
                             <div className="flex items-center gap-2">
                               <h4 className="font-semibold text-sm truncate">{ticket.subject}</h4>
                               <Badge variant={ticket.status === 'resolved' ? 'success' : 'warning'}>
-                                {ticket.status}
+                                {ticket.status === 'resolved' ? t('common.resolved', 'Resolved') : t('common.open', 'Open')}
                               </Badge>
                               {!ticket.read && (
                                 <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
@@ -2516,7 +2579,7 @@ export default function AdminDashboardPage() {
                           {payout.completedAt && (
                             <p className="text-xs text-muted-foreground">
                               {payout.status === 'COMPLETED' ? t('admin.paidOn', 'Paid') : t('admin.rejected', 'Rejected')}: {formatDate(new Date(payout.completedAt))}
-                              {payout.paymentMethod && ` — ${payout.paymentMethod}`}
+                              {payout.paymentMethod && ` — ${{ CASH: t('admin.methodCash'), TRANSFER: t('admin.methodTransfer'), ZELLE: t('admin.methodZelle'), CHECK: t('admin.methodCheck'), OTHER: t('admin.methodOther') }[payout.paymentMethod] || payout.paymentMethod}`}
                             </p>
                           )}
                         </div>
@@ -2527,7 +2590,7 @@ export default function AdminDashboardPage() {
                             payout.status === 'REJECTED' ? 'destructive' :
                             'secondary'
                           }>
-                            {payout.status}
+                            {payout.status === 'COMPLETED' ? t('admin.completed') : payout.status === 'REJECTED' ? t('admin.rejected') : payout.status === 'REQUESTED' ? t('admin.requested') : payout.status === 'PROCESSING' ? t('admin.processing') : payout.status}
                           </Badge>
                           {(payout.status === 'REQUESTED' || payout.status === 'PROCESSING') && (
                             <div className="flex gap-1 mt-1">

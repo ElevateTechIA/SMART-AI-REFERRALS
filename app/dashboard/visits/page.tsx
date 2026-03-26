@@ -1255,7 +1255,7 @@ export default function VisitsPage() {
                             : 'secondary'
                         }
                       >
-                        {reward.status}
+                        {reward.status === 'PAID' ? t('promotions.earningStatusPaid') : reward.status === 'APPROVED' ? t('promotions.earningStatusApproved') : t('promotions.earningStatusPending')}
                       </Badge>
                     </div>
                   </div>

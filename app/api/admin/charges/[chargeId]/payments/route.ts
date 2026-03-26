@@ -28,6 +28,7 @@ export async function GET(
         amount: data.amount,
         method: data.method,
         note: data.note || '',
+        receiptUrl: data.receiptUrl || undefined,
         status: data.status,
         createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt,
         createdBy: data.createdBy,

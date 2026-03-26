@@ -251,7 +251,7 @@ export default function BusinessSettingsPage() {
                 : 'destructive'
             }
           >
-            {business.status}
+            {business.status === 'active' ? t('common.active', 'Active') : business.status === 'pending' ? t('common.pending', 'Pending') : t('common.suspended', 'Suspended')}
           </Badge>
         </div>
       </div>

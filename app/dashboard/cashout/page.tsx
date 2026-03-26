@@ -346,7 +346,7 @@ export default function CashoutPage() {
                       {payout.completedAt && ` — ${t('cashout.completed', 'Completed')} ${new Date(payout.completedAt).toLocaleDateString()}`}
                     </p>
                     {payout.paymentMethod && (
-                      <p className="text-xs text-muted-foreground">{t('cashout.via', 'Via')}: {payout.paymentMethod}</p>
+                      <p className="text-xs text-muted-foreground">{t('cashout.via', 'Via')}: {{ CASH: t('admin.methodCash'), TRANSFER: t('admin.methodTransfer'), ZELLE: t('admin.methodZelle'), CHECK: t('admin.methodCheck'), OTHER: t('admin.methodOther') }[payout.paymentMethod] || payout.paymentMethod}</p>
                     )}
                   </div>
                   <Badge variant={
