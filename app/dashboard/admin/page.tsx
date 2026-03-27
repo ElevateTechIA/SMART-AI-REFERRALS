@@ -17,6 +17,7 @@ import { apiGet, apiPost, apiPut, apiUpload } from '@/lib/api-client'
 import type { Business, User, Visit, FraudFlag, Offer, ConsumerRewardType, Receipt, SupportTicket } from '@/lib/types'
 import { DateFilter, filterByDate, type DateRange } from '@/components/list-controls'
 import { useTheme } from '@/lib/theme/theme-provider'
+import { BusinessCalendar } from '@/components/dashboard/business-calendar'
 
 /** Safely render **bold** markdown as React elements (no dangerouslySetInnerHTML) */
 function SafeBoldText({ text, boldColor, textColor }: { text: string; boldColor: string; textColor: string }) {
@@ -306,6 +307,7 @@ export default function AdminDashboardPage() {
   const [chargesDateRange, setChargesDateRange] = useState<DateRange>('all')
   const [chargesStartDate, setChargesStartDate] = useState('')
   const [chargesEndDate, setChargesEndDate] = useState('')
+  const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date | null>(null)
   // Admin payouts
   const [adminPayouts, setAdminPayouts] = useState<AdminPayoutRequest[]>([])
   const [payoutSearch, setPayoutSearch] = useState('')
@@ -1324,7 +1326,7 @@ export default function AdminDashboardPage() {
 
             {/* Inline charge details */}
             {selectedRevenueBiz && (
-              <div className="border-t pt-4 space-y-3">
+              <div className="border-t pt-4">
                 {revenueBizChargesLoading ? (
                   <div className="text-center py-6 text-muted-foreground">
                     <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />
@@ -1335,118 +1337,71 @@ export default function AdminDashboardPage() {
                     {t('admin.noCharges', 'No charges found for this business')}
                   </p>
                 ) : (
-                  <>
-                    {/* Date filter for charges */}
-                    <div className="mb-3">
-                      <DateFilter value={chargesDateRange} onChange={(v) => { setChargesDateRange(v) }}
-                        startDate={chargesStartDate} endDate={chargesEndDate}
-                        onStartChange={setChargesStartDate} onEndChange={setChargesEndDate} />
-                    </div>
-                    {/* Summary bar */}
-                    {(() => {
-                      const dateFiltered = filterByDate(revenueBizCharges, chargesDateRange, (c) => c.createdAt, chargesStartDate, chargesEndDate)
-                      const totalPlatform = dateFiltered.reduce((s, c) => s + c.platformAmount, 0)
-                      const totalPaidAmt = dateFiltered.reduce((s, c) => s + (c.paidAmount || 0), 0)
-                      const pct = totalPlatform > 0 ? Math.round((totalPaidAmt / totalPlatform) * 100) : 0
-                      const hasOwed = dateFiltered.some(c => c.status === 'OWED' || c.status === 'PARTIAL')
-                      return (
-                        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                          <div className="flex items-center gap-4 text-sm">
-                            <span className="font-medium">{dateFiltered.length} {t('admin.charges', 'charges')}</span>
-                            <span>{t('admin.totalCharge', 'Total')}: {formatCurrency(totalPlatform)}</span>
-                            <span className="text-theme-success">{t('admin.paid', 'Paid')}: {formatCurrency(totalPaidAmt)}</span>
-                            <span className="text-theme-error">{t('admin.owes', 'Owed')}: {formatCurrency(totalPlatform - totalPaidAmt)}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
-                              <div className="h-full bg-theme-success rounded-full transition-all" style={{ width: `${pct}%` }} />
-                            </div>
-                            <span className="text-xs text-muted-foreground">{pct}%</span>
-                          </div>
-                          {hasOwed && (
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2">
-                                <Select value={payAllMethod} onValueChange={(v) => setPayAllMethod(v as PaymentMethod)}>
-                                  <SelectTrigger className="w-[130px] h-8 text-xs">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="CASH">{t('admin.methodCash', 'Cash')}</SelectItem>
-                                    <SelectItem value="TRANSFER">{t('admin.methodTransfer', 'Transfer')}</SelectItem>
-                                    <SelectItem value="ZELLE">{t('admin.methodZelle', 'Zelle')}</SelectItem>
-                                    <SelectItem value="CHECK">{t('admin.methodCheck', 'Check')}</SelectItem>
-                                    <SelectItem value="OTHER">{t('admin.methodOther', 'Other')}</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                <Button size="sm" disabled={payAllBizSaving} onClick={() => {
-                                  if (confirm(t('admin.payAllConfirm', 'Are you sure you want to mark all charges as paid?'))) {
-                                    handlePayAllBiz(selectedRevenueBiz!)
-                                  }
-                                }}>
-                                  {payAllBizSaving ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <DollarSign className="h-3 w-3 mr-1" />}
-                                  {t('admin.payAll', 'Pay All')}
-                                </Button>
+                  <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+                    {/* LEFT: Charges list (2/3) */}
+                    <div className="xl:col-span-2 space-y-3">
+                      {/* Summary bar */}
+                      {(() => {
+                        const dateFiltered = filterByDate(revenueBizCharges, chargesDateRange, (c) => c.createdAt, chargesStartDate, chargesEndDate)
+                        const totalPlatform = dateFiltered.reduce((s, c) => s + c.platformAmount, 0)
+                        const totalPaidAmt = dateFiltered.reduce((s, c) => s + (c.paidAmount || 0), 0)
+                        const pct = totalPlatform > 0 ? Math.round((totalPaidAmt / totalPlatform) * 100) : 0
+                        return (
+                          <div className="rounded-xl bg-black/15 backdrop-blur-sm p-3 space-y-2">
+                            <div className="flex flex-wrap items-center gap-3 text-sm">
+                              <span className="font-semibold">{dateFiltered.length} {t('admin.charges', 'charges')}</span>
+                              <span className="text-white/30">|</span>
+                              <span>{t('admin.totalCharge', 'Total')}: <strong>{formatCurrency(totalPlatform)}</strong></span>
+                              <span className="text-theme-success">{t('admin.paid', 'Paid')}: {formatCurrency(totalPaidAmt)}</span>
+                              <span className="text-theme-error">{t('admin.owes', 'Owed')}: {formatCurrency(totalPlatform - totalPaidAmt)}</span>
+                              <div className="flex items-center gap-2 ml-auto">
+                                <div className="w-20 h-2 bg-white/10 rounded-full overflow-hidden">
+                                  <div className="h-full bg-theme-success rounded-full transition-all" style={{ width: `${pct}%` }} />
+                                </div>
+                                <span className="text-xs font-medium opacity-70">{pct}%</span>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <Input
-                                  value={payAllNote}
-                                  onChange={(e) => setPayAllNote(e.target.value)}
-                                  placeholder={t('admin.payAllNote', 'Note (optional)...')}
-                                  className="h-8 text-xs flex-1"
-                                />
-                                <label className="cursor-pointer">
-                                  <input
-                                    type="file"
-                                    accept="image/*,.pdf"
-                                    className="hidden"
-                                    onChange={(e) => setPayAllFile(e.target.files?.[0] || null)}
-                                  />
-                                  <div className={`flex items-center gap-1 h-8 px-3 text-xs rounded-md border transition-colors ${payAllFile ? 'bg-theme-primary/10 border-theme-primary text-foreground' : 'bg-background border-input text-muted-foreground hover:bg-accent'}`}>
-                                    <Paperclip className="h-3 w-3" />
-                                    <span className="hidden sm:inline">{payAllFile ? payAllFile.name.slice(0, 15) + (payAllFile.name.length > 15 ? '...' : '') : t('admin.attachReceipt', 'Receipt')}</span>
-                                  </div>
-                                </label>
-                                {payAllFile && (
-                                  <button onClick={() => setPayAllFile(null)} className="text-muted-foreground hover:text-foreground">
-                                    <X className="h-3 w-3" />
-                                  </button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <DateFilter value={chargesDateRange} onChange={(v) => { setChargesDateRange(v) }}
+                                startDate={chargesStartDate} endDate={chargesEndDate}
+                                onStartChange={setChargesStartDate} onEndChange={setChargesEndDate} />
+                            </div>
+                          </div>
+                        )
+                      })()}
+
+                      {/* Payment Batches - collapsible */}
+                      {paymentBatches.length > 0 && (
+                        <details className="rounded-xl border border-white/10 bg-black/10">
+                          <summary className="px-3 py-2 text-xs font-medium text-muted-foreground cursor-pointer hover:text-foreground select-none">
+                            {t('admin.paymentBatches', 'Payment Records')} ({paymentBatches.length})
+                          </summary>
+                          <div className="px-3 pb-3 space-y-1.5">
+                            {paymentBatches.map((batch) => (
+                              <div key={batch.id} className="flex flex-wrap items-center gap-2 text-xs py-1.5 border-t border-white/10 first:border-0">
+                                <span className="text-muted-foreground">{formatDate(new Date(batch.createdAt))}</span>
+                                <span className="font-medium">{formatCurrency(batch.totalAmount)}</span>
+                                <Badge variant="outline" className="text-[10px] py-0">{{ CASH: t('admin.methodCash'), TRANSFER: t('admin.methodTransfer'), ZELLE: t('admin.methodZelle'), CHECK: t('admin.methodCheck'), OTHER: t('admin.methodOther') }[batch.method] || batch.method}</Badge>
+                                {batch.note && <span className="text-muted-foreground truncate max-w-[150px]">{batch.note}</span>}
+                                {batch.receiptUrl && (
+                                  <a href={batch.receiptUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-theme-primary hover:underline ml-auto">
+                                    <FileText className="h-3 w-3" />
+                                    <span>{t('admin.receipt', 'Receipt')}</span>
+                                  </a>
                                 )}
                               </div>
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })()}
-
-                    {/* Payment Batches (global receipts) */}
-                    {paymentBatches.length > 0 && (
-                      <div className="space-y-1.5 mb-3">
-                        <p className="text-xs font-medium text-muted-foreground">{t('admin.paymentBatches', 'Payment Records')}</p>
-                        {paymentBatches.map((batch) => (
-                          <div key={batch.id} className="flex items-center gap-3 text-xs px-3 py-2 rounded-lg border border-theme-cardBorder" style={{ background: 'var(--theme-cardBg)' }}>
-                            <span className="text-muted-foreground">{formatDate(new Date(batch.createdAt))}</span>
-                            <span className="font-medium">{formatCurrency(batch.totalAmount)}</span>
-                            <Badge variant="outline" className="text-[10px] py-0">{{ CASH: t('admin.methodCash'), TRANSFER: t('admin.methodTransfer'), ZELLE: t('admin.methodZelle'), CHECK: t('admin.methodCheck'), OTHER: t('admin.methodOther') }[batch.method] || batch.method}</Badge>
-                            {batch.note && <span className="text-muted-foreground truncate max-w-[200px]">{batch.note}</span>}
-                            <span className="text-muted-foreground">{batch.chargeIds.length} {t('admin.charges', 'charges')}</span>
-                            {batch.receiptUrl && (
-                              <a href={batch.receiptUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-theme-primary hover:underline ml-auto">
-                                <FileText className="h-3 w-3" />
-                                <span>{t('admin.receipt', 'Receipt')}</span>
-                              </a>
-                            )}
+                            ))}
                           </div>
-                        ))}
-                      </div>
-                    )}
+                        </details>
+                      )}
 
-                    {/* Charge rows */}
-                    <div className="space-y-2">
+                      {/* Charge rows - scrollable */}
+                      <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
                       {filterByDate(revenueBizCharges, chargesDateRange, (c) => c.createdAt, chargesStartDate, chargesEndDate).map((charge) => {
                         const remaining = charge.platformAmount - (charge.paidAmount || 0)
                         const paidPct = charge.platformAmount > 0 ? Math.round(((charge.paidAmount || 0) / charge.platformAmount) * 100) : 0
                         return (
-                          <div key={charge.id} className="rounded-lg border border-border bg-background">
+                          <div key={charge.id} className="rounded-lg border border-white/10 bg-black/15">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 gap-2">
                               <div className="flex-1 space-y-0.5">
                                 <div className="flex items-center gap-2 flex-wrap">
@@ -1636,8 +1591,79 @@ export default function AdminDashboardPage() {
                           </div>
                         )
                       })}
+                      </div>
                     </div>
-                  </>
+
+                    {/* RIGHT: Calendar + Pay All (1/3) */}
+                    <div className="space-y-4">
+                      <BusinessCalendar chargeDetails={revenueBizCharges} onDaySelect={(date) => {
+                        setCalendarSelectedDate(date)
+                        if (date) {
+                          const dateStr = date.toISOString().slice(0, 10)
+                          setChargesDateRange('custom')
+                          setChargesStartDate(dateStr)
+                          setChargesEndDate(dateStr)
+                        } else {
+                          setChargesDateRange('all')
+                          setChargesStartDate('')
+                          setChargesEndDate('')
+                        }
+                      }} />
+
+                      {/* Pay All controls */}
+                      {(() => {
+                        const dateFiltered = filterByDate(revenueBizCharges, chargesDateRange, (c) => c.createdAt, chargesStartDate, chargesEndDate)
+                        const hasOwed = dateFiltered.some(c => c.status === 'OWED' || c.status === 'PARTIAL')
+                        if (!hasOwed) return null
+                        return (
+                          <div className="rounded-xl border border-white/10 bg-black/15 backdrop-blur-sm p-4 space-y-3">
+                            <p className="text-sm font-semibold">{t('admin.payAll', 'Pay All')}</p>
+                            <Select value={payAllMethod} onValueChange={(v) => setPayAllMethod(v as PaymentMethod)}>
+                              <SelectTrigger className="h-9 text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="CASH">{t('admin.methodCash', 'Cash')}</SelectItem>
+                                <SelectItem value="TRANSFER">{t('admin.methodTransfer', 'Transfer')}</SelectItem>
+                                <SelectItem value="ZELLE">{t('admin.methodZelle', 'Zelle')}</SelectItem>
+                                <SelectItem value="CHECK">{t('admin.methodCheck', 'Check')}</SelectItem>
+                                <SelectItem value="OTHER">{t('admin.methodOther', 'Other')}</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <Input
+                              value={payAllNote}
+                              onChange={(e) => setPayAllNote(e.target.value)}
+                              placeholder={t('admin.payAllNote', 'Note (optional)...')}
+                              className="h-9 text-xs"
+                            />
+                            <div className="flex items-center gap-2">
+                              <label className="cursor-pointer flex-1">
+                                <input type="file" accept="image/*,.pdf" className="hidden"
+                                  onChange={(e) => setPayAllFile(e.target.files?.[0] || null)} />
+                                <div className={`flex items-center justify-center gap-1 h-9 px-3 text-xs rounded-md border transition-colors w-full ${payAllFile ? 'bg-theme-primary/10 border-theme-primary text-foreground' : 'bg-background border-input text-muted-foreground hover:bg-accent'}`}>
+                                  <Paperclip className="h-3 w-3" />
+                                  <span>{payAllFile ? payAllFile.name.slice(0, 20) + (payAllFile.name.length > 20 ? '...' : '') : t('admin.attachReceipt', 'Receipt')}</span>
+                                </div>
+                              </label>
+                              {payAllFile && (
+                                <button onClick={() => setPayAllFile(null)} className="text-muted-foreground hover:text-foreground">
+                                  <X className="h-4 w-4" />
+                                </button>
+                              )}
+                            </div>
+                            <Button className="w-full" disabled={payAllBizSaving} onClick={() => {
+                              if (confirm(t('admin.payAllConfirm', 'Are you sure you want to mark all charges as paid?'))) {
+                                handlePayAllBiz(selectedRevenueBiz!)
+                              }
+                            }}>
+                              {payAllBizSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <DollarSign className="h-4 w-4 mr-2" />}
+                              {t('admin.payAll', 'Pay All')}
+                            </Button>
+                          </div>
+                        )
+                      })()}
+                    </div>
+                  </div>
                 )}
               </div>
             )}

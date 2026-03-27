@@ -40,6 +40,7 @@ import { useTranslation } from 'react-i18next'
 import QRCode from 'qrcode'
 import { QRScanner, type ScanResult } from '@/components/business/qr-scanner'
 import { useTheme } from '@/lib/theme/theme-provider'
+import { BusinessCalendar } from '@/components/dashboard/business-calendar'
 import { themes } from '@/lib/theme/colors'
 
 export default function BusinessDashboardPage() {
@@ -403,6 +404,9 @@ export default function BusinessDashboardPage() {
         )}
 
       </div>
+
+      {/* Activity Calendar */}
+      <BusinessCalendar visits={visits} charges={charges} />
 
       {/* Offer Settings */}
       {offer ? (

@@ -608,7 +608,27 @@
     "promoDiscountPercent": "{{value}}% off",
     "promoDiscountFixed": "{{value}} off",
     "promoFreeItem": "Free item",
-    "searchVisitPlaceholder": "Search by visit ID..."
+    "searchVisitPlaceholder": "Search by visit ID...",
+    "activityCalendar": "Monthly Activity",
+    "visitsLabel": "visits",
+    "conversionsLabel": "conversions",
+    "legendConversion": "Conversion",
+    "legendRevenue": "Revenue",
+    "legendPending": "Pending",
+    "newLabel": "New",
+    "repeatLabel": "Repeat",
+    "revenueLabel": "Revenue",
+    "pendingVisits": "pending visits",
+    "noActivityDay": "No activity on this day"
+  },
+  "calendar": {
+    "sun": "Sun",
+    "mon": "Mon",
+    "tue": "Tue",
+    "wed": "Wed",
+    "thu": "Thu",
+    "fri": "Fri",
+    "sat": "Sat"
   },
   "qrScanner": {
     "title": "Scan Customer QR",
