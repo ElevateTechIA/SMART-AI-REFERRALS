@@ -39,13 +39,18 @@ export async function PUT(
     const referrerAmount = Math.floor(price * commissionSplit.promoterPercent / 100)
     const consumerAmount = Math.floor(price * commissionSplit.consumerPercent / 100)
 
-    await offerRef.update({
+    const updateData: Record<string, unknown> = {
       referrerCommissionAmount: referrerAmount,
       referrerCommissionPercentage: commissionSplit.promoterPercent,
-      consumerRewardType: 'cash',
       consumerRewardValue: consumerAmount,
       updatedAt: FieldValue.serverTimestamp(),
-    })
+    }
+    // Only set consumerRewardType to 'cash' if not already configured
+    if (!offerData.consumerRewardType) {
+      updateData.consumerRewardType = 'cash'
+    }
+
+    await offerRef.update(updateData)
 
     return NextResponse.json({
       success: true,

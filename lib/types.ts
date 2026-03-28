@@ -199,7 +199,7 @@ export interface PayoutRequest {
 export const MIN_CASHOUT_AMOUNT = 50
 
 // Charge Status
-export type ChargeStatus = 'OWED' | 'PAID' | 'VOID'
+export type ChargeStatus = 'OWED' | 'PARTIAL' | 'PAID' | 'VOID'
 
 // Charge Record (Amount owed by business to platform)
 export interface Charge {
