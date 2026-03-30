@@ -137,6 +137,9 @@ export function ReviewDialog({
             <p className="text-sm text-destructive">{error}</p>
           )}
 
+          {rating === 0 && !submitting && (
+            <p className="text-xs text-muted-foreground text-center">{t('review.selectRating')}</p>
+          )}
           <Button
             onClick={handleSubmit}
             disabled={submitting || rating === 0}

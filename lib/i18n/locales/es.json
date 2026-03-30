@@ -1077,7 +1077,8 @@
     "reviewPlural": "reseñas",
     "today": "Hoy",
     "yesterday": "Ayer",
-    "daysAgo": "hace {{count}}d"
+    "daysAgo": "hace {{count}}d",
+    "selectRating": "Toca una estrella para calificar"
   },
   "support": {
     "title": "Contactar Soporte",

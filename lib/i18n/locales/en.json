@@ -1077,7 +1077,8 @@
     "reviewPlural": "reviews",
     "today": "Today",
     "yesterday": "Yesterday",
-    "daysAgo": "{{count}}d ago"
+    "daysAgo": "{{count}}d ago",
+    "selectRating": "Tap a star to rate"
   },
   "support": {
     "title": "Contact Support",

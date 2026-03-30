@@ -17,7 +17,8 @@ import { apiGet, apiPost, apiUpload } from '@/lib/api-client'
 import type { Business, PromotionType } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
 import { DEFAULT_COMMISSION_SPLIT, type CommissionSplit } from '@/lib/commission-config'
-import { Loader2, DollarSign, Building2, ImagePlus, Gift } from 'lucide-react'
+import { Loader2, DollarSign, Building2, ImagePlus, Gift, ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
 import { useTranslation } from 'react-i18next'
 
 export default function OfferConfigPage() {
@@ -199,6 +200,13 @@ export default function OfferConfigPage() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-8">
+        <Link
+          href="/dashboard/business"
+          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
+        >
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          {t('common.backToDashboard')}
+        </Link>
         <h1 className="text-3xl font-bold tracking-tight">{t('businessOffer.title')}</h1>
         <p className="text-muted-foreground">
           {t('businessOffer.subtitle')}
