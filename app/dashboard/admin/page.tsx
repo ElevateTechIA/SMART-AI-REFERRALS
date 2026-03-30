@@ -845,12 +845,17 @@ export default function AdminDashboardPage() {
 
   // --- Payment handlers ---
   const handleRegisterPayment = async (charge: ChargeDetail) => {
+    const remaining = charge.platformAmount - (charge.paidAmount || 0)
+    if (remaining <= 0) {
+      toast({ title: t('admin.chargeAlreadyPaid', 'This charge is already fully paid'), variant: 'destructive' })
+      setPayingChargeId(null)
+      return
+    }
     const amt = parseFloat(paymentAmount)
     if (isNaN(amt) || amt <= 0) {
       toast({ title: t('admin.invalidAmount', 'Invalid amount'), variant: 'destructive' })
       return
     }
-    const remaining = charge.platformAmount - (charge.paidAmount || 0)
     if (amt > remaining + 0.01) {
       toast({ title: t('admin.amountExceedsBalance', 'Amount exceeds remaining balance'), variant: 'destructive' })
       return
@@ -1000,9 +1005,10 @@ export default function AdminDashboardPage() {
           })
         }
       }
-      // Reset Pay All fields
+      // Reset Pay All fields and close any open individual payment form
       setPayAllNote('')
       setPayAllFile(null)
+      setPayingChargeId(null)
       // Reload charges and batches for this business
       const [chargesRes, batchesRes] = await Promise.all([
         apiGet<{ success: boolean; data: { charges: ChargeDetail[] } }>(`/api/admin/charges?businessId=${businessId}`),
