@@ -532,7 +532,7 @@ function ReferralList({
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-medium truncate">{business?.name || t('common.unknown')}</p>
+                      <p className="font-medium truncate" title={business?.name || t('common.unknown')}>{business?.name || t('common.unknown')}</p>
                       <p className="text-xs text-muted-foreground">
                         {formatDate(referral.createdAt)}
                       </p>

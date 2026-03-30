@@ -423,45 +423,45 @@ export default function VisitsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('visits.totalVisits')}</CardTitle>
-            <MapPin className="h-4 w-4 text-muted-foreground" />
+      <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4">
+        <Card className="min-w-0">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">{t('visits.totalVisits')}</CardTitle>
+            <MapPin className="h-4 w-4 text-muted-foreground hidden sm:block" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalVisits}</div>
-            <p className="text-xs text-muted-foreground">{t('visits.placesVisited')}</p>
+          <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+            <div className="text-xl sm:text-2xl font-bold">{stats.totalVisits}</div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">{t('visits.placesVisited')}</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('visits.confirmed')}</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+        <Card className="min-w-0">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">{t('visits.confirmed')}</CardTitle>
+            <CheckCircle className="h-4 w-4 text-muted-foreground hidden sm:block" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.converted}</div>
-            <p className="text-xs text-muted-foreground">{t('visits.pendingCount', { count: stats.pending })}</p>
+          <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+            <div className="text-xl sm:text-2xl font-bold">{stats.converted}</div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">{t('visits.pendingCount', { count: stats.pending })}</p>
           </CardContent>
         </Card>
-        <Card className={theme === 'eliv' ? 'bg-[#d6fd79] border-[#d6fd79]' : ''}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className={`text-sm font-medium ${theme === 'eliv' ? 'text-black' : ''}`}>{t('visits.pendingRewards')}</CardTitle>
-            <Clock className={`h-4 w-4 ${theme === 'eliv' ? 'text-black/60' : 'text-muted-foreground'}`} />
+        <Card className={`min-w-0 ${theme === 'eliv' ? 'bg-[#d6fd79] border-[#d6fd79]' : ''}`}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+            <CardTitle className={`text-xs sm:text-sm font-medium ${theme === 'eliv' ? 'text-black' : ''}`}>{t('visits.pendingRewards')}</CardTitle>
+            <Clock className={`h-4 w-4 hidden sm:block ${theme === 'eliv' ? 'text-black/60' : 'text-muted-foreground'}`} />
           </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${theme === 'eliv' ? 'text-black' : ''}`}>{formatCurrency(stats.pendingRewards)}</div>
-            <p className={`text-xs ${theme === 'eliv' ? 'text-black/60' : 'text-muted-foreground'}`}>{t('visits.awaitingConfirmation')}</p>
+          <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+            <div className={`text-xl sm:text-2xl font-bold ${theme === 'eliv' ? 'text-black' : ''}`}>{formatCurrency(stats.pendingRewards)}</div>
+            <p className={`text-[10px] sm:text-xs ${theme === 'eliv' ? 'text-black/60' : 'text-muted-foreground'}`}>{t('visits.awaitingConfirmation')}</p>
           </CardContent>
         </Card>
-        <Card className={theme === 'eliv' ? 'bg-[#d6fd79] border-[#d6fd79]' : ''}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className={`text-sm font-medium ${theme === 'eliv' ? 'text-black' : ''}`}>{t('visits.totalRewards')}</CardTitle>
-            <Gift className={`h-4 w-4 ${theme === 'eliv' ? 'text-black/60' : 'text-muted-foreground'}`} />
+        <Card className={`min-w-0 ${theme === 'eliv' ? 'bg-[#d6fd79] border-[#d6fd79]' : ''}`}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+            <CardTitle className={`text-xs sm:text-sm font-medium ${theme === 'eliv' ? 'text-black' : ''}`}>{t('visits.totalRewards')}</CardTitle>
+            <Gift className={`h-4 w-4 hidden sm:block ${theme === 'eliv' ? 'text-black/60' : 'text-muted-foreground'}`} />
           </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${theme === 'eliv' ? 'text-black' : ''}`}>{formatCurrency(stats.totalRewards)}</div>
-            <p className={`text-xs ${theme === 'eliv' ? 'text-black/60' : 'text-muted-foreground'}`}>{t('visits.earnedFromVisits')}</p>
+          <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+            <div className={`text-xl sm:text-2xl font-bold ${theme === 'eliv' ? 'text-black' : ''}`}>{formatCurrency(stats.totalRewards)}</div>
+            <p className={`text-[10px] sm:text-xs ${theme === 'eliv' ? 'text-black/60' : 'text-muted-foreground'}`}>{t('visits.earnedFromVisits')}</p>
           </CardContent>
         </Card>
       </div>
@@ -1034,10 +1034,10 @@ export default function VisitsPage() {
                                 )}
                               </div>
                               <div className="min-w-0">
-                                <h4 className="font-semibold break-words">
+                                <h4 className="font-semibold truncate" title={visit.business?.name || t('common.unknown')}>
                                   {visit.business?.name || t('common.unknown')}
                                 </h4>
-                                <p className="text-sm text-muted-foreground break-words">
+                                <p className="text-sm text-muted-foreground truncate" title={visit.business?.category}>
                                   {visit.business?.category}
                                 </p>
                                 <p className="text-xs text-muted-foreground mt-1">

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -77,11 +78,16 @@ function CheckInContent() {
               {t('checkInPage.errorTitle')}
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{t('checkInPage.missingParams')}</AlertDescription>
             </Alert>
+            <Link href="/dashboard">
+              <Button variant="outline" className="w-full">
+                {t('checkInPage.goToDashboard')}
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       </div>
@@ -123,6 +129,9 @@ function CheckInContent() {
               loading={false}
               label={t('checkInPage.loginButton')}
             />
+            <Link href="/dashboard" className="block text-center text-sm text-muted-foreground hover:text-foreground transition-colors">
+              {t('checkInPage.goToDashboard')}
+            </Link>
           </CardContent>
         </Card>
       </div>
