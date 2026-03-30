@@ -22,7 +22,7 @@ export function BusinessDashboard() {
   const [qrCode, setQrCode] = useState<string>('')
   const [showShareModal, setShowShareModal] = useState(false)
 
-  const appUrl = 'https://smart-ai-referrals.vercel.app/'
+  const appUrl = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_APP_URL || 'https://elivapp.com')
 
   useEffect(() => {
     generateQRCode()

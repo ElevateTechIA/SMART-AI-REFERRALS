@@ -48,7 +48,9 @@
     "thisMonth": "Este Mes",
     "lastMonth": "Mes Pasado",
     "thisYear": "Este Año",
-    "custom": "Rango Personalizado"
+    "custom": "Rango Personalizado",
+    "lastWeek": "7d",
+    "last3Months": "90d"
   },
   "nav": {
     "dashboard": "Panel",

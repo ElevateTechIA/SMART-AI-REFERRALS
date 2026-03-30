@@ -47,7 +47,7 @@ export function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [showShareModal, setShowShareModal] = useState(false)
 
-  const appUrl = 'https://smart-ai-referrals.vercel.app/'
+  const appUrl = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_APP_URL || 'https://elivapp.com')
 
   useEffect(() => {
     if (user) fetchDashboardData()

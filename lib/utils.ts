@@ -32,7 +32,8 @@ export function formatDateTime(date: Date | string): string {
 }
 
 export function generateReferralUrl(businessId: string, referrerUserId?: string): string {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  let baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  if (!baseUrl.startsWith('http')) baseUrl = `https://${baseUrl}`
   const url = `${baseUrl}/r/${businessId}`
   return referrerUserId ? `${url}?ref=${referrerUserId}` : url
 }

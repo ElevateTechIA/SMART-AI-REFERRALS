@@ -1337,17 +1337,16 @@ export default function AdminDashboardPage() {
                     {t('admin.noCharges', 'No charges found for this business')}
                   </p>
                 ) : (
-                  <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-                    {/* LEFT: Charges list (2/3) */}
-                    <div className="xl:col-span-2 space-y-3">
-                      {/* Summary bar */}
+                  <div className="flex flex-col xl:grid xl:grid-cols-3 gap-4">
+                    {/* 1. Summary bar - always first */}
+                    <div className="xl:col-span-2 order-1">
                       {(() => {
                         const dateFiltered = filterByDate(revenueBizCharges, chargesDateRange, (c) => c.createdAt, chargesStartDate, chargesEndDate)
                         const totalPlatform = dateFiltered.reduce((s, c) => s + c.platformAmount, 0)
                         const totalPaidAmt = dateFiltered.reduce((s, c) => s + (c.paidAmount || 0), 0)
                         const pct = totalPlatform > 0 ? Math.round((totalPaidAmt / totalPlatform) * 100) : 0
                         return (
-                          <div className="rounded-xl bg-black/15 backdrop-blur-sm p-3 space-y-2">
+                          <div className="rounded-xl bg-black/15 backdrop-blur-sm p-3">
                             <div className="flex flex-wrap items-center gap-3 text-sm">
                               <span className="font-semibold">{dateFiltered.length} {t('admin.charges', 'charges')}</span>
                               <span className="text-white/30">|</span>
@@ -1361,15 +1360,100 @@ export default function AdminDashboardPage() {
                                 <span className="text-xs font-medium opacity-70">{pct}%</span>
                               </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <DateFilter value={chargesDateRange} onChange={(v) => { setChargesDateRange(v) }}
-                                startDate={chargesStartDate} endDate={chargesEndDate}
-                                onStartChange={setChargesStartDate} onEndChange={setChargesEndDate} />
-                            </div>
+                            {chargesDateRange !== 'all' && (
+                              <div className="flex items-center gap-2 mt-2">
+                                <span className="text-xs text-muted-foreground">
+                                  {chargesStartDate && new Date(chargesStartDate + 'T12:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                  {chargesEndDate && chargesEndDate !== chargesStartDate && ` — ${new Date(chargesEndDate + 'T12:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`}
+                                </span>
+                                <Button variant="ghost" size="sm" className="h-6 text-xs px-2" onClick={() => {
+                                  setChargesDateRange('all')
+                                  setChargesStartDate('')
+                                  setChargesEndDate('')
+                                }}>
+                                  {t('filters.allTime', 'All Time')} ×
+                                </Button>
+                              </div>
+                            )}
                           </div>
                         )
                       })()}
+                    </div>
 
+                    {/* 2. Pay All - second on mobile, right column on desktop */}
+                    <div className="order-2 xl:order-3 xl:row-start-1">
+                      {(() => {
+                        const dateFiltered2 = filterByDate(revenueBizCharges, chargesDateRange, (c) => c.createdAt, chargesStartDate, chargesEndDate)
+                        const hasOwed2 = dateFiltered2.some(c => c.status === 'OWED' || c.status === 'PARTIAL')
+                        if (!hasOwed2) return null
+                        return (
+                          <div className="rounded-xl border border-white/10 bg-black/15 backdrop-blur-sm p-4 space-y-3">
+                            <p className="text-sm font-semibold">{t('admin.payAll', 'Pay All')}</p>
+                            <div className="grid grid-cols-2 xl:grid-cols-1 gap-2">
+                              <Select value={payAllMethod} onValueChange={(v) => setPayAllMethod(v as PaymentMethod)}>
+                                <SelectTrigger className="h-9 text-xs">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="CASH">{t('admin.methodCash', 'Cash')}</SelectItem>
+                                  <SelectItem value="TRANSFER">{t('admin.methodTransfer', 'Transfer')}</SelectItem>
+                                  <SelectItem value="ZELLE">{t('admin.methodZelle', 'Zelle')}</SelectItem>
+                                  <SelectItem value="CHECK">{t('admin.methodCheck', 'Check')}</SelectItem>
+                                  <SelectItem value="OTHER">{t('admin.methodOther', 'Other')}</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <Input
+                                value={payAllNote}
+                                onChange={(e) => setPayAllNote(e.target.value)}
+                                placeholder={t('admin.payAllNote', 'Note (optional)...')}
+                                className="h-9 text-xs"
+                              />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <label className="cursor-pointer flex-1">
+                                <input type="file" accept="image/*,.pdf" className="hidden"
+                                  onChange={(e) => setPayAllFile(e.target.files?.[0] || null)} />
+                                <div className={`flex items-center justify-center gap-1 h-9 px-3 text-xs rounded-md border transition-colors w-full ${payAllFile ? 'bg-theme-primary/10 border-theme-primary text-foreground' : 'bg-background border-input text-muted-foreground hover:bg-accent'}`}>
+                                  <Paperclip className="h-3 w-3" />
+                                  <span>{payAllFile ? payAllFile.name.slice(0, 20) + (payAllFile.name.length > 20 ? '...' : '') : t('admin.attachReceipt', 'Receipt')}</span>
+                                </div>
+                              </label>
+                              {payAllFile && (
+                                <button onClick={() => setPayAllFile(null)} className="text-muted-foreground hover:text-foreground">
+                                  <X className="h-4 w-4" />
+                                </button>
+                              )}
+                            </div>
+                            <Button className="w-full" disabled={payAllBizSaving} onClick={() => {
+                              if (confirm(t('admin.payAllConfirm', 'Are you sure you want to mark all charges as paid?'))) {
+                                handlePayAllBiz(selectedRevenueBiz!)
+                              }
+                            }}>
+                              {payAllBizSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <DollarSign className="h-4 w-4 mr-2" />}
+                              {t('admin.payAll', 'Pay All')}
+                            </Button>
+                          </div>
+                        )
+                      })()}
+                    </div>
+
+                    {/* 3. Calendar - third on mobile, right column on desktop */}
+                    <div className="order-3 xl:order-4 xl:row-start-2">
+                      <BusinessCalendar chargeDetails={revenueBizCharges} onDateFilter={(range) => {
+                        if (range) {
+                          setChargesDateRange('custom')
+                          setChargesStartDate(range.from.toISOString().slice(0, 10))
+                          setChargesEndDate(range.to.toISOString().slice(0, 10))
+                        } else {
+                          setChargesDateRange('all')
+                          setChargesStartDate('')
+                          setChargesEndDate('')
+                        }
+                      }} />
+                    </div>
+
+                    {/* 4. Charges list - last on mobile, left column on desktop */}
+                    <div className="xl:col-span-2 order-4 xl:order-2 space-y-3">
                       {/* Payment Batches - collapsible */}
                       {paymentBatches.length > 0 && (
                         <details className="rounded-xl border border-white/10 bg-black/10">
@@ -1594,75 +1678,6 @@ export default function AdminDashboardPage() {
                       </div>
                     </div>
 
-                    {/* RIGHT: Calendar + Pay All (1/3) */}
-                    <div className="space-y-4">
-                      <BusinessCalendar chargeDetails={revenueBizCharges} onDaySelect={(date) => {
-                        setCalendarSelectedDate(date)
-                        if (date) {
-                          const dateStr = date.toISOString().slice(0, 10)
-                          setChargesDateRange('custom')
-                          setChargesStartDate(dateStr)
-                          setChargesEndDate(dateStr)
-                        } else {
-                          setChargesDateRange('all')
-                          setChargesStartDate('')
-                          setChargesEndDate('')
-                        }
-                      }} />
-
-                      {/* Pay All controls */}
-                      {(() => {
-                        const dateFiltered = filterByDate(revenueBizCharges, chargesDateRange, (c) => c.createdAt, chargesStartDate, chargesEndDate)
-                        const hasOwed = dateFiltered.some(c => c.status === 'OWED' || c.status === 'PARTIAL')
-                        if (!hasOwed) return null
-                        return (
-                          <div className="rounded-xl border border-white/10 bg-black/15 backdrop-blur-sm p-4 space-y-3">
-                            <p className="text-sm font-semibold">{t('admin.payAll', 'Pay All')}</p>
-                            <Select value={payAllMethod} onValueChange={(v) => setPayAllMethod(v as PaymentMethod)}>
-                              <SelectTrigger className="h-9 text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="CASH">{t('admin.methodCash', 'Cash')}</SelectItem>
-                                <SelectItem value="TRANSFER">{t('admin.methodTransfer', 'Transfer')}</SelectItem>
-                                <SelectItem value="ZELLE">{t('admin.methodZelle', 'Zelle')}</SelectItem>
-                                <SelectItem value="CHECK">{t('admin.methodCheck', 'Check')}</SelectItem>
-                                <SelectItem value="OTHER">{t('admin.methodOther', 'Other')}</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <Input
-                              value={payAllNote}
-                              onChange={(e) => setPayAllNote(e.target.value)}
-                              placeholder={t('admin.payAllNote', 'Note (optional)...')}
-                              className="h-9 text-xs"
-                            />
-                            <div className="flex items-center gap-2">
-                              <label className="cursor-pointer flex-1">
-                                <input type="file" accept="image/*,.pdf" className="hidden"
-                                  onChange={(e) => setPayAllFile(e.target.files?.[0] || null)} />
-                                <div className={`flex items-center justify-center gap-1 h-9 px-3 text-xs rounded-md border transition-colors w-full ${payAllFile ? 'bg-theme-primary/10 border-theme-primary text-foreground' : 'bg-background border-input text-muted-foreground hover:bg-accent'}`}>
-                                  <Paperclip className="h-3 w-3" />
-                                  <span>{payAllFile ? payAllFile.name.slice(0, 20) + (payAllFile.name.length > 20 ? '...' : '') : t('admin.attachReceipt', 'Receipt')}</span>
-                                </div>
-                              </label>
-                              {payAllFile && (
-                                <button onClick={() => setPayAllFile(null)} className="text-muted-foreground hover:text-foreground">
-                                  <X className="h-4 w-4" />
-                                </button>
-                              )}
-                            </div>
-                            <Button className="w-full" disabled={payAllBizSaving} onClick={() => {
-                              if (confirm(t('admin.payAllConfirm', 'Are you sure you want to mark all charges as paid?'))) {
-                                handlePayAllBiz(selectedRevenueBiz!)
-                              }
-                            }}>
-                              {payAllBizSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <DollarSign className="h-4 w-4 mr-2" />}
-                              {t('admin.payAll', 'Pay All')}
-                            </Button>
-                          </div>
-                        )
-                      })()}
-                    </div>
                   </div>
                 )}
               </div>

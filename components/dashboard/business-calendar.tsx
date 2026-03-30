@@ -4,7 +4,6 @@ import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { ChevronLeft, ChevronRight, Users, DollarSign, UserPlus, UserCheck } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import type { Visit, Charge } from '@/lib/types'
@@ -34,11 +33,11 @@ interface BusinessCalendarProps {
   charges?: Charge[]
   /** Admin mode: pass ChargeDetail[] with embedded visit data */
   chargeDetails?: ChargeWithVisit[]
-  /** Called when a day is selected/deselected. null means deselected. */
-  onDaySelect?: (date: Date | null) => void
+  /** Called when date filter changes. null = all time, single date = one day, {from,to} = range */
+  onDateFilter?: (range: { from: Date; to: Date } | null) => void
 }
 
-export function BusinessCalendar({ visits, charges, chargeDetails, onDaySelect }: BusinessCalendarProps) {
+export function BusinessCalendar({ visits, charges, chargeDetails, onDateFilter }: BusinessCalendarProps) {
   const { t } = useTranslation()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
@@ -114,12 +113,12 @@ export function BusinessCalendar({ visits, charges, chargeDetails, onDaySelect }
   const prevMonth = () => {
     setCurrentDate(new Date(year, month - 1, 1))
     setSelectedDay(null)
-    onDaySelect?.(null)
+    onDateFilter?.(null)
   }
   const nextMonth = () => {
     setCurrentDate(new Date(year, month + 1, 1))
     setSelectedDay(null)
-    onDaySelect?.(null)
+    onDateFilter?.(null)
   }
 
   const selectedData = selectedDay ? dayMap.get(selectedDay.toString()) : null
@@ -156,10 +155,16 @@ export function BusinessCalendar({ visits, charges, chargeDetails, onDaySelect }
           </div>
         </div>
         {/* Month summary */}
-        <div className="flex gap-4 text-xs text-muted-foreground mt-1">
+        <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
           <span>{monthTotals.totalVisits} {t('businessDashboard.visitsLabel', 'visits')}</span>
           <span>{monthTotals.totalConversions} {t('businessDashboard.conversionsLabel', 'conversions')}</span>
           {monthTotals.totalRevenue > 0 && <span>{formatCurrency(monthTotals.totalRevenue)}</span>}
+          {selectedDay && (
+            <button onClick={() => { setSelectedDay(null); onDateFilter?.(null) }}
+              className="ml-auto text-theme-primary hover:underline text-[10px] font-medium">
+              {t('filters.allTime', 'All Time')} ×
+            </button>
+          )}
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -184,12 +189,13 @@ export function BusinessCalendar({ visits, charges, chargeDetails, onDaySelect }
                 onClick={() => {
                   const newDay = isSelected ? null : day
                   setSelectedDay(newDay)
-                  onDaySelect?.(newDay ? new Date(year, month, newDay) : null)
+                  onDateFilter?.(newDay ? { from: new Date(year, month, newDay), to: new Date(year, month, newDay, 23, 59, 59) } : null)
                 }}
                 className={`relative flex flex-col items-center justify-center rounded-lg py-1.5 text-xs transition-all
-                  ${isSelected ? 'ring-2 ring-theme-primary bg-theme-primaryBg' : ''}
-                  ${isToday(day) && !isSelected ? 'font-bold' : ''}
-                  ${hasActivity ? 'hover:bg-muted cursor-pointer' : 'text-muted-foreground cursor-default'}
+                  ${isSelected ? 'ring-2 ring-theme-primary bg-theme-primary text-black font-bold' : ''}
+                  ${isToday(day) && !isSelected ? 'font-bold text-foreground' : ''}
+                  ${hasActivity && !isSelected ? 'hover:bg-muted cursor-pointer text-foreground' : ''}
+                  ${!hasActivity && !isSelected ? 'text-muted-foreground/50 cursor-default' : ''}
                 `}
               >
                 <span>{day}</span>
@@ -205,12 +211,39 @@ export function BusinessCalendar({ visits, charges, chargeDetails, onDaySelect }
           })}
         </div>
 
-        {/* Legend */}
-        <div className="flex flex-wrap gap-3 text-[10px] text-muted-foreground">
-          <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-theme-success" /> {t('businessDashboard.legendConversion', 'Conversion')}</span>
-          <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-yellow-400" /> {t('businessDashboard.legendRevenue', 'Revenue')}</span>
-          <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-blue-400" /> {t('businessDashboard.legendPending', 'Pending')}</span>
+        {/* Legend + Quick filters */}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap gap-3 text-[10px] text-muted-foreground">
+            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-theme-success" /> {t('businessDashboard.legendConversion', 'Conversion')}</span>
+            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-yellow-400" /> {t('businessDashboard.legendRevenue', 'Revenue')}</span>
+            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-blue-400" /> {t('businessDashboard.legendPending', 'Pending')}</span>
+          </div>
         </div>
+        {onDateFilter && (
+          <div className="flex flex-wrap gap-1.5">
+            {([
+              { label: t('filters.lastWeek', '7d'), days: 7 },
+              { label: t('filters.lastMonth', '30d'), days: 30 },
+              { label: t('filters.last3Months', '90d'), days: 90 },
+              { label: t('filters.allTime', 'All'), days: 0 },
+            ] as const).map(({ label, days }) => (
+              <button key={days} onClick={() => {
+                setSelectedDay(null)
+                if (days === 0) {
+                  onDateFilter(null)
+                } else {
+                  const from = new Date()
+                  from.setDate(from.getDate() - days)
+                  onDateFilter({ from, to: new Date() })
+                }
+              }}
+                className="px-2 py-0.5 text-[10px] rounded-md border border-border hover:bg-muted transition-colors"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Selected day detail */}
         {selectedDay && selectedData && (

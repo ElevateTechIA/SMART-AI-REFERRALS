@@ -48,7 +48,9 @@
     "thisMonth": "This Month",
     "lastMonth": "Last Month",
     "thisYear": "This Year",
-    "custom": "Custom Range"
+    "custom": "Custom Range",
+    "lastWeek": "7d",
+    "last3Months": "90d"
   },
   "nav": {
     "dashboard": "Dashboard",
