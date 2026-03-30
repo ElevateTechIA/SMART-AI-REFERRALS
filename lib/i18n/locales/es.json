@@ -1177,5 +1177,24 @@
     "privacyText": "Tu uso de la Plataforma también está regulado por nuestra Política de Privacidad, que detalla cómo recopilamos y usamos tus datos para procesar comisiones y pagos.",
     "modificationsTitle": "Modificaciones al Servicio",
     "modificationsText": "Eliv se reserva el derecho de actualizar, cambiar o descontinuar cualquier parte de la Plataforma o estos Términos en cualquier momento. El uso continuado de la Plataforma después de cualquier cambio constituye la aceptación de los nuevos Términos."
+  },
+  "checkInPage": {
+    "title": "Check-In de Cliente",
+    "subtitle": "Verifica y convierte una visita de cliente",
+    "loginRequired": "Necesitas iniciar sesión como dueño del negocio para hacer check-in de este cliente.",
+    "loginButton": "Iniciar sesión para continuar",
+    "missingParams": "Enlace de check-in inválido. Falta el ID de visita o el token.",
+    "verifying": "Verificando visita...",
+    "confirmTitle": "Confirmar Visita del Cliente",
+    "confirmDesc": "Estás a punto de verificar y convertir esta visita. Esto confirmará la asistencia del cliente y procesará las recompensas aplicables.",
+    "visitIdLabel": "ID de Visita",
+    "confirmButton": "Confirmar Check-In",
+    "processing": "Procesando...",
+    "successTitle": "¡Check-In Exitoso!",
+    "successDesc": "La visita del cliente ha sido verificada y las recompensas están siendo procesadas.",
+    "goToDashboard": "Ir al Dashboard",
+    "errorTitle": "Check-In Fallido",
+    "tryAgain": "Intentar de Nuevo",
+    "backToDashboard": "Volver al Dashboard"
   }
 }

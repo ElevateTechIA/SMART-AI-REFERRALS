@@ -1177,5 +1177,24 @@
     "privacyText": "Your use of the Platform is also governed by our Privacy Policy, which details how we collect and use your data to process commissions and payouts.",
     "modificationsTitle": "Modifications to the Service",
     "modificationsText": "Eliv reserves the right to update, change, or discontinue any part of the Platform or these Terms at any time. Continued use of the Platform following any changes constitutes acceptance of the new Terms."
+  },
+  "checkInPage": {
+    "title": "Customer Check-In",
+    "subtitle": "Verify and convert a customer visit",
+    "loginRequired": "You need to sign in as the business owner to check in this customer.",
+    "loginButton": "Sign in to continue",
+    "missingParams": "Invalid check-in link. The visit ID or token is missing.",
+    "verifying": "Verifying visit...",
+    "confirmTitle": "Confirm Customer Visit",
+    "confirmDesc": "You are about to verify and convert this customer visit. This will confirm their attendance and process any applicable rewards.",
+    "visitIdLabel": "Visit ID",
+    "confirmButton": "Confirm Check-In",
+    "processing": "Processing...",
+    "successTitle": "Check-In Successful!",
+    "successDesc": "The customer visit has been verified and rewards are being processed.",
+    "goToDashboard": "Go to Dashboard",
+    "errorTitle": "Check-In Failed",
+    "tryAgain": "Try Again",
+    "backToDashboard": "Back to Dashboard"
   }
 }
