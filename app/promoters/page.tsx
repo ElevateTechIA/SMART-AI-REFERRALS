@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Store, Share2, DollarSign, BadgeCheck, QrCode, Wallet } from 'lucide-react'
 import { LanguageSwitcher } from '@/components/language-switcher'
+import { ThemeSwitcher } from '@/components/theme-switcher'
 import { ElivBrand } from '@/components/eliv-logo'
 import { RegisterShareModal } from '@/components/register-share-modal'
 
@@ -19,7 +20,7 @@ export default function PromotersLandingPage() {
   const estimatedEarnings = referrals * earningsPerVisit
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-white">
+    <div className="min-h-screen relative overflow-hidden bg-white dark:bg-gray-950">
       {/* Content */}
       <div className="relative z-10">
         {/* Brand gradient bar */}
@@ -29,18 +30,19 @@ export default function PromotersLandingPage() {
         <nav className="px-6 py-6">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <ElivBrand responsive="md/lg" forceDark />
+              <ElivBrand responsive="md/lg" />
             </Link>
 
             <div className="flex items-center gap-2">
-              <LanguageSwitcher forceDark />
+              <ThemeSwitcher />
+              <LanguageSwitcher />
               <Link href="/businesses">
-                <Button variant="ghost" className="hidden sm:inline-flex text-gray-600 hover:bg-gray-100">
+                <Button variant="ghost" className="hidden sm:inline-flex text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
                   {t('businessLanding.cta')}
                 </Button>
               </Link>
               <Link href="/auth/signin">
-                <Button variant="ghost" className="text-gray-600 hover:bg-gray-100">
+                <Button variant="ghost" className="text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
                   {t('auth.signIn')}
                 </Button>
               </Link>
@@ -53,11 +55,11 @@ export default function PromotersLandingPage() {
           <div className="max-w-7xl mx-auto px-6 py-12 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center w-full">
             <div className="space-y-8 text-center lg:text-left max-w-2xl mx-auto lg:mx-0">
               <div>
-                <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-gray-900">
+                <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-gray-900 dark:text-white">
                   {t('promotersLanding.heroTitle')}{' '}
-                  <span style={{ color: 'var(--theme-primary)' }}>{t('promotersLanding.heroTitleHighlight')}</span>
+                  <span className="text-theme-highlight">{t('promotersLanding.heroTitleHighlight')}</span>
                 </h1>
-                <p className="text-xl md:text-2xl leading-relaxed text-gray-600">
+                <p className="text-xl md:text-2xl leading-relaxed text-gray-600 dark:text-gray-300">
                   {t('promotersLanding.heroSubtitle')}
                 </p>
               </div>
@@ -100,48 +102,48 @@ export default function PromotersLandingPage() {
         {/* How It Works */}
         <div className="py-16">
           <div className="max-w-7xl mx-auto px-6">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-900">
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-900 dark:text-white">
               {t('promotersLanding.howItWorks')}
             </h2>
 
             <div className="grid md:grid-cols-3 gap-6">
-              <div className="rounded-2xl p-8 border border-gray-200 bg-white text-center">
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5" style={{ background: 'color-mix(in srgb, var(--theme-primary) 15%, transparent)' }}>
-                  <Store className="w-8 h-8" style={{ color: 'var(--theme-primary)' }} />
+              <div className="rounded-2xl p-8 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-center">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 bg-theme-highlight-subtle">
+                  <Store className="w-8 h-8 text-theme-highlight" />
                 </div>
-                <h3 className="font-bold text-lg mb-2 text-gray-900">{t('promotersLanding.step1Title')}</h3>
-                <p className="text-sm text-gray-500">{t('promotersLanding.step1Desc')}</p>
+                <h3 className="font-bold text-lg mb-2 text-gray-900 dark:text-white">{t('promotersLanding.step1Title')}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('promotersLanding.step1Desc')}</p>
               </div>
 
-              <div className="rounded-2xl p-8 border border-gray-200 bg-white text-center">
+              <div className="rounded-2xl p-8 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-center">
                 <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5" style={{ background: 'color-mix(in srgb, var(--theme-success) 15%, transparent)' }}>
                   <Share2 className="w-8 h-8" style={{ color: 'var(--theme-success)' }} />
                 </div>
-                <h3 className="font-bold text-lg mb-2 text-gray-900">{t('promotersLanding.step2Title')}</h3>
-                <p className="text-sm text-gray-500">{t('promotersLanding.step2Desc')}</p>
+                <h3 className="font-bold text-lg mb-2 text-gray-900 dark:text-white">{t('promotersLanding.step2Title')}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('promotersLanding.step2Desc')}</p>
               </div>
 
-              <div className="rounded-2xl p-8 border border-gray-200 bg-white text-center">
+              <div className="rounded-2xl p-8 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-center">
                 <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5" style={{ background: 'color-mix(in srgb, var(--theme-warning) 15%, transparent)' }}>
                   <DollarSign className="w-8 h-8" style={{ color: 'var(--theme-warning)' }} />
                 </div>
-                <h3 className="font-bold text-lg mb-2 text-gray-900">{t('promotersLanding.step3Title')}</h3>
-                <p className="text-sm text-gray-500">{t('promotersLanding.step3Desc')}</p>
+                <h3 className="font-bold text-lg mb-2 text-gray-900 dark:text-white">{t('promotersLanding.step3Title')}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('promotersLanding.step3Desc')}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Earnings Calculator */}
-        <div className="py-16 bg-gray-50">
+        <div className="py-16 bg-gray-50 dark:bg-gray-900">
           <div className="max-w-2xl mx-auto px-6">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-10 text-gray-900">
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-10 text-gray-900 dark:text-white">
               {t('promotersLanding.calculatorTitle')}
             </h2>
 
-            <div className="rounded-3xl p-8 border border-gray-200 bg-white shadow-sm">
+            <div className="rounded-3xl p-8 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
               <div className="mb-6">
-                <label className="text-sm font-medium mb-3 block text-gray-600">
+                <label className="text-sm font-medium mb-3 block text-gray-600 dark:text-gray-300">
                   {t('promotersLanding.friendsReferred')}
                 </label>
                 <input
@@ -153,25 +155,25 @@ export default function PromotersLandingPage() {
                   className="w-full h-2 rounded-lg appearance-none cursor-pointer"
                   style={{ background: `linear-gradient(to right, var(--theme-primary) ${(referrals / 50) * 100}%, #e5e7eb ${(referrals / 50) * 100}%)` }}
                 />
-                <div className="flex justify-between text-xs mt-2 text-gray-500">
+                <div className="flex justify-between text-xs mt-2 text-gray-500 dark:text-gray-400">
                   <span>1</span>
-                  <span className="font-bold text-lg text-gray-900">{referrals}</span>
+                  <span className="font-bold text-lg text-gray-900 dark:text-white">{referrals}</span>
                   <span>50</span>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between rounded-2xl p-6 bg-gray-50">
+              <div className="flex items-center justify-between rounded-2xl p-6 bg-gray-50 dark:bg-gray-900">
                 <div>
-                  <p className="text-sm text-gray-500">{t('promotersLanding.estimated')}</p>
-                  <p className="text-xs text-gray-500">${earningsPerVisit} {t('promotersLanding.perVisit')}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('promotersLanding.estimated')}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">${earningsPerVisit} {t('promotersLanding.perVisit')}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-4xl md:text-5xl font-bold text-gray-900">${estimatedEarnings}</span>
-                  <DollarSign className="w-8 h-8" style={{ color: 'var(--theme-primary)' }} />
+                  <span className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white">${estimatedEarnings}</span>
+                  <DollarSign className="w-8 h-8 text-theme-highlight" />
                 </div>
               </div>
 
-              <p className="text-xs text-center mt-4 text-gray-500">
+              <p className="text-xs text-center mt-4 text-gray-500 dark:text-gray-400">
                 {t('promotersLanding.calculatorDesc')}
               </p>
             </div>
@@ -181,40 +183,40 @@ export default function PromotersLandingPage() {
         {/* Trust Badges */}
         <div className="py-16">
           <div className="max-w-7xl mx-auto px-6">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-900">
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-900 dark:text-white">
               {t('promotersLanding.trustTitle')}
             </h2>
 
             <div className="grid md:grid-cols-3 gap-6">
-              <div className="rounded-2xl p-8 border border-gray-200 bg-white text-center">
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5" style={{ background: 'color-mix(in srgb, var(--theme-primary) 15%, transparent)' }}>
-                  <BadgeCheck className="w-8 h-8" style={{ color: 'var(--theme-primary)' }} />
+              <div className="rounded-2xl p-8 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-center">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 bg-theme-highlight-subtle">
+                  <BadgeCheck className="w-8 h-8 text-theme-highlight" />
                 </div>
-                <h3 className="font-bold text-lg mb-1 text-gray-900">{t('promotersLanding.trustVerified')}</h3>
-                <p className="text-sm text-gray-500">{t('promotersLanding.trustVerifiedDesc')}</p>
+                <h3 className="font-bold text-lg mb-1 text-gray-900 dark:text-white">{t('promotersLanding.trustVerified')}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('promotersLanding.trustVerifiedDesc')}</p>
               </div>
 
-              <div className="rounded-2xl p-8 border border-gray-200 bg-white text-center">
+              <div className="rounded-2xl p-8 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-center">
                 <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5" style={{ background: 'color-mix(in srgb, var(--theme-success) 15%, transparent)' }}>
                   <QrCode className="w-8 h-8" style={{ color: 'var(--theme-success)' }} />
                 </div>
-                <h3 className="font-bold text-lg mb-1 text-gray-900">{t('promotersLanding.trustQR')}</h3>
-                <p className="text-sm text-gray-500">{t('promotersLanding.trustQRDesc')}</p>
+                <h3 className="font-bold text-lg mb-1 text-gray-900 dark:text-white">{t('promotersLanding.trustQR')}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('promotersLanding.trustQRDesc')}</p>
               </div>
 
-              <div className="rounded-2xl p-8 border border-gray-200 bg-white text-center">
+              <div className="rounded-2xl p-8 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-center">
                 <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5" style={{ background: 'color-mix(in srgb, var(--theme-warning) 15%, transparent)' }}>
                   <Wallet className="w-8 h-8" style={{ color: 'var(--theme-warning)' }} />
                 </div>
-                <h3 className="font-bold text-lg mb-1 text-gray-900">{t('promotersLanding.trustReal')}</h3>
-                <p className="text-sm text-gray-500">{t('promotersLanding.trustRealDesc')}</p>
+                <h3 className="font-bold text-lg mb-1 text-gray-900 dark:text-white">{t('promotersLanding.trustReal')}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('promotersLanding.trustRealDesc')}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* CTA Final */}
-        <div className="py-16 bg-gray-50">
+        <div className="py-16 bg-gray-50 dark:bg-gray-900">
           <div className="max-w-7xl mx-auto px-6 text-center">
             <Button
               size="lg"
@@ -228,9 +230,9 @@ export default function PromotersLandingPage() {
         </div>
 
         {/* Footer */}
-        <footer className="py-8 border-t border-gray-200">
+        <footer className="py-8 border-t border-gray-200 dark:border-gray-700">
           <div className="max-w-7xl mx-auto px-6 text-center">
-            <p className="text-gray-400">{t('landing.allRightsReserved')}</p>
+            <p className="text-gray-400 dark:text-gray-500">{t('landing.allRightsReserved')}</p>
             <Link href="/terms" className="text-xs text-gray-400 hover:text-gray-600 underline mt-1 inline-block">
               {t('auth.termsOfService')}
             </Link>

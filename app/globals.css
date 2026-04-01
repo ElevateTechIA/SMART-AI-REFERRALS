@@ -694,6 +694,20 @@
     box-shadow: 0 4px 12px color-mix(in srgb, var(--theme-primaryDark) 40%, transparent);
   }
 
+  /* Landing page highlight color - adapts to dark mode */
+  .text-theme-highlight {
+    color: var(--theme-secondary);
+  }
+  .dark .text-theme-highlight {
+    color: var(--theme-secondaryLight);
+  }
+  .bg-theme-highlight-subtle {
+    background: color-mix(in srgb, var(--theme-secondary) 15%, transparent);
+  }
+  .dark .bg-theme-highlight-subtle {
+    background: color-mix(in srgb, var(--theme-secondaryLight) 20%, transparent);
+  }
+
   /* Card flip 3D */
   .perspective-1000 {
     perspective: 1000px;
