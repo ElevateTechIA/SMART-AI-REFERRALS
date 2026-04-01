@@ -26,7 +26,7 @@ export default function BusinessLandingPage() {
         <nav className="px-6 py-6">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <ElivBrand responsive="md/lg" />
+              <ElivBrand responsive="md/lg" forceDark />
             </Link>
 
             <div className="flex items-center gap-2">

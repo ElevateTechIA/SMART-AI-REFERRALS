@@ -88,9 +88,10 @@ interface ElivBrandProps {
 }
 
 export function ElivBrand({ size, responsive, className, forceDark = false, color }: ElivBrandProps) {
-  // forceDark = light background (public pages) → secondary for contrast
-  // default (dashboard) → adapts to light/dark via textPrimary
-  const logoColor = color ?? (forceDark ? 'var(--theme-secondary)' : 'var(--theme-textPrimary)')
+  // forceDark uses CSS class for light/dark adaptation on public pages
+  // default (dashboard) → adapts via textPrimary
+  const logoColor = color ?? (forceDark ? undefined : 'var(--theme-textPrimary)')
+  const logoClass = forceDark ? 'text-theme-highlight' : ''
 
   if (responsive) {
     const [mobile, desktop] = responsive.split('/') as [BrandSize, BrandSize]
@@ -98,7 +99,7 @@ export function ElivBrand({ size, responsive, className, forceDark = false, colo
     const d = sizeConfig[desktop]
 
     return (
-      <span className={className ?? ''}>
+      <span className={`${className ?? ''} ${logoClass}`}>
         {/* Mobile */}
         <span className="flex items-center gap-2 md:hidden" style={{ color: logoColor }}>
           <ElivIcon size={m.icon} />
@@ -144,7 +145,7 @@ export function ElivBrand({ size, responsive, className, forceDark = false, colo
   // Fallback: fixed size (for nav, smaller uses)
   const s = size ?? 32
   return (
-    <span className={`flex items-center gap-2 ${className ?? ''}`} style={{ color: logoColor }}>
+    <span className={`flex items-center gap-2 ${className ?? ''} ${logoClass}`} style={{ color: logoColor }}>
       <ElivIcon size={s} />
       <span
         style={{
