@@ -2253,10 +2253,10 @@ export default function AdminDashboardPage() {
                         const userPerms = (u.adminPermissions || []) as AdminPermission[]
                         const isLimited = userPerms.length > 0
                         return (
-                          <div className="mt-3 ml-14 rounded-lg border border-dashed p-3">
-                            <div className="flex items-center justify-between mb-1">
+                          <div className="mt-3 ml-0 sm:ml-14 rounded-lg border border-dashed p-3">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-1">
                               <div className="flex items-center gap-2">
-                                <Shield className="h-4 w-4 text-muted-foreground" />
+                                <Shield className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                                 <span className="text-sm font-medium">{t('admin.adminAccess')}</span>
                               </div>
                               <div className="flex items-center gap-2">
@@ -2281,7 +2281,7 @@ export default function AdminDashboardPage() {
                               </div>
                             </div>
                             {isLimited && (
-                              <div className="flex items-center gap-2 flex-wrap mt-2 pt-2 border-t border-dashed">
+                              <div className="grid grid-cols-2 sm:flex sm:items-center gap-1.5 sm:gap-2 sm:flex-wrap mt-2 pt-2 border-t border-dashed">
                                 {(['businesses', 'referrers', 'users', 'visits', 'support', 'payouts', 'revenue'] as AdminPermission[]).map((perm) => {
                                   const hasPerm = userPerms.includes(perm)
                                   const isLoading = roleLoading === `${u.id}-perm-${perm}`
