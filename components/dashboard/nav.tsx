@@ -224,7 +224,7 @@ export function DashboardNav() {
           >
             <Avatar className="h-9 w-9 ring-2 ring-white/30">
               <AvatarImage src={user?.photoURL} alt={user?.name} />
-              <AvatarFallback className="text-sm bg-theme-primary text-gray-900">
+              <AvatarFallback className="text-sm bg-theme-primary text-[var(--theme-primaryForeground,#111827)]">
                 {user?.name?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
@@ -327,7 +327,7 @@ export function DashboardNav() {
                     className={cn(
                       'flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors',
                       mode === value
-                        ? 'bg-theme-primary text-gray-900'
+                        ? 'bg-theme-primary text-[var(--theme-primaryForeground,#111827)]'
                         : 'bg-theme-primary/10 text-theme-textMuted hover:bg-theme-primary/20'
                     )}
                   >
@@ -375,7 +375,7 @@ export function DashboardNav() {
                     className={cn(
                       'flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold transition-all',
                       i18n.language === lang.code
-                        ? 'bg-theme-primary text-gray-900 shadow-lg'
+                        ? 'bg-theme-primary text-[var(--theme-primaryForeground,#111827)] shadow-lg'
                         : 'bg-theme-primary/10 text-theme-textMuted hover:bg-theme-primary/20'
                     )}
                   >
