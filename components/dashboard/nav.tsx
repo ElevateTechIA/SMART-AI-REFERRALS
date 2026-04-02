@@ -132,7 +132,7 @@ export function DashboardNav() {
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-6">
             <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <ElivBrand responsive="sm/md" color={resolvedMode === 'dark' || theme === 'eliv' || theme === 'rosePastel' ? '#ffffff' : undefined} />
+              <ElivBrand responsive="sm/md" color="#ffffff" />
             </Link>
             <nav className="hidden md:flex items-center gap-1">
               {filteredNavItems.map((item) => {
@@ -148,8 +148,8 @@ export function DashboardNav() {
                       className={cn(
                         'gap-2',
                         isActive
-                          ? 'bg-theme-primary text-gray-900 shadow-md hover:bg-theme-primary/90'
-                          : (resolvedMode === 'dark' || theme === 'eliv' || theme === 'rosePastel') && 'text-white hover:bg-white/10 hover:text-white'
+                          ? 'bg-white/20 text-white shadow-md font-semibold hover:bg-white/25 border border-white/20'
+                          : 'text-white/80 hover:bg-white/10 hover:text-white'
                       )}
                     >
                       <Icon className="w-4 h-4" />
@@ -163,12 +163,12 @@ export function DashboardNav() {
 
           {/* Desktop: show all controls */}
           <div className="hidden md:flex items-center gap-4">
-            <LanguageSwitcher />
-            <ThemeSwitcher />
+            <LanguageSwitcher forceLight />
+            <ThemeSwitcher forceLight />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full hover:bg-white/10">
+                  <Avatar className="h-8 w-8 ring-2 ring-white/30">
                     <AvatarImage src={user?.photoURL} alt={user?.name} />
                     <AvatarFallback>
                       {user?.name?.charAt(0).toUpperCase() || 'U'}
@@ -222,7 +222,7 @@ export function DashboardNav() {
             className="md:hidden"
             onClick={() => setMenuOpen(true)}
           >
-            <Avatar className="h-9 w-9 ring-2 ring-theme-primary/30">
+            <Avatar className="h-9 w-9 ring-2 ring-white/30">
               <AvatarImage src={user?.photoURL} alt={user?.name} />
               <AvatarFallback className="text-sm bg-theme-primary text-gray-900">
                 {user?.name?.charAt(0).toUpperCase() || 'U'}

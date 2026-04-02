@@ -19,14 +19,14 @@ const modeOptions: { value: Mode; label: string; icon: typeof Sun }[] = [
   { value: 'system', label: 'Auto', icon: Monitor },
 ]
 
-export function ThemeSwitcher({ forceDark = false }: { forceDark?: boolean }) {
+export function ThemeSwitcher({ forceDark = false, forceLight = false }: { forceDark?: boolean; forceLight?: boolean }) {
   const { theme, setTheme, mode, setMode, availableThemes } = useTheme()
   const [isOpen, setIsOpen] = useState(false)
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className={forceDark ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800'}>
+        <Button variant="ghost" size="icon" className={forceLight ? 'text-white/80 hover:text-white hover:bg-white/10' : forceDark ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800'}>
           <Palette className="h-5 w-5" />
           <span className="sr-only">Switch theme</span>
         </Button>
