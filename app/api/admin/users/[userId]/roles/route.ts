@@ -25,7 +25,7 @@ export async function PUT(
 
     // If only updating adminPermissions (not roles)
     if (adminPermissions !== undefined && roles === undefined) {
-      const VALID_PERMISSIONS = ['businesses', 'referrers', 'visits', 'support', 'payouts']
+      const VALID_PERMISSIONS = ['businesses', 'referrers', 'users', 'visits', 'support', 'payouts', 'revenue']
       if (!Array.isArray(adminPermissions) || adminPermissions.some((p: string) => !VALID_PERMISSIONS.includes(p))) {
         return NextResponse.json({ error: 'Invalid admin permissions' }, { status: 400 })
       }

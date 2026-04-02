@@ -1174,8 +1174,8 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Stats Cards - full admin only */}
-      {isFullAdmin && stats && (
+      {/* Stats Cards */}
+      {(isFullAdmin || hasPermission('revenue')) && stats && (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -1240,13 +1240,13 @@ export default function AdminDashboardPage() {
               </div>
             </CardContent>
           </Card>
-          <Card className={theme === 'eliv' ? 'bg-[#d6fd79] border-[#d6fd79]' : ''}>
+          <Card className="bg-theme-primary border-theme-primary">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className={`text-sm font-medium ${theme === 'eliv' ? 'text-black' : ''}`}>{t('admin.totalRevenue')}</CardTitle>
-              <DollarSign className={`h-4 w-4 ${theme === 'eliv' ? 'text-black/60' : 'text-muted-foreground'}`} />
+              <CardTitle className="text-sm font-medium text-[var(--theme-primaryForeground,#111827)]">{t('admin.totalRevenue')}</CardTitle>
+              <DollarSign className="h-4 w-4 text-[var(--theme-primaryForeground,#111827)] opacity-60" />
             </CardHeader>
             <CardContent>
-              <div className={`text-2xl font-bold ${theme === 'eliv' ? 'text-black' : ''}`}>{formatCurrency(stats.totalRevenue)}</div>
+              <div className="text-2xl font-bold text-[var(--theme-primaryForeground,#111827)]">{formatCurrency(stats.totalRevenue)}</div>
               <div className="mt-2 space-y-1">
                 {stats.totalOwed > 0 ? (
                   <>
@@ -1269,8 +1269,8 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* Revenue Breakdown by Business - full admin only */}
-      {isFullAdmin && stats?.revenueByBusiness && stats.revenueByBusiness.length > 0 && (
+      {/* Revenue Breakdown by Business */}
+      {(isFullAdmin || hasPermission('revenue')) && stats?.revenueByBusiness && stats.revenueByBusiness.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -2269,7 +2269,7 @@ export default function AdminDashboardPage() {
                                   onCheckedChange={async (fullAccess) => {
                                     setRoleLoading(`${u.id}-perm-toggle`)
                                     try {
-                                      const newPerms = fullAccess ? [] : ['businesses', 'referrers', 'visits', 'support', 'payouts']
+                                      const newPerms = fullAccess ? [] : ['businesses', 'referrers', 'users', 'visits', 'support', 'payouts', 'revenue']
                                       const result = await apiPut<{ success: boolean }>(`/api/admin/users/${u.id}/roles`, { adminPermissions: newPerms })
                                       if (!result.ok) throw new Error('Failed')
                                       setUsers((prev) => prev.map((x) => x.id === u.id ? { ...x, adminPermissions: newPerms as AdminPermission[] } : x))
@@ -2282,7 +2282,7 @@ export default function AdminDashboardPage() {
                             </div>
                             {isLimited && (
                               <div className="flex items-center gap-2 flex-wrap mt-2 pt-2 border-t border-dashed">
-                                {(['businesses', 'referrers', 'visits', 'support', 'payouts'] as AdminPermission[]).map((perm) => {
+                                {(['businesses', 'referrers', 'users', 'visits', 'support', 'payouts', 'revenue'] as AdminPermission[]).map((perm) => {
                                   const hasPerm = userPerms.includes(perm)
                                   const isLoading = roleLoading === `${u.id}-perm-${perm}`
                                   return (
@@ -2297,7 +2297,13 @@ export default function AdminDashboardPage() {
                                         handleToggleAdminPermission(u.id, perm, userPerms)
                                       }}
                                     >
-                                      {isLoading && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
+                                      {isLoading ? (
+                                        <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                                      ) : hasPerm ? (
+                                        <X className="h-3 w-3 mr-1" />
+                                      ) : (
+                                        <Plus className="h-3 w-3 mr-1" />
+                                      )}
                                       {t('admin.perm_' + perm)}
                                     </Badge>
                                   )

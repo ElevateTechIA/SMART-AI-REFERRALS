@@ -37,10 +37,10 @@ export interface User {
 }
 
 // Admin permissions — if empty/undefined, user is a full admin with all access
-export type AdminPermission = 'businesses' | 'referrers' | 'visits' | 'support' | 'payouts'
+export type AdminPermission = 'businesses' | 'referrers' | 'users' | 'visits' | 'support' | 'payouts' | 'revenue'
 
 // Tabs restricted to full admins only (cannot be granted to limited admins)
-export const FULL_ADMIN_ONLY_TABS = ['users', 'settings'] as const
+export const FULL_ADMIN_ONLY_TABS = ['settings'] as const
 
 // Business Status
 export type BusinessStatus = 'pending' | 'active' | 'suspended'
