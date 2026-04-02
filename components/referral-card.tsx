@@ -194,9 +194,9 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
               {/* Earn badge */}
               {business.offer && (
                 <div className="absolute top-4 right-4">
-                  <div className="bg-green-50 dark:bg-green-900/80 border border-green-200 dark:border-green-700 rounded-xl px-3.5 py-1.5 flex items-center gap-1.5 shadow-lg">
-                    <Gift className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
-                    <span className="text-sm font-bold text-green-700 dark:text-green-300">
+                  <div className="bg-[var(--theme-success,#22c55e)]/15 border border-[var(--theme-success,#22c55e)]/30 rounded-xl px-3.5 py-1.5 flex items-center gap-1.5 shadow-lg backdrop-blur-sm">
+                    <Gift className="h-3.5 w-3.5 text-[var(--theme-success,#22c55e)]" />
+                    <span className="text-sm font-bold text-[var(--theme-success,#22c55e)]">
                       {t('cards.earn', { amount: formatCurrency(business.offer.referrerCommissionAmount) })}
                     </span>
                   </div>

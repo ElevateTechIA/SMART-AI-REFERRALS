@@ -25,7 +25,7 @@ export function ChatMessage({ message, onQuickAction }: ChatMessageProps) {
           'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center',
           isAssistant
             ? 'bg-theme-primaryBg text-theme-secondary'
-            : 'bg-gray-100 text-gray-600'
+            : 'bg-theme-primary/20 text-theme-textSecondary'
         )}
       >
         {isAssistant ? (
@@ -46,8 +46,8 @@ export function ChatMessage({ message, onQuickAction }: ChatMessageProps) {
           className={cn(
             'px-4 py-2.5 rounded-2xl text-sm',
             isAssistant
-              ? 'bg-gray-100 text-gray-900 rounded-tl-sm'
-              : 'bg-theme-primary text-gray-900 rounded-tr-sm'
+              ? 'bg-[var(--theme-surfaceVariant,#f3f4f6)] text-[var(--theme-textPrimary,#111827)] rounded-tl-sm'
+              : 'bg-theme-primary text-[var(--theme-primaryForeground,#111827)] rounded-tr-sm'
           )}
         >
           {message.content}
@@ -63,9 +63,9 @@ export function ChatMessage({ message, onQuickAction }: ChatMessageProps) {
                 className={cn(
                   'px-3 py-1.5 text-sm rounded-full border transition-colors',
                   action.type === 'confirm'
-                    ? 'border-green-500 text-green-600 hover:bg-green-50'
+                    ? 'border-[var(--theme-success,#22c55e)] text-[var(--theme-success,#22c55e)] hover:bg-[var(--theme-success,#22c55e)]/10'
                     : action.type === 'cancel'
-                    ? 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                    ? 'border-[var(--theme-cardBorder,#d1d5db)] text-[var(--theme-textMuted,#6b7280)] hover:opacity-80'
                     : action.type === 'auth'
                     ? 'border-theme-primary text-theme-secondary hover:bg-theme-primaryBg'
                     : 'border-theme-primaryBorder text-theme-secondary hover:bg-theme-primaryBg'
@@ -78,7 +78,7 @@ export function ChatMessage({ message, onQuickAction }: ChatMessageProps) {
         )}
 
         {/* Timestamp */}
-        <span className="text-xs text-gray-400">
+        <span className="text-xs text-[var(--theme-textMuted,#9ca3af)]">
           {message.timestamp.toLocaleTimeString([], {
             hour: '2-digit',
             minute: '2-digit',

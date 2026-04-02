@@ -319,7 +319,7 @@
   }
 
   .dark .card-clean {
-    background: #1F2937;
+    background: var(--theme-cardBg, #1F2937);
   }
 
   .card-clean:hover {
@@ -335,7 +335,7 @@
   }
 
   .dark .card-elevated {
-    background: #1F2937;
+    background: var(--theme-cardBg, #1F2937);
   }
 
   /* ===== BLUE BUTTON (Primary action) ===== */
@@ -384,7 +384,7 @@
   }
 
   .dark .btn-outline-blue {
-    background: #1F2937;
+    background: var(--theme-cardBg, #1F2937);
   }
 
   .btn-outline-blue:hover {

@@ -46,7 +46,7 @@ export function ChatInput({
 
   return (
     <form onSubmit={handleSubmit} className="relative">
-      <div className="flex items-end gap-2 p-3 bg-white border-t border-gray-200">
+      <div className="flex items-end gap-2 p-3 bg-[var(--theme-cardBg,#ffffff)] border-t border-[var(--theme-cardBorder,#e5e7eb)]">
         <div className="flex-1 relative">
           <textarea
             ref={textareaRef}
@@ -57,10 +57,10 @@ export function ChatInput({
             disabled={disabled}
             rows={1}
             className={cn(
-              'w-full px-4 py-2.5 pr-12 text-sm rounded-2xl border border-gray-200',
+              'w-full px-4 py-2.5 pr-12 text-sm rounded-2xl border border-[var(--theme-cardBorder,#e5e7eb)]',
               'focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent',
               'resize-none transition-all',
-              disabled && 'bg-gray-50 cursor-not-allowed'
+              disabled && 'opacity-50 cursor-not-allowed'
             )}
           />
           {/* Character count */}
@@ -81,7 +81,7 @@ export function ChatInput({
           disabled={disabled || !message.trim()}
           className={cn(
             'flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center',
-            'bg-theme-primary text-gray-900 transition-all',
+            'bg-theme-primary text-[var(--theme-primaryForeground,#111827)] transition-all',
             'hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:ring-offset-2',
             (disabled || !message.trim()) && 'opacity-50 cursor-not-allowed'
           )}

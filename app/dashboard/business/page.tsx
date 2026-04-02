@@ -380,24 +380,24 @@ export default function BusinessDashboardPage() {
         </Card>
         {isAdmin && (
           <>
-            <Card className={theme === 'eliv' ? 'bg-[#d6fd79] border-[#d6fd79]' : ''}>
+            <Card className="bg-theme-primary border-theme-primary">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className={`text-sm font-medium ${theme === 'eliv' ? 'text-black' : ''}`}>{t('businessDashboard.amountOwed')}</CardTitle>
-                <DollarSign className={`h-4 w-4 ${theme === 'eliv' ? 'text-black/60' : 'text-muted-foreground'}`} />
+                <CardTitle className="text-sm font-medium text-[var(--theme-primaryForeground,#111827)]">{t('businessDashboard.amountOwed')}</CardTitle>
+                <DollarSign className="h-4 w-4 text-[var(--theme-primaryForeground,#111827)] opacity-60" />
               </CardHeader>
               <CardContent>
-                <div className={`text-2xl font-bold ${theme === 'eliv' ? 'text-black' : ''}`}>{formatCurrency(stats.totalOwed)}</div>
-                <p className={`text-xs ${theme === 'eliv' ? 'text-black/60' : 'text-muted-foreground'}`}>{t('businessDashboard.toPlatform')}</p>
+                <div className="text-2xl font-bold text-[var(--theme-primaryForeground,#111827)]">{formatCurrency(stats.totalOwed)}</div>
+                <p className="text-xs text-[var(--theme-primaryForeground,#111827)] opacity-60">{t('businessDashboard.toPlatform')}</p>
               </CardContent>
             </Card>
-            <Card className={theme === 'eliv' ? 'bg-[#d6fd79] border-[#d6fd79]' : ''}>
+            <Card className="bg-theme-primary border-theme-primary">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className={`text-sm font-medium ${theme === 'eliv' ? 'text-black' : ''}`}>{t('businessDashboard.totalPaid')}</CardTitle>
-                <DollarSign className={`h-4 w-4 ${theme === 'eliv' ? 'text-black/60' : 'text-muted-foreground'}`} />
+                <CardTitle className="text-sm font-medium text-[var(--theme-primaryForeground,#111827)]">{t('businessDashboard.totalPaid')}</CardTitle>
+                <DollarSign className="h-4 w-4 text-[var(--theme-primaryForeground,#111827)] opacity-60" />
               </CardHeader>
               <CardContent>
-                <div className={`text-2xl font-bold ${theme === 'eliv' ? 'text-black' : ''}`}>{formatCurrency(stats.totalPaid)}</div>
-                <p className={`text-xs ${theme === 'eliv' ? 'text-black/60' : 'text-muted-foreground'}`}>{t('businessDashboard.allTime')}</p>
+                <div className="text-2xl font-bold text-[var(--theme-primaryForeground,#111827)]">{formatCurrency(stats.totalPaid)}</div>
+                <p className="text-xs text-[var(--theme-primaryForeground,#111827)] opacity-60">{t('businessDashboard.allTime')}</p>
               </CardContent>
             </Card>
           </>

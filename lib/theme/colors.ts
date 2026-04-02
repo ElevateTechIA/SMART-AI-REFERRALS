@@ -17,6 +17,7 @@ export const themes = {
       gradientTo: '#6b24a8',
 
       primary: '#b88ce6',
+      primaryForeground: '#111827',
       primaryLight: '#c9a4ee',
       primaryDark: '#5a189a',
 
@@ -58,6 +59,7 @@ export const themes = {
       gradientTo: '#1d4ed8',
 
       primary: '#3b82f6',
+      primaryForeground: '#ffffff',
       primaryLight: '#60a5fa',
       primaryDark: '#2563eb',
 
@@ -99,6 +101,7 @@ export const themes = {
       gradientTo: '#0d6830',
 
       primary: '#22c55e',
+      primaryForeground: '#111827',
       primaryLight: '#4ade80',
       primaryDark: '#0d6830',
 
@@ -141,6 +144,7 @@ export const themes = {
 
       // eliv green for buttons/CTAs
       primary: '#d6fd79',
+      primaryForeground: '#111827',
       primaryLight: '#e2fe9a',
       primaryDark: '#2d5a00',
 
@@ -183,6 +187,7 @@ export const themes = {
 
       // Rosa suave as primary (buttons, CTAs)
       primary: '#FF83BE',
+      primaryForeground: '#111827',
       primaryLight: '#FFa8d0',
       primaryDark: '#D4467E',
 
@@ -221,6 +226,7 @@ export const themes = {
       gradientTo: '#B85080',
 
       primary: '#FF83BE',
+      primaryForeground: '#111827',
       primaryLight: '#FFa8d0',
       primaryDark: '#FF83BE',
 
@@ -263,6 +269,7 @@ export const themes = {
       gradientTo: '#3B82F6',
 
       primary: '#3B82F6',
+      primaryForeground: '#ffffff',
       primaryLight: '#60A5FA',
       primaryDark: '#1D4ED8',
 
@@ -293,6 +300,43 @@ export const themes = {
       textSecondary: '#4B5563',
       textMuted: '#6B7280',
       surfaceVariant: '#f3f4f6',
+    },
+    darkColors: {
+      gradientFrom: '#1E3A8A',
+      gradientVia: '#1E3A8A',
+      gradientTo: '#1E3A8A',
+
+      primary: '#3B82F6',
+      primaryForeground: '#ffffff',
+      primaryLight: '#60A5FA',
+      primaryDark: '#1D4ED8',
+
+      secondary: '#94A3B8',
+      secondaryLight: '#CBD5E1',
+
+      accent: '#22C55E',
+      accentHover: '#16A34A',
+
+      success: '#22C55E',
+      successForeground: '#111827',
+      warning: '#F59E0B',
+      warningForeground: '#111827',
+      error: '#dc2626',
+
+      cardBg: '#1E293B',
+      cardBgHover: '#334155',
+      cardBorder: 'rgba(148, 163, 184, 0.2)',
+
+      primaryBg: '#1E3A5F',
+      primaryBgHover: '#1E4070',
+      primaryBorder: 'rgba(59, 130, 246, 0.3)',
+      overlayFrom: 'rgba(30, 58, 138, 0.5)',
+      overlayTo: 'rgba(30, 58, 138, 0.6)',
+
+      textPrimary: '#F1F5F9',
+      textSecondary: '#CBD5E1',
+      textMuted: '#94A3B8',
+      surfaceVariant: '#334155',
     }
   }
 }

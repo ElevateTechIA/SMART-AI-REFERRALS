@@ -444,24 +444,24 @@ export default function VisitsPage() {
             <p className="text-[10px] sm:text-xs text-muted-foreground">{t('visits.pendingCount', { count: stats.pending })}</p>
           </CardContent>
         </Card>
-        <Card className={`min-w-0 ${theme === 'eliv' ? 'bg-[#d6fd79] border-[#d6fd79]' : ''}`}>
+        <Card className="min-w-0 bg-theme-primary border-theme-primary">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
-            <CardTitle className={`text-xs sm:text-sm font-medium ${theme === 'eliv' ? 'text-black' : ''}`}>{t('visits.pendingRewards')}</CardTitle>
-            <Clock className={`h-4 w-4 hidden sm:block ${theme === 'eliv' ? 'text-black/60' : 'text-muted-foreground'}`} />
+            <CardTitle className="text-xs sm:text-sm font-medium text-[var(--theme-primaryForeground,#111827)]">{t('visits.pendingRewards')}</CardTitle>
+            <Clock className="h-4 w-4 hidden sm:block text-[var(--theme-primaryForeground,#111827)] opacity-60" />
           </CardHeader>
           <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
-            <div className={`text-xl sm:text-2xl font-bold ${theme === 'eliv' ? 'text-black' : ''}`}>{formatCurrency(stats.pendingRewards)}</div>
-            <p className={`text-[10px] sm:text-xs ${theme === 'eliv' ? 'text-black/60' : 'text-muted-foreground'}`}>{t('visits.awaitingConfirmation')}</p>
+            <div className="text-xl sm:text-2xl font-bold text-[var(--theme-primaryForeground,#111827)]">{formatCurrency(stats.pendingRewards)}</div>
+            <p className="text-[10px] sm:text-xs text-[var(--theme-primaryForeground,#111827)] opacity-60">{t('visits.awaitingConfirmation')}</p>
           </CardContent>
         </Card>
-        <Card className={`min-w-0 ${theme === 'eliv' ? 'bg-[#d6fd79] border-[#d6fd79]' : ''}`}>
+        <Card className="min-w-0 bg-theme-primary border-theme-primary">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
-            <CardTitle className={`text-xs sm:text-sm font-medium ${theme === 'eliv' ? 'text-black' : ''}`}>{t('visits.totalRewards')}</CardTitle>
-            <Gift className={`h-4 w-4 hidden sm:block ${theme === 'eliv' ? 'text-black/60' : 'text-muted-foreground'}`} />
+            <CardTitle className="text-xs sm:text-sm font-medium text-[var(--theme-primaryForeground,#111827)]">{t('visits.totalRewards')}</CardTitle>
+            <Gift className="h-4 w-4 hidden sm:block text-[var(--theme-primaryForeground,#111827)] opacity-60" />
           </CardHeader>
           <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
-            <div className={`text-xl sm:text-2xl font-bold ${theme === 'eliv' ? 'text-black' : ''}`}>{formatCurrency(stats.totalRewards)}</div>
-            <p className={`text-[10px] sm:text-xs ${theme === 'eliv' ? 'text-black/60' : 'text-muted-foreground'}`}>{t('visits.earnedFromVisits')}</p>
+            <div className="text-xl sm:text-2xl font-bold text-[var(--theme-primaryForeground,#111827)]">{formatCurrency(stats.totalRewards)}</div>
+            <p className="text-[10px] sm:text-xs text-[var(--theme-primaryForeground,#111827)] opacity-60">{t('visits.earnedFromVisits')}</p>
           </CardContent>
         </Card>
       </div>

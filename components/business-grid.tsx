@@ -31,16 +31,16 @@ const PLACEHOLDER_BUSINESSES = [
 ]
 
 const PLACEHOLDER_GRADIENTS = [
-  'bg-gradient-to-br from-rose-100 to-rose-200 dark:from-rose-900/30 dark:to-rose-800/30',
-  'bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30',
-  'bg-gradient-to-br from-amber-100 to-amber-200 dark:from-amber-900/30 dark:to-amber-800/30',
-  'bg-gradient-to-br from-emerald-100 to-emerald-200 dark:from-emerald-900/30 dark:to-emerald-800/30',
-  'bg-gradient-to-br from-violet-100 to-violet-200 dark:from-violet-900/30 dark:to-violet-800/30',
-  'bg-gradient-to-br from-cyan-100 to-cyan-200 dark:from-cyan-900/30 dark:to-cyan-800/30',
-  'bg-gradient-to-br from-pink-100 to-pink-200 dark:from-pink-900/30 dark:to-pink-800/30',
-  'bg-gradient-to-br from-teal-100 to-teal-200 dark:from-teal-900/30 dark:to-teal-800/30',
-  'bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/30 dark:to-orange-800/30',
-  'bg-gradient-to-br from-indigo-100 to-indigo-200 dark:from-indigo-900/30 dark:to-indigo-800/30',
+  'bg-gradient-to-br from-rose-200/60 to-rose-300/60',
+  'bg-gradient-to-br from-blue-200/60 to-blue-300/60',
+  'bg-gradient-to-br from-amber-200/60 to-amber-300/60',
+  'bg-gradient-to-br from-emerald-200/60 to-emerald-300/60',
+  'bg-gradient-to-br from-violet-200/60 to-violet-300/60',
+  'bg-gradient-to-br from-cyan-200/60 to-cyan-300/60',
+  'bg-gradient-to-br from-pink-200/60 to-pink-300/60',
+  'bg-gradient-to-br from-teal-200/60 to-teal-300/60',
+  'bg-gradient-to-br from-orange-200/60 to-orange-300/60',
+  'bg-gradient-to-br from-indigo-200/60 to-indigo-300/60',
 ]
 
 const INITIAL_COLORS = [

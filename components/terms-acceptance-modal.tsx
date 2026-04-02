@@ -36,7 +36,7 @@ export function TermsAcceptanceModal() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl relative animate-in fade-in zoom-in duration-200">
+      <div className="bg-[var(--theme-cardBg,#ffffff)] rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl relative animate-in fade-in zoom-in duration-200">
         {/* Icon */}
         <div className="text-center mb-6">
           <div
@@ -45,17 +45,17 @@ export function TermsAcceptanceModal() {
           >
             <Shield className="h-8 w-8 text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          <h2 className="text-2xl font-bold text-[var(--theme-textPrimary,#111827)] mb-2">
             {t('termsAcceptance.title')}
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-[var(--theme-textMuted,#6b7280)]">
             {t('termsAcceptance.description')}
           </p>
         </div>
 
         {/* Terms Summary */}
-        <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4 mb-6 max-h-48 overflow-y-auto">
-          <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+        <div className="rounded-xl border border-[var(--theme-cardBorder,#e5e7eb)] bg-[var(--theme-surfaceVariant,#f3f4f6)] p-4 mb-6 max-h-48 overflow-y-auto">
+          <p className="text-sm text-[var(--theme-textSecondary,#4b5563)] leading-relaxed">
             {t('termsAcceptance.summary')}
           </p>
         </div>
@@ -65,7 +65,7 @@ export function TermsAcceptanceModal() {
           href="/terms"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 text-sm font-medium mb-6 transition-colors hover:opacity-80 text-blue-600 dark:text-blue-400"
+          className="flex items-center justify-center gap-2 text-sm font-medium mb-6 transition-colors hover:opacity-80 text-[var(--theme-primary,#3b82f6)]"
         >
           <ExternalLink className="h-4 w-4" />
           {t('termsAcceptance.readFull')}
@@ -87,7 +87,7 @@ export function TermsAcceptanceModal() {
           )}
         </Button>
 
-        <p className="text-xs text-gray-400 dark:text-gray-500 text-center mt-4">
+        <p className="text-xs text-[var(--theme-textMuted,#9ca3af)] text-center mt-4">
           {t('termsAcceptance.disclaimer')}
         </p>
       </div>
