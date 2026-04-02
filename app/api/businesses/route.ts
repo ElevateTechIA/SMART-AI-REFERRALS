@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
 
     // Check auto-approve setting
     const appSettings = await getAppSettings()
-    const initialStatus = appSettings.autoApproveUsers ? 'active' : 'pending'
+    const initialStatus = appSettings.autoApproveBusinesses ? 'active' : 'pending'
 
     // Create business
     const businessData = {

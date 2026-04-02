@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     }
 
     const settings = await getAppSettings()
-    if (!settings.autoApproveUsers) {
+    if (!settings.autoApproveBusinesses && !settings.autoApproveReferrers) {
       return NextResponse.json({ success: true, autoApproved: false })
     }
 
@@ -37,34 +37,39 @@ export async function POST(request: NextRequest) {
     }
 
     const userData = userDoc.data()!
+    let approved = false
 
     // Auto-approve referrers with pending status
-    if (userData.roles?.includes('referrer') && userData.referrerStatus === 'pending') {
+    if (settings.autoApproveReferrers && userData.roles?.includes('referrer') && userData.referrerStatus === 'pending') {
       await userRef.update({
         referrerStatus: 'active',
         updatedAt: FieldValue.serverTimestamp(),
       })
+      approved = true
     }
 
     // Auto-approve businesses owned by this user
-    const businessesSnapshot = await getAdminDb()
-      .collection('businesses')
-      .where('ownerUserId', '==', userId)
-      .where('status', '==', 'pending')
-      .get()
+    if (settings.autoApproveBusinesses) {
+      const businessesSnapshot = await getAdminDb()
+        .collection('businesses')
+        .where('ownerUserId', '==', userId)
+        .where('status', '==', 'pending')
+        .get()
 
-    const batch = getAdminDb().batch()
-    businessesSnapshot.docs.forEach((doc) => {
-      batch.update(doc.ref, {
-        status: 'active',
-        updatedAt: FieldValue.serverTimestamp(),
+      const batch = getAdminDb().batch()
+      businessesSnapshot.docs.forEach((doc) => {
+        batch.update(doc.ref, {
+          status: 'active',
+          updatedAt: FieldValue.serverTimestamp(),
+        })
       })
-    })
-    if (!businessesSnapshot.empty) {
-      await batch.commit()
+      if (!businessesSnapshot.empty) {
+        await batch.commit()
+        approved = true
+      }
     }
 
-    return NextResponse.json({ success: true, autoApproved: true })
+    return NextResponse.json({ success: true, autoApproved: approved })
   } catch (error) {
     console.error('Error in auto-approve:', error)
     return NextResponse.json(

@@ -36,16 +36,20 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { autoApproveUsers } = body
+    const { autoApproveBusinesses, autoApproveReferrers } = body
 
-    if (typeof autoApproveUsers !== 'boolean') {
+    const updates: Record<string, boolean> = {}
+    if (typeof autoApproveBusinesses === 'boolean') updates.autoApproveBusinesses = autoApproveBusinesses
+    if (typeof autoApproveReferrers === 'boolean') updates.autoApproveReferrers = autoApproveReferrers
+
+    if (Object.keys(updates).length === 0) {
       return NextResponse.json(
-        { error: 'autoApproveUsers must be a boolean' },
+        { error: 'At least one of autoApproveBusinesses or autoApproveReferrers must be provided as a boolean' },
         { status: 400 }
       )
     }
 
-    await saveAppSettings({ autoApproveUsers })
+    await saveAppSettings(updates)
 
     return NextResponse.json({
       success: true,

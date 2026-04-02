@@ -3,11 +3,13 @@ import { getAdminDb } from '@/lib/firebase/admin'
 const CONFIG_DOC_PATH = 'config/appSettings'
 
 export interface AppSettings {
-  autoApproveUsers: boolean
+  autoApproveBusinesses: boolean
+  autoApproveReferrers: boolean
 }
 
 const DEFAULT_APP_SETTINGS: AppSettings = {
-  autoApproveUsers: false,
+  autoApproveBusinesses: false,
+  autoApproveReferrers: false,
 }
 
 /** Fetch app settings from Firestore, fallback to defaults */
@@ -17,7 +19,8 @@ export async function getAppSettings(): Promise<AppSettings> {
     if (doc.exists) {
       const data = doc.data()!
       return {
-        autoApproveUsers: data.autoApproveUsers ?? DEFAULT_APP_SETTINGS.autoApproveUsers,
+        autoApproveBusinesses: data.autoApproveBusinesses ?? data.autoApproveUsers ?? DEFAULT_APP_SETTINGS.autoApproveBusinesses,
+        autoApproveReferrers: data.autoApproveReferrers ?? data.autoApproveUsers ?? DEFAULT_APP_SETTINGS.autoApproveReferrers,
       }
     }
   } catch (error) {
