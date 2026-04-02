@@ -31,9 +31,16 @@ export interface User {
   bankInfo?: BankInfo
   termsAccepted?: boolean
   termsAcceptedAt?: Date
+  adminPermissions?: AdminPermission[]
   createdAt: Date
   updatedAt: Date
 }
+
+// Admin permissions — if empty/undefined, user is a full admin with all access
+export type AdminPermission = 'businesses' | 'referrers' | 'visits' | 'support' | 'payouts'
+
+// Tabs restricted to full admins only (cannot be granted to limited admins)
+export const FULL_ADMIN_ONLY_TABS = ['users', 'settings'] as const
 
 // Business Status
 export type BusinessStatus = 'pending' | 'active' | 'suspended'

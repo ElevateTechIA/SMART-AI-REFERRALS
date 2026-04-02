@@ -21,7 +21,21 @@ export async function PUT(
 
     const { userId } = params
     const body = await request.json()
-    const { roles } = body
+    const { roles, adminPermissions } = body
+
+    // If only updating adminPermissions (not roles)
+    if (adminPermissions !== undefined && roles === undefined) {
+      const VALID_PERMISSIONS = ['businesses', 'referrers', 'visits', 'support', 'payouts']
+      if (!Array.isArray(adminPermissions) || adminPermissions.some((p: string) => !VALID_PERMISSIONS.includes(p))) {
+        return NextResponse.json({ error: 'Invalid admin permissions' }, { status: 400 })
+      }
+      const userRef = getAdminDb().collection('users').doc(userId)
+      await userRef.update({
+        adminPermissions,
+        updatedAt: FieldValue.serverTimestamp(),
+      })
+      return NextResponse.json({ success: true, message: 'Admin permissions updated', adminPermissions })
+    }
 
     if (!userId || !Array.isArray(roles)) {
       return NextResponse.json(

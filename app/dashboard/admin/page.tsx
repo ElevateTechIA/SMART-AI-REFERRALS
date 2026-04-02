@@ -14,7 +14,8 @@ import { Switch } from '@/components/ui/switch'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { apiGet, apiPost, apiPut, apiUpload } from '@/lib/api-client'
-import type { Business, User, Visit, FraudFlag, Offer, ConsumerRewardType, Receipt, SupportTicket } from '@/lib/types'
+import type { Business, User, Visit, FraudFlag, Offer, ConsumerRewardType, Receipt, SupportTicket, AdminPermission } from '@/lib/types'
+import { FULL_ADMIN_ONLY_TABS } from '@/lib/types'
 import { DateFilter, filterByDate, type DateRange } from '@/components/list-controls'
 import { useTheme } from '@/lib/theme/theme-provider'
 import { BusinessCalendar } from '@/components/dashboard/business-calendar'
@@ -250,7 +251,15 @@ export default function AdminDashboardPage() {
   const searchParams = useSearchParams()
   const { t } = useTranslation()
   const { theme } = useTheme()
-  const initialTab = searchParams.get('tab') || 'businesses'
+  // Admin permissions: empty/undefined = full admin, otherwise limited
+  const isFullAdmin = !user?.adminPermissions || user.adminPermissions.length === 0
+  const hasPermission = (tab: string) => {
+    if (isFullAdmin) return true
+    if (FULL_ADMIN_ONLY_TABS.includes(tab as typeof FULL_ADMIN_ONLY_TABS[number])) return false
+    return user?.adminPermissions?.includes(tab as AdminPermission) ?? false
+  }
+  const allowedTabs = ['businesses', 'referrers', 'users', 'visits', 'support', 'payouts', 'settings'].filter(hasPermission)
+  const initialTab = searchParams.get('tab') || allowedTabs[0] || 'businesses'
 
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [businesses, setBusinesses] = useState<Business[]>([])
@@ -278,7 +287,8 @@ export default function AdminDashboardPage() {
   const [commissionSplit, setCommissionSplit] = useState<CommissionSplit>(DEFAULT_COMMISSION_SPLIT)
   const [splitForm, setSplitForm] = useState<CommissionSplit>(DEFAULT_COMMISSION_SPLIT)
   const [splitSaving, setSplitSaving] = useState(false)
-  const [autoApproveUsers, setAutoApproveUsers] = useState(false)
+  const [autoApproveBusinesses, setAutoApproveBusinesses] = useState(false)
+  const [autoApproveReferrers, setAutoApproveReferrers] = useState(false)
   const [autoApproveSaving, setAutoApproveSaving] = useState(false)
   const [selectedRevenueBiz, setSelectedRevenueBiz] = useState<string | null>(null)
   const [revenueBizCharges, setRevenueBizCharges] = useState<ChargeDetail[]>([])
@@ -438,9 +448,10 @@ export default function AdminDashboardPage() {
         }
 
         // Fetch app settings (auto-approve flag)
-        const appSettingsResult = await apiGet<{ success: boolean; data: { autoApproveUsers: boolean } }>('/api/admin/config/app-settings')
+        const appSettingsResult = await apiGet<{ success: boolean; data: { autoApproveBusinesses: boolean; autoApproveReferrers: boolean } }>('/api/admin/config/app-settings')
         if (appSettingsResult.ok && appSettingsResult.data?.success) {
-          setAutoApproveUsers(appSettingsResult.data.data.autoApproveUsers)
+          setAutoApproveBusinesses(appSettingsResult.data.data.autoApproveBusinesses)
+          setAutoApproveReferrers(appSettingsResult.data.data.autoApproveReferrers)
         }
       } catch (error) {
         console.error('Error fetching admin data:', error)
@@ -638,17 +649,18 @@ export default function AdminDashboardPage() {
     }
   }
 
-  const handleToggleAutoApprove = async (checked: boolean) => {
+  const handleToggleAutoApprove = async (field: 'autoApproveBusinesses' | 'autoApproveReferrers', checked: boolean) => {
     setAutoApproveSaving(true)
     try {
       const result = await apiPut<{ success: boolean; error?: string }>(
         '/api/admin/config/app-settings',
-        { autoApproveUsers: checked }
+        { [field]: checked }
       )
       if (!result.ok) {
         throw new Error(result.error || 'Failed to save')
       }
-      setAutoApproveUsers(checked)
+      if (field === 'autoApproveBusinesses') setAutoApproveBusinesses(checked)
+      if (field === 'autoApproveReferrers') setAutoApproveReferrers(checked)
       toast({
         title: t('common.success'),
         description: t('admin.autoApproveUpdated'),
@@ -708,6 +720,39 @@ export default function AdminDashboardPage() {
         description: errorMessage,
         variant: 'destructive',
       })
+    } finally {
+      setRoleLoading(null)
+    }
+  }
+
+  const handleToggleAdminPermission = async (userId: string, permission: AdminPermission, currentPermissions: AdminPermission[]) => {
+    setRoleLoading(`${userId}-perm-${permission}`)
+    try {
+      const hasIt = currentPermissions.includes(permission)
+      const newPermissions = hasIt
+        ? currentPermissions.filter((p) => p !== permission)
+        : [...currentPermissions, permission]
+
+      const result = await apiPut<{ success: boolean; error?: string }>(
+        `/api/admin/users/${userId}/roles`,
+        { adminPermissions: newPermissions }
+      )
+
+      if (!result.ok) throw new Error(result.error || 'Failed to update permissions')
+
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === userId ? { ...u, adminPermissions: newPermissions } : u
+        )
+      )
+
+      toast({
+        title: t('common.success'),
+        description: t('admin.permissionsUpdated'),
+      })
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update'
+      toast({ title: t('common.error'), description: errorMessage, variant: 'destructive' })
     } finally {
       setRoleLoading(null)
     }
@@ -1129,8 +1174,8 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      {stats && (
+      {/* Stats Cards - full admin only */}
+      {isFullAdmin && stats && (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -1224,8 +1269,8 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* Revenue Breakdown by Business */}
-      {stats?.revenueByBusiness && stats.revenueByBusiness.length > 0 && (
+      {/* Revenue Breakdown by Business - full admin only */}
+      {isFullAdmin && stats?.revenueByBusiness && stats.revenueByBusiness.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -1729,10 +1774,11 @@ export default function AdminDashboardPage() {
       <Tabs defaultValue={initialTab}>
         <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
           <TabsList className="w-max sm:w-auto">
-            <TabsTrigger value="businesses">{t('admin.tabBusinesses')}</TabsTrigger>
-            <TabsTrigger value="referrers">{t('admin.tabPromoters')}</TabsTrigger>
-            <TabsTrigger value="users">{t('admin.tabUsers')}</TabsTrigger>
-            <TabsTrigger value="visits">{t('admin.tabRecentVisits')}</TabsTrigger>
+            {hasPermission('businesses') && <TabsTrigger value="businesses">{t('admin.tabBusinesses')}</TabsTrigger>}
+            {hasPermission('referrers') && <TabsTrigger value="referrers">{t('admin.tabPromoters')}</TabsTrigger>}
+            {hasPermission('users') && <TabsTrigger value="users">{t('admin.tabUsers')}</TabsTrigger>}
+            {hasPermission('visits') && <TabsTrigger value="visits">{t('admin.tabRecentVisits')}</TabsTrigger>}
+            {hasPermission('support') && (
             <TabsTrigger value="support">
               {t('admin.tabSupport')}
               {supportTickets.filter((t) => t.status === 'open').length > 0 && (
@@ -1741,6 +1787,8 @@ export default function AdminDashboardPage() {
                 </Badge>
               )}
             </TabsTrigger>
+            )}
+            {hasPermission('payouts') && (
             <TabsTrigger value="payouts">
               {t('admin.tabPayouts', 'Payouts')}
               {(adminPayouts.filter(p => p.status === 'REQUESTED').length + pendingEarnings.length) > 0 && (
@@ -1749,10 +1797,13 @@ export default function AdminDashboardPage() {
                 </Badge>
               )}
             </TabsTrigger>
+            )}
+            {hasPermission('settings') && (
             <TabsTrigger value="settings">
               <Settings className="h-4 w-4 mr-1" />
               {t('admin.tabSettings')}
             </TabsTrigger>
+            )}
           </TabsList>
         </div>
 
@@ -2197,6 +2248,65 @@ export default function AdminDashboardPage() {
                           )
                         })}
                       </div>
+                      {/* Admin permissions config - only shown for admin users by full admins */}
+                      {u.roles.includes('admin') && u.id !== user?.id && isFullAdmin && (() => {
+                        const userPerms = (u.adminPermissions || []) as AdminPermission[]
+                        const isLimited = userPerms.length > 0
+                        return (
+                          <div className="mt-3 ml-14 rounded-lg border border-dashed p-3">
+                            <div className="flex items-center justify-between mb-1">
+                              <div className="flex items-center gap-2">
+                                <Shield className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-sm font-medium">{t('admin.adminAccess')}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground">
+                                  {isLimited ? t('admin.limitedAccess') : t('admin.permFullAccess')}
+                                </span>
+                                <Switch
+                                  checked={!isLimited}
+                                  disabled={roleLoading?.startsWith(`${u.id}-perm`)}
+                                  onCheckedChange={async (fullAccess) => {
+                                    setRoleLoading(`${u.id}-perm-toggle`)
+                                    try {
+                                      const newPerms = fullAccess ? [] : ['businesses', 'referrers', 'visits', 'support', 'payouts']
+                                      const result = await apiPut<{ success: boolean }>(`/api/admin/users/${u.id}/roles`, { adminPermissions: newPerms })
+                                      if (!result.ok) throw new Error('Failed')
+                                      setUsers((prev) => prev.map((x) => x.id === u.id ? { ...x, adminPermissions: newPerms as AdminPermission[] } : x))
+                                      toast({ title: t('common.success'), description: t('admin.permissionsUpdated') })
+                                    } catch { toast({ title: t('common.error'), description: 'Failed', variant: 'destructive' }) }
+                                    finally { setRoleLoading(null) }
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            {isLimited && (
+                              <div className="flex items-center gap-2 flex-wrap mt-2 pt-2 border-t border-dashed">
+                                {(['businesses', 'referrers', 'visits', 'support', 'payouts'] as AdminPermission[]).map((perm) => {
+                                  const hasPerm = userPerms.includes(perm)
+                                  const isLoading = roleLoading === `${u.id}-perm-${perm}`
+                                  return (
+                                    <Badge
+                                      key={perm}
+                                      variant={hasPerm ? 'secondary' : 'outline'}
+                                      className={`cursor-pointer select-none transition-colors text-xs ${
+                                        hasPerm ? '' : 'opacity-40 hover:opacity-70'
+                                      }`}
+                                      onClick={() => {
+                                        if (isLoading) return
+                                        handleToggleAdminPermission(u.id, perm, userPerms)
+                                      }}
+                                    >
+                                      {isLoading && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
+                                      {t('admin.perm_' + perm)}
+                                    </Badge>
+                                  )
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })()}
                     </div>
                   ))}
                   <Pagination page={userPage} totalPages={userTotalPages} onPageChange={setUserPage} />
@@ -2811,25 +2921,46 @@ export default function AdminDashboardPage() {
                 {t('admin.autoApproveDesc')}
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <div className="flex items-center justify-between rounded-lg border p-4">
                 <div className="space-y-0.5">
-                  <Label className="text-base">{t('admin.autoApproveLabel')}</Label>
+                  <Label className="text-base">{t('admin.autoApproveBusinessLabel')}</Label>
                   <p className="text-sm text-muted-foreground">
-                    {t('admin.autoApproveHint')}
+                    {t('admin.autoApproveBusinessHint')}
                   </p>
                 </div>
                 <Switch
-                  checked={autoApproveUsers}
-                  onCheckedChange={handleToggleAutoApprove}
+                  checked={autoApproveBusinesses}
+                  onCheckedChange={(checked) => handleToggleAutoApprove('autoApproveBusinesses', checked)}
                   disabled={autoApproveSaving}
                 />
               </div>
-              {autoApproveUsers && (
-                <div className="mt-3 rounded-lg bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 p-3">
+              {autoApproveBusinesses && (
+                <div className="rounded-lg bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 p-3">
                   <p className="text-sm text-yellow-800 dark:text-yellow-200 flex items-center gap-2">
                     <AlertTriangle className="h-4 w-4 shrink-0" />
-                    {t('admin.autoApproveWarning')}
+                    {t('admin.autoApproveBusinessWarning')}
+                  </p>
+                </div>
+              )}
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <Label className="text-base">{t('admin.autoApproveReferrerLabel')}</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {t('admin.autoApproveReferrerHint')}
+                  </p>
+                </div>
+                <Switch
+                  checked={autoApproveReferrers}
+                  onCheckedChange={(checked) => handleToggleAutoApprove('autoApproveReferrers', checked)}
+                  disabled={autoApproveSaving}
+                />
+              </div>
+              {autoApproveReferrers && (
+                <div className="rounded-lg bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 p-3">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200 flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                    {t('admin.autoApproveReferrerWarning')}
                   </p>
                 </div>
               )}

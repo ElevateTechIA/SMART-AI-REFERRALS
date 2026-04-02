@@ -43,6 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     photoURL: (data.photoURL as string) || undefined,
     roles: (data.roles as UserRole[]) || ['referrer'],
     referrerStatus: data.referrerStatus as User['referrerStatus'],
+    adminPermissions: (data.adminPermissions as User['adminPermissions']) || undefined,
     profileComplete: (data.profileComplete as boolean) || false,
     bankInfo: data.bankInfo as User['bankInfo'],
     termsAccepted: (data.termsAccepted as boolean) || false,
