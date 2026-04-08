@@ -65,7 +65,6 @@ export function ElivBrand({ size, responsive, className, forceDark = false, colo
       <span className={`${className ?? ''} ${logoClass}`}>
         {/* Mobile */}
         <span className="flex items-center gap-2 md:hidden" style={{ color: logoColor }}>
-          <ElivIcon size={m.icon} />
           <span
             style={{
               fontFamily: "'Eight One', sans-serif",
@@ -84,7 +83,6 @@ export function ElivBrand({ size, responsive, className, forceDark = false, colo
         </span>
         {/* Desktop */}
         <span className="hidden md:flex items-center gap-2" style={{ color: logoColor }}>
-          <ElivIcon size={d.icon} />
           <span
             style={{
               fontFamily: "'Eight One', sans-serif",
@@ -109,7 +107,6 @@ export function ElivBrand({ size, responsive, className, forceDark = false, colo
   const s = size ?? 32
   return (
     <span className={`flex items-center gap-2 ${className ?? ''} ${logoClass}`} style={{ color: logoColor }}>
-      <ElivIcon size={s} />
       <span
         style={{
           fontFamily: "'Eight One', sans-serif",
