@@ -41,7 +41,7 @@ import QRCode from 'qrcode'
 import { QRScanner, type ScanResult } from '@/components/business/qr-scanner'
 import { useTheme } from '@/lib/theme/theme-provider'
 import { BusinessCalendar } from '@/components/dashboard/business-calendar'
-import { themes } from '@/lib/theme/colors'
+import { themes, getQRColor } from '@/lib/theme/colors'
 
 export default function BusinessDashboardPage() {
   const { user } = useAuth()
@@ -154,7 +154,7 @@ export default function BusinessDashboardPage() {
     QRCode.toDataURL(generateReferralUrl(business.id), {
       width: 240,
       margin: 2,
-      color: { dark: themes[theme].colors.accent, light: '#ffffff' },
+      color: { dark: getQRColor(theme), light: '#ffffff' },
     })
       .then(setPromoQr)
       .catch(console.error)

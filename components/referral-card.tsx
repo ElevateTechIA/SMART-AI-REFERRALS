@@ -9,7 +9,7 @@ import { Copy, Download, Share2, Building2, Gift, Link2, MapPin, Phone, Globe, M
 import type { Business, Offer } from '@/lib/types'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/lib/theme/theme-provider'
-import { themes } from '@/lib/theme/colors'
+import { themes, getQRColor } from '@/lib/theme/colors'
 
 const GRADIENTS = [
   'from-rose-500 via-pink-500 to-teal-500',
@@ -121,7 +121,7 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
     QRCode.toDataURL(referralUrl, {
       width: 240,
       margin: 2,
-      color: { dark: themes[theme].colors.accent, light: '#ffffff' },
+      color: { dark: getQRColor(theme), light: '#ffffff' },
     })
       .then(setQrCode)
       .catch(console.error)
@@ -194,7 +194,7 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
               {/* Earn badge */}
               {business.offer && (
                 <div className="absolute top-4 right-4">
-                  <div className="bg-[var(--theme-success,#22c55e)]/15 border border-[var(--theme-success,#22c55e)]/30 rounded-xl px-3.5 py-1.5 flex items-center gap-1.5 shadow-lg backdrop-blur-sm">
+                  <div className="bg-white border border-[var(--theme-success,#22c55e)]/30 rounded-xl px-3.5 py-1.5 flex items-center gap-1.5 shadow-lg">
                     <Gift className="h-3.5 w-3.5 text-[var(--theme-success,#22c55e)]" />
                     <span className="text-sm font-bold text-[var(--theme-success,#22c55e)]">
                       {t('cards.earn', { amount: formatCurrency(business.offer.referrerCommissionAmount) })}

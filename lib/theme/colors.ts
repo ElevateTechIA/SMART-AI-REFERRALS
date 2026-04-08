@@ -352,3 +352,12 @@ export function getTheme(themeName: keyof typeof themes = defaultTheme) {
 // Theme type
 export type ThemeName = keyof typeof themes
 export type ThemeColors = typeof themes[typeof defaultTheme]['colors']
+
+// QR code color override per theme (falls back to accent if not set)
+const qrColorOverrides: Partial<Record<ThemeName, string>> = {
+  eliv: '#22C55E',
+}
+
+export function getQRColor(themeName: ThemeName): string {
+  return qrColorOverrides[themeName] ?? themes[themeName].colors.accent
+}

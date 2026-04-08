@@ -11,7 +11,7 @@ import QRCode from 'qrcode'
 import { LanguageSwitcher } from '@/components/language-switcher'
 import { ThemeSwitcher } from '@/components/theme-switcher'
 import { useTheme } from '@/lib/theme/theme-provider'
-import { themes } from '@/lib/theme/colors'
+import { themes, getQRColor } from '@/lib/theme/colors'
 
 export default function LandingPage() {
   const { t } = useTranslation()
@@ -29,7 +29,7 @@ export default function LandingPage() {
         width: 300,
         margin: 2,
         color: {
-          dark: themes[theme].colors.accent,
+          dark: getQRColor(theme),
           light: '#ffffff',
         },
       })

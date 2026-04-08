@@ -12,7 +12,7 @@ import { Building2, Users, CheckCircle, Loader2, MessageSquare, Mail } from 'luc
 import QRCode from 'qrcode'
 import { ShareAppModal } from '@/components/share-app-modal'
 import { useTheme } from '@/lib/theme/theme-provider'
-import { themes } from '@/lib/theme/colors'
+import { themes, getQRColor } from '@/lib/theme/colors'
 import { WelcomeBanner } from './shared/welcome-banner'
 import { PromoLinkCard } from './shared/promo-link-card'
 
@@ -85,7 +85,7 @@ export function AdminDashboard() {
       const qr = await QRCode.toDataURL(appUrl, {
         width: 200,
         margin: 2,
-        color: { dark: themes[theme].colors.accent, light: '#ffffff' },
+        color: { dark: getQRColor(theme), light: '#ffffff' },
       })
       setQrCode(qr)
     } catch (error) {

@@ -6,7 +6,7 @@ import { useToast } from '@/components/ui/use-toast'
 import { X, Users, Building2, ExternalLink } from 'lucide-react'
 import QRCode from 'qrcode'
 import { useTheme } from '@/lib/theme/theme-provider'
-import { themes } from '@/lib/theme/colors'
+import { themes, getQRColor } from '@/lib/theme/colors'
 
 interface RegisterShareModalProps {
   isOpen: boolean
@@ -41,7 +41,7 @@ export function RegisterShareModal({ isOpen, onClose, type }: RegisterShareModal
         width: 280,
         margin: 2,
         color: {
-          dark: themes[theme].colors.accent,
+          dark: getQRColor(theme),
           light: '#ffffff',
         },
       })
