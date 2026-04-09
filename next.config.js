@@ -1,3 +1,5 @@
+const { version } = require('./package.json')
+
 const withSerwist = require('@serwist/next').default({
   swSrc: 'app/sw.ts',
   swDest: 'public/sw.js',
@@ -6,6 +8,9 @@ const withSerwist = require('@serwist/next').default({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  env: {
+    NEXT_PUBLIC_APP_VERSION: version,
+  },
   images: {
     remotePatterns: [
       {

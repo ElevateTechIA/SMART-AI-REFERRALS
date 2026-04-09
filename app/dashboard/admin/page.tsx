@@ -271,9 +271,10 @@ export default function AdminDashboardPage() {
   const [expandedBusiness, setExpandedBusiness] = useState<string | null>(null)
   const [expandedVisit, setExpandedVisit] = useState<string | null>(null)
   const [commissionForm, setCommissionForm] = useState({
-    referrerCommissionAmount: 0,
+    pricePerNewCustomer: '' as number | '',
+    referrerCommissionAmount: '' as number | '',
     consumerRewardType: 'none' as ConsumerRewardType,
-    consumerRewardValue: 0,
+    consumerRewardValue: '' as number | '',
   })
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
@@ -285,7 +286,7 @@ export default function AdminDashboardPage() {
   const [replyText, setReplyText] = useState('')
   const [replyLoading, setReplyLoading] = useState<string | null>(null)
   const [commissionSplit, setCommissionSplit] = useState<CommissionSplit>(DEFAULT_COMMISSION_SPLIT)
-  const [splitForm, setSplitForm] = useState<CommissionSplit>(DEFAULT_COMMISSION_SPLIT)
+  const [splitForm, setSplitForm] = useState<{ promoterPercent: number | ''; consumerPercent: number | ''; platformPercent: number | '' }>(DEFAULT_COMMISSION_SPLIT)
   const [splitSaving, setSplitSaving] = useState(false)
   const [autoApproveBusinesses, setAutoApproveBusinesses] = useState(false)
   const [autoApproveReferrers, setAutoApproveReferrers] = useState(false)
@@ -563,20 +564,48 @@ export default function AdminDashboardPage() {
     const offer = offers.get(businessId)
     if (offer) {
       setCommissionForm({
-        referrerCommissionAmount: offer.referrerCommissionAmount || Math.round(offer.pricePerNewCustomer * 0.1 * 100) / 100,
+        pricePerNewCustomer: offer.pricePerNewCustomer || '',
+        referrerCommissionAmount: offer.referrerCommissionAmount || '',
         consumerRewardType: offer.consumerRewardType || 'none',
-        consumerRewardValue: offer.consumerRewardValue || 0,
+        consumerRewardValue: offer.consumerRewardValue || '',
+      })
+    } else {
+      // No offer yet — start with empty defaults for creation
+      setCommissionForm({
+        pricePerNewCustomer: '',
+        referrerCommissionAmount: '',
+        consumerRewardType: 'cash',
+        consumerRewardValue: '',
       })
     }
     setExpandedBusiness(businessId)
   }
 
   const handleSaveCommission = async (businessId: string) => {
+    const price = Number(commissionForm.pricePerNewCustomer) || 0
+    if (price <= 0) {
+      toast({
+        title: t('common.error'),
+        description: t('admin.priceRequired'),
+        variant: 'destructive',
+      })
+      return
+    }
+
+    const payload = {
+      businessId,
+      pricePerNewCustomer: price,
+      referrerCommissionAmount: Number(commissionForm.referrerCommissionAmount) || 0,
+      consumerRewardType: commissionForm.consumerRewardType,
+      consumerRewardValue: Number(commissionForm.consumerRewardValue) || 0,
+    }
+
     setCommissionSaving(true)
     try {
-      const result = await apiPut<{ success: boolean; error?: string }>(
-        `/api/admin/offers/${businessId}/commission`,
-        commissionForm
+      // Use the admin offers endpoint which handles both create and update
+      const result = await apiPost<{ success: boolean; error?: string; data?: { isNew?: boolean } }>(
+        '/api/admin/offers',
+        payload
       )
 
       if (!result.ok) {
@@ -590,15 +619,27 @@ export default function AdminDashboardPage() {
         if (existing) {
           newMap.set(businessId, {
             ...existing,
-            ...commissionForm,
+            ...payload,
           })
+        } else {
+          // New offer created by admin
+          newMap.set(businessId, {
+            id: businessId,
+            ...payload,
+            promotionType: 'none',
+            promotionValue: 0,
+            allowPlatformAttribution: true,
+            active: true,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          } as Offer)
         }
         return newMap
       })
 
       toast({
         title: t('common.success'),
-        description: t('admin.commissionSaved'),
+        description: result.data?.data?.isNew ? t('admin.offerCreated') : t('admin.commissionSaved'),
       })
       setExpandedBusiness(null)
     } catch (error: unknown) {
@@ -614,7 +655,12 @@ export default function AdminDashboardPage() {
   }
 
   const handleSaveSplit = async () => {
-    const total = splitForm.promoterPercent + splitForm.consumerPercent + splitForm.platformPercent
+    const splitPayload = {
+      promoterPercent: Number(splitForm.promoterPercent) || 0,
+      consumerPercent: Number(splitForm.consumerPercent) || 0,
+      platformPercent: Number(splitForm.platformPercent) || 0,
+    }
+    const total = splitPayload.promoterPercent + splitPayload.consumerPercent + splitPayload.platformPercent
     if (total !== 100) {
       toast({
         title: t('common.error'),
@@ -627,12 +673,12 @@ export default function AdminDashboardPage() {
     try {
       const result = await apiPut<{ success: boolean; error?: string }>(
         '/api/admin/config/commission',
-        splitForm
+        splitPayload
       )
       if (!result.ok) {
         throw new Error(result.error || 'Failed to save')
       }
-      setCommissionSplit(splitForm)
+      setCommissionSplit(splitPayload)
       toast({
         title: t('common.success'),
         description: t('admin.splitSaved'),
@@ -1938,53 +1984,75 @@ export default function AdminDashboardPage() {
                               </Button>
                             )}
 
-                            {offer && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleExpandBusiness(business.id)}
-                              >
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleExpandBusiness(business.id)}
+                            >
+                              {offer ? (
                                 <Settings className="h-4 w-4 mr-1" />
-                                {t('admin.configureOffer')}
-                                {isExpanded ? (
-                                  <ChevronUp className="h-4 w-4 ml-1" />
-                                ) : (
-                                  <ChevronDown className="h-4 w-4 ml-1" />
-                                )}
-                              </Button>
-                            )}
+                              ) : (
+                                <Plus className="h-4 w-4 mr-1" />
+                              )}
+                              {offer ? t('admin.configureOffer') : t('admin.createOffer')}
+                              {isExpanded ? (
+                                <ChevronUp className="h-4 w-4 ml-1" />
+                              ) : (
+                                <ChevronDown className="h-4 w-4 ml-1" />
+                              )}
+                            </Button>
                           </div>
                         </div>
 
                         {/* Expandable commission config */}
-                        {isExpanded && offer && (
+                        {isExpanded && (
                           <div className="mt-4 ml-16 p-4 rounded-lg bg-muted/50 border space-y-4">
                             <div>
                               <h5 className="font-medium flex items-center gap-2">
-                                <Gift className="h-4 w-4" />
-                                {t('admin.offerCommission')}
+                                {offer ? <Gift className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                                {offer ? t('admin.offerCommission') : t('admin.createOfferTitle')}
                               </h5>
                               <p className="text-xs text-muted-foreground">
-                                {t('admin.offerCommissionDesc')}
+                                {offer ? t('admin.offerCommissionDesc') : t('admin.createOfferDesc')}
                               </p>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                              <div className="space-y-2">
+                                <Label>{t('admin.pricePerCustomerLabel')} ($)</Label>
+                                <Input
+                                  type="number"
+                                  min="1"
+                                  max="10000"
+                                  step="1"
+                                  value={commissionForm.pricePerNewCustomer}
+                                  placeholder="e.g. 30"
+                                  onChange={(e) =>
+                                    setCommissionForm({ ...commissionForm, pricePerNewCustomer: e.target.value === '' ? '' : Number(e.target.value) })
+                                  }
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                  {t('admin.pricePerCustomerHint')}
+                                </p>
+                              </div>
+
                               <div className="space-y-2">
                                 <Label>{t('admin.commissionAmount')}</Label>
                                 <Input
                                   type="number"
                                   min="0"
-                                  max={offer.pricePerNewCustomer}
+                                  max={Number(commissionForm.pricePerNewCustomer) || 10000}
                                   step="1"
                                   value={commissionForm.referrerCommissionAmount}
                                   onChange={(e) =>
-                                    setCommissionForm({ ...commissionForm, referrerCommissionAmount: Number(e.target.value) })
+                                    setCommissionForm({ ...commissionForm, referrerCommissionAmount: e.target.value === '' ? '' : Number(e.target.value) })
                                   }
                                 />
-                                <p className="text-xs text-muted-foreground">
-                                  {commissionSplit.promoterPercent}% = ${Math.floor(offer.pricePerNewCustomer * commissionSplit.promoterPercent / 100)}
-                                </p>
+                                {Number(commissionForm.pricePerNewCustomer) > 0 && (
+                                  <p className="text-xs text-muted-foreground">
+                                    {commissionSplit.promoterPercent}% = ${Math.floor(Number(commissionForm.pricePerNewCustomer) * commissionSplit.promoterPercent / 100)}
+                                  </p>
+                                )}
                               </div>
 
                               <div className="space-y-2">
@@ -2016,7 +2084,7 @@ export default function AdminDashboardPage() {
                                     step="1"
                                     value={commissionForm.consumerRewardValue}
                                     onChange={(e) =>
-                                      setCommissionForm({ ...commissionForm, consumerRewardValue: Number(e.target.value) })
+                                      setCommissionForm({ ...commissionForm, consumerRewardValue: e.target.value === '' ? '' : Number(e.target.value) })
                                     }
                                   />
                                 </div>
@@ -2027,14 +2095,14 @@ export default function AdminDashboardPage() {
                               <Button
                                 size="sm"
                                 onClick={() => handleSaveCommission(business.id)}
-                                disabled={commissionSaving}
+                                disabled={commissionSaving || !commissionForm.pricePerNewCustomer}
                               >
                                 {commissionSaving ? (
                                   <Loader2 className="h-4 w-4 animate-spin mr-1" />
                                 ) : (
                                   <CheckCircle className="h-4 w-4 mr-1" />
                                 )}
-                                {t('admin.saveCommission')}
+                                {offer ? t('admin.saveCommission') : t('admin.createOfferBtn')}
                               </Button>
                             </div>
                           </div>
@@ -2994,7 +3062,7 @@ export default function AdminDashboardPage() {
                     step="1"
                     value={splitForm.promoterPercent}
                     onChange={(e) =>
-                      setSplitForm({ ...splitForm, promoterPercent: Number(e.target.value) })
+                      setSplitForm({ ...splitForm, promoterPercent: e.target.value === '' ? '' : Number(e.target.value) })
                     }
                   />
                   <p className="text-xs text-muted-foreground">{t('admin.promoterPercentDesc')}</p>
@@ -3008,7 +3076,7 @@ export default function AdminDashboardPage() {
                     step="1"
                     value={splitForm.consumerPercent}
                     onChange={(e) =>
-                      setSplitForm({ ...splitForm, consumerPercent: Number(e.target.value) })
+                      setSplitForm({ ...splitForm, consumerPercent: e.target.value === '' ? '' : Number(e.target.value) })
                     }
                   />
                   <p className="text-xs text-muted-foreground">{t('admin.consumerPercentDesc')}</p>
@@ -3022,16 +3090,16 @@ export default function AdminDashboardPage() {
                     step="1"
                     value={splitForm.platformPercent}
                     onChange={(e) =>
-                      setSplitForm({ ...splitForm, platformPercent: Number(e.target.value) })
+                      setSplitForm({ ...splitForm, platformPercent: e.target.value === '' ? '' : Number(e.target.value) })
                     }
                   />
                   <p className="text-xs text-muted-foreground">{t('admin.platformPercentDesc')}</p>
                 </div>
               </div>
 
-              {splitForm.promoterPercent + splitForm.consumerPercent + splitForm.platformPercent !== 100 && (
+              {(Number(splitForm.promoterPercent) || 0) + (Number(splitForm.consumerPercent) || 0) + (Number(splitForm.platformPercent) || 0) !== 100 && (
                 <p className="text-sm text-destructive font-medium">
-                  {t('admin.splitMustSum100', { total: splitForm.promoterPercent + splitForm.consumerPercent + splitForm.platformPercent })}
+                  {t('admin.splitMustSum100', { total: (Number(splitForm.promoterPercent) || 0) + (Number(splitForm.consumerPercent) || 0) + (Number(splitForm.platformPercent) || 0) })}
                 </p>
               )}
 
@@ -3039,9 +3107,9 @@ export default function AdminDashboardPage() {
                 <p className="text-sm font-medium">{t('admin.splitPreview')}</p>
                 <p className="text-sm text-muted-foreground">
                   {t('admin.splitPreviewExample', {
-                    promoter: Math.floor(100 * splitForm.promoterPercent / 100),
-                    consumer: Math.floor(100 * splitForm.consumerPercent / 100),
-                    platform: 100 - Math.floor(100 * splitForm.promoterPercent / 100) - Math.floor(100 * splitForm.consumerPercent / 100),
+                    promoter: Math.floor(100 * (Number(splitForm.promoterPercent) || 0) / 100),
+                    consumer: Math.floor(100 * (Number(splitForm.consumerPercent) || 0) / 100),
+                    platform: 100 - Math.floor(100 * (Number(splitForm.promoterPercent) || 0) / 100) - Math.floor(100 * (Number(splitForm.consumerPercent) || 0) / 100),
                   })}
                 </p>
               </div>
@@ -3049,7 +3117,7 @@ export default function AdminDashboardPage() {
               <div className="flex justify-end">
                 <Button
                   onClick={handleSaveSplit}
-                  disabled={splitSaving || splitForm.promoterPercent + splitForm.consumerPercent + splitForm.platformPercent !== 100}
+                  disabled={splitSaving || (Number(splitForm.promoterPercent) || 0) + (Number(splitForm.consumerPercent) || 0) + (Number(splitForm.platformPercent) || 0) !== 100}
                 >
                   {splitSaving ? (
                     <Loader2 className="h-4 w-4 animate-spin mr-1" />

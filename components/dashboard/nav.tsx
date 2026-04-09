@@ -213,6 +213,8 @@ export function DashboardNav() {
                   <LogOut className="mr-2 h-4 w-4" />
                   {t('nav.signOut')}
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <p className="text-center text-xs text-muted-foreground py-1">v{process.env.NEXT_PUBLIC_APP_VERSION}</p>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -397,7 +399,7 @@ export function DashboardNav() {
                 <LogOut className="h-5 w-5" />
                 <span className="font-medium">{t('nav.signOut')}</span>
               </button>
-              <p className="text-center text-xs text-theme-textMuted mt-2">v1.0.0</p>
+              <p className="text-center text-xs text-theme-textMuted mt-2">v{process.env.NEXT_PUBLIC_APP_VERSION}</p>
             </div>
           </div>
         </div>
