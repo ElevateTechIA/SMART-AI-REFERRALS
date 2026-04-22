@@ -10,7 +10,7 @@ export async function PUT(
   { params }: { params: { offerId: string } }
 ) {
   try {
-    const authResult = await verifyAdmin(request)
+    const authResult = await verifyAdmin(request, 'businesses')
     if (!authResult.success) {
       return NextResponse.json(
         { error: authResult.error },

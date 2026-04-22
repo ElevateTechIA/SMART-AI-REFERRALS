@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAdminDb, getAdminStorage, verifyAuth } from '@/lib/firebase/admin'
+import { getAdminDb, getAdminStorage, hasAdminPermission, verifyAuth } from '@/lib/firebase/admin'
 import { FieldValue } from 'firebase-admin/firestore'
 
 export const dynamic = 'force-dynamic'
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'File too large. Maximum 5MB' }, { status: 400 })
     }
 
-    // Verify business ownership
+    // Verify business ownership OR admin with `businesses` permission
     const db = getAdminDb()
     const businessDoc = await db.collection('businesses').doc(businessId).get()
 
@@ -42,8 +42,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Business not found' }, { status: 404 })
     }
 
-    if (businessDoc.data()?.ownerUserId !== userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+    const isOwner = businessDoc.data()?.ownerUserId === userId
+    if (!isOwner) {
+      const userDoc = await db.collection('users').doc(userId).get()
+      if (!hasAdminPermission(userDoc.data(), 'businesses')) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+      }
     }
 
     // Determine upload target: 'business' (default) or 'offer'

@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Switch } from '@/components/ui/switch'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
-import { apiGet, apiPost, apiPut, apiUpload } from '@/lib/api-client'
+import { apiClient, apiGet, apiPost, apiPut, apiUpload } from '@/lib/api-client'
 import type { Business, User, Visit, FraudFlag, Offer, ConsumerRewardType, Receipt, SupportTicket, AdminPermission } from '@/lib/types'
 import { FULL_ADMIN_ONLY_TABS } from '@/lib/types'
 import { DateFilter, filterByDate, type DateRange } from '@/components/list-controls'
@@ -276,6 +276,17 @@ export default function AdminDashboardPage() {
     consumerRewardType: 'none' as ConsumerRewardType,
     consumerRewardValue: '' as number | '',
   })
+  const [expandedProfile, setExpandedProfile] = useState<string | null>(null)
+  const [profileForm, setProfileForm] = useState({
+    name: '',
+    category: '',
+    description: '',
+    address: '',
+    phone: '',
+    website: '',
+  })
+  const [profileSaving, setProfileSaving] = useState(false)
+  const [logoUploading, setLogoUploading] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [commissionSaving, setCommissionSaving] = useState(false)
@@ -651,6 +662,89 @@ export default function AdminDashboardPage() {
       })
     } finally {
       setCommissionSaving(false)
+    }
+  }
+
+  const handleToggleProfile = (business: Business) => {
+    if (expandedProfile === business.id) {
+      setExpandedProfile(null)
+      return
+    }
+    setProfileForm({
+      name: business.name || '',
+      category: business.category || '',
+      description: business.description || '',
+      address: business.address || '',
+      phone: business.phone || '',
+      website: business.website || '',
+    })
+    setExpandedProfile(business.id)
+  }
+
+  const handleSaveProfile = async (businessId: string) => {
+    if (!profileForm.name.trim()) {
+      toast({ title: t('common.error'), description: t('admin.nameRequired'), variant: 'destructive' })
+      return
+    }
+    setProfileSaving(true)
+    try {
+      const payload = {
+        name: profileForm.name.trim(),
+        category: profileForm.category.trim(),
+        description: profileForm.description.trim(),
+        address: profileForm.address.trim(),
+        phone: profileForm.phone.trim(),
+        website: profileForm.website.trim(),
+      }
+      const res = await apiClient<{ success: boolean; error?: string }>(
+        `/api/admin/businesses/${businessId}`,
+        { method: 'PATCH', body: JSON.stringify(payload) }
+      )
+      if (!res.ok) throw new Error(res.error || t('admin.profileSaveFailed'))
+
+      setBusinesses((prev) => prev.map((b) => (b.id === businessId ? { ...b, ...payload } : b)))
+      toast({ title: t('common.success'), description: t('admin.profileSaved') })
+      setExpandedProfile(null)
+    } catch (error: unknown) {
+      toast({
+        title: t('common.error'),
+        description: error instanceof Error ? error.message : t('admin.profileSaveFailed'),
+        variant: 'destructive',
+      })
+    } finally {
+      setProfileSaving(false)
+    }
+  }
+
+  const handleLogoUpload = async (businessId: string, file: File) => {
+    if (!file) return
+    setLogoUploading(businessId)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('businessId', businessId)
+      formData.append('target', 'business')
+      const res = await apiUpload<{ success: boolean; url?: string; error?: string }>(
+        '/api/upload',
+        formData
+      )
+      if (!res.ok || !res.data?.url) throw new Error(res.error || res.data?.error || t('admin.logoUploadFailed'))
+
+      const newUrl = res.data.url
+      setBusinesses((prev) =>
+        prev.map((b) =>
+          b.id === businessId ? { ...b, images: [...(b.images || []), newUrl] } : b
+        )
+      )
+      toast({ title: t('common.success'), description: t('admin.logoUploaded') })
+    } catch (error: unknown) {
+      toast({
+        title: t('common.error'),
+        description: error instanceof Error ? error.message : t('admin.logoUploadFailed'),
+        variant: 'destructive',
+      })
+    } finally {
+      setLogoUploading(null)
     }
   }
 
@@ -1987,6 +2081,20 @@ export default function AdminDashboardPage() {
                             <Button
                               size="sm"
                               variant="outline"
+                              onClick={() => handleToggleProfile(business)}
+                            >
+                              <Image className="h-4 w-4 mr-1" />
+                              {t('admin.editProfile')}
+                              {expandedProfile === business.id ? (
+                                <ChevronUp className="h-4 w-4 ml-1" />
+                              ) : (
+                                <ChevronDown className="h-4 w-4 ml-1" />
+                              )}
+                            </Button>
+
+                            <Button
+                              size="sm"
+                              variant="outline"
                               onClick={() => handleExpandBusiness(business.id)}
                             >
                               {offer ? (
@@ -2103,6 +2211,115 @@ export default function AdminDashboardPage() {
                                   <CheckCircle className="h-4 w-4 mr-1" />
                                 )}
                                 {offer ? t('admin.saveCommission') : t('admin.createOfferBtn')}
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Expandable business profile editor (admin-on-behalf-of-business) */}
+                        {expandedProfile === business.id && (
+                          <div className="mt-4 ml-16 p-4 rounded-lg bg-muted/50 border space-y-4">
+                            <div>
+                              <h5 className="font-medium flex items-center gap-2">
+                                <Image className="h-4 w-4" />
+                                {t('admin.editProfileTitle')}
+                              </h5>
+                              <p className="text-xs text-muted-foreground">
+                                {t('admin.editProfileDesc')}
+                              </p>
+                            </div>
+
+                            <div className="flex items-center gap-4">
+                              <div className="h-20 w-20 rounded-xl overflow-hidden flex-shrink-0 bg-muted border border-border">
+                                {business.images?.[business.images.length - 1] ? (
+                                  <img
+                                    src={business.images[business.images.length - 1]}
+                                    alt={business.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <Building2 className="h-8 w-8 text-muted-foreground" />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex-1 space-y-2">
+                                <Label className="text-xs">{t('admin.logoUpload')}</Label>
+                                <Input
+                                  type="file"
+                                  accept="image/jpeg,image/png,image/webp,image/gif"
+                                  disabled={logoUploading === business.id}
+                                  onChange={(e) => {
+                                    const f = e.target.files?.[0]
+                                    if (f) handleLogoUpload(business.id, f)
+                                    e.target.value = ''
+                                  }}
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                  {logoUploading === business.id
+                                    ? t('common.uploading')
+                                    : t('admin.logoUploadHint')}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label>{t('admin.profileName')}</Label>
+                                <Input
+                                  value={profileForm.name}
+                                  onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>{t('admin.profileCategory')}</Label>
+                                <Input
+                                  value={profileForm.category}
+                                  onChange={(e) => setProfileForm({ ...profileForm, category: e.target.value })}
+                                />
+                              </div>
+                              <div className="space-y-2 md:col-span-2">
+                                <Label>{t('admin.profileDescription')}</Label>
+                                <Input
+                                  value={profileForm.description}
+                                  onChange={(e) => setProfileForm({ ...profileForm, description: e.target.value })}
+                                />
+                              </div>
+                              <div className="space-y-2 md:col-span-2">
+                                <Label>{t('admin.profileAddress')}</Label>
+                                <Input
+                                  value={profileForm.address}
+                                  onChange={(e) => setProfileForm({ ...profileForm, address: e.target.value })}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>{t('admin.profilePhone')}</Label>
+                                <Input
+                                  value={profileForm.phone}
+                                  onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>{t('admin.profileWebsite')}</Label>
+                                <Input
+                                  value={profileForm.website}
+                                  onChange={(e) => setProfileForm({ ...profileForm, website: e.target.value })}
+                                />
+                              </div>
+                            </div>
+
+                            <div className="flex justify-end">
+                              <Button
+                                size="sm"
+                                onClick={() => handleSaveProfile(business.id)}
+                                disabled={profileSaving || !profileForm.name.trim()}
+                              >
+                                {profileSaving ? (
+                                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                                ) : (
+                                  <CheckCircle className="h-4 w-4 mr-1" />
+                                )}
+                                {t('admin.saveProfile')}
                               </Button>
                             </div>
                           </div>

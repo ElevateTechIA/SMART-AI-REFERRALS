@@ -3,6 +3,7 @@ import { getAuth, DecodedIdToken } from 'firebase-admin/auth'
 import { getFirestore } from 'firebase-admin/firestore'
 import { getStorage } from 'firebase-admin/storage'
 import { NextRequest } from 'next/server'
+import type { AdminPermission } from '@/lib/types'
 
 // Result type for auth verification
 export interface AuthResult {
@@ -102,22 +103,46 @@ export async function verifyAuth(request: NextRequest): Promise<VerifyAuthResult
 }
 
 /**
- * Verify that the authenticated user has admin role
+ * Pure predicate: does this user document grant a specific admin permission?
+ * Full admins (empty/undefined adminPermissions) are granted every permission.
+ * Kept as a plain function (no Firestore I/O) so it's easy to unit-test.
  */
-export async function verifyAdmin(request: NextRequest): Promise<VerifyAuthResult> {
+export function hasAdminPermission(
+  userData: { roles?: string[]; adminPermissions?: string[] } | undefined,
+  requiredPermission?: AdminPermission
+): boolean {
+  if (!userData?.roles?.includes('admin')) return false
+  if (!requiredPermission) return true
+  const perms = userData.adminPermissions
+  // Empty or missing adminPermissions array = full admin
+  if (!perms || perms.length === 0) return true
+  return perms.includes(requiredPermission)
+}
+
+/**
+ * Verify that the authenticated user has admin role.
+ * If `requiredPermission` is provided, the user must be a full admin OR have
+ * that permission explicitly granted in `adminPermissions`.
+ */
+export async function verifyAdmin(
+  request: NextRequest,
+  requiredPermission?: AdminPermission
+): Promise<VerifyAuthResult> {
   const authResult = await verifyAuth(request)
 
   if (!authResult.success) {
     return authResult
   }
 
-  // Check if user has admin role in Firestore
   const userDoc = await getAdminDb().collection('users').doc(authResult.uid).get()
+  const userData = userDoc.exists ? userDoc.data() : undefined
 
-  if (!userDoc.exists || !userDoc.data()?.roles?.includes('admin')) {
+  if (!hasAdminPermission(userData, requiredPermission)) {
     return {
       success: false,
-      error: 'Admin access required',
+      error: requiredPermission
+        ? `Admin permission "${requiredPermission}" required`
+        : 'Admin access required',
       status: 403,
     }
   }
