@@ -1,6 +1,9 @@
 {
   "app": {
-    "name": "Eliv"
+    "name": "Eliv",
+    "newVersionTitle": "Nueva versión disponible",
+    "newVersionDesc": "Actualiza a v{{version}} para las últimas mejoras",
+    "upgrade": "Actualizar"
   },
   "common": {
     "loading": "Cargando...",

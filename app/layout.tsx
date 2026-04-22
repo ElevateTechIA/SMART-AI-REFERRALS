@@ -5,6 +5,7 @@ import { AuthProvider } from '@/lib/auth/context'
 import { ThemeProvider } from '@/lib/theme/theme-provider'
 import { I18nProvider } from '@/lib/i18n/provider'
 import { Toaster } from '@/components/ui/toaster'
+import { VersionUpdater } from '@/components/version-updater'
 // PWA components disabled — re-enable when PWA is set up
 // import { OfflineIndicator } from '@/components/pwa/offline-indicator'
 // import { SyncManager } from '@/components/pwa/sync-manager'
@@ -97,6 +98,7 @@ export default function RootLayout({
             <AuthProvider>
               {children}
               <Toaster />
+              <VersionUpdater />
             </AuthProvider>
           </ThemeProvider>
         </I18nProvider>
