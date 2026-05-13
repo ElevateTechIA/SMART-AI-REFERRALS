@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyAdmin } from '@/lib/firebase/admin'
+import { FieldValue } from 'firebase-admin/firestore'
+import { getAdminDb, verifyAdmin } from '@/lib/firebase/admin'
 import { getCommissionSplit, saveCommissionSplit } from '@/lib/commission-config.server'
+import { calculateSplit } from '@/lib/commission-config'
 
 export const dynamic = 'force-dynamic'
 
@@ -59,9 +61,51 @@ export async function PUT(request: NextRequest) {
 
     await saveCommissionSplit({ promoterPercent, consumerPercent, platformPercent })
 
+    // Recalculate stored amounts on every existing offer so the new split takes
+    // effect immediately on public cards (referrerCommissionAmount /
+    // consumerRewardValue are denormalized — they don't auto-recompute).
+    const db = getAdminDb()
+    const offersSnapshot = await db.collection('offers').get()
+    let recalculated = 0
+    const BATCH_LIMIT = 450
+    let batch = db.batch()
+    let pending = 0
+
+    for (const offerDoc of offersSnapshot.docs) {
+      const data = offerDoc.data()
+      const price = Number(data.pricePerNewCustomer) || 0
+      if (price <= 0) continue
+
+      const { promoterAmount, consumerAmount } = calculateSplit(price, {
+        promoterPercent,
+        consumerPercent,
+        platformPercent,
+      })
+
+      batch.update(offerDoc.ref, {
+        referrerCommissionAmount: promoterAmount,
+        referrerCommissionPercentage: promoterPercent,
+        consumerRewardValue: consumerAmount,
+        updatedAt: FieldValue.serverTimestamp(),
+      })
+      recalculated++
+      pending++
+
+      if (pending >= BATCH_LIMIT) {
+        await batch.commit()
+        batch = db.batch()
+        pending = 0
+      }
+    }
+
+    if (pending > 0) {
+      await batch.commit()
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Commission split updated successfully',
+      recalculatedOffers: recalculated,
     })
   } catch (error) {
     console.error('Error updating commission config:', error)

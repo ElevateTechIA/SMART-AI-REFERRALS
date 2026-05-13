@@ -603,24 +603,46 @@ export default function AdminDashboardPage() {
       return
     }
 
+    // Send undefined (not 0) for blank fields so the server falls back to
+    // the configured commission split instead of treating empty as $0.
     const payload = {
       businessId,
       pricePerNewCustomer: price,
-      referrerCommissionAmount: Number(commissionForm.referrerCommissionAmount) || 0,
+      referrerCommissionAmount: commissionForm.referrerCommissionAmount === ''
+        ? undefined
+        : Number(commissionForm.referrerCommissionAmount),
       consumerRewardType: commissionForm.consumerRewardType,
-      consumerRewardValue: Number(commissionForm.consumerRewardValue) || 0,
+      consumerRewardValue: commissionForm.consumerRewardValue === ''
+        ? undefined
+        : Number(commissionForm.consumerRewardValue),
     }
 
     setCommissionSaving(true)
     try {
       // Use the admin offers endpoint which handles both create and update
-      const result = await apiPost<{ success: boolean; error?: string; data?: { isNew?: boolean } }>(
+      const result = await apiPost<{
+        success: boolean
+        error?: string
+        data?: {
+          isNew?: boolean
+          referrerCommissionAmount: number
+          referrerCommissionPercentage: number
+          consumerRewardValue: number
+        }
+      }>(
         '/api/admin/offers',
         payload
       )
 
       if (!result.ok) {
         throw new Error(result.error || t('admin.commissionSaveFailed'))
+      }
+
+      // Use server-computed amounts (server falls back to split when payload omits them)
+      const serverData = result.data?.data
+      const computedAmounts = {
+        referrerCommissionAmount: serverData?.referrerCommissionAmount ?? 0,
+        consumerRewardValue: serverData?.consumerRewardValue ?? 0,
       }
 
       // Update local offers state
@@ -631,12 +653,14 @@ export default function AdminDashboardPage() {
           newMap.set(businessId, {
             ...existing,
             ...payload,
+            ...computedAmounts,
           })
         } else {
           // New offer created by admin
           newMap.set(businessId, {
             id: businessId,
             ...payload,
+            ...computedAmounts,
             promotionType: 'none',
             promotionValue: 0,
             allowPlatformAttribution: true,
@@ -765,7 +789,7 @@ export default function AdminDashboardPage() {
     }
     setSplitSaving(true)
     try {
-      const result = await apiPut<{ success: boolean; error?: string }>(
+      const result = await apiPut<{ success: boolean; error?: string; recalculatedOffers?: number }>(
         '/api/admin/config/commission',
         splitPayload
       )
@@ -773,9 +797,12 @@ export default function AdminDashboardPage() {
         throw new Error(result.error || 'Failed to save')
       }
       setCommissionSplit(splitPayload)
+      const recalculated = result.data?.recalculatedOffers ?? 0
       toast({
         title: t('common.success'),
-        description: t('admin.splitSaved'),
+        description: recalculated > 0
+          ? t('admin.splitSavedWithRecalc', { count: recalculated })
+          : t('admin.splitSaved'),
       })
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to save'

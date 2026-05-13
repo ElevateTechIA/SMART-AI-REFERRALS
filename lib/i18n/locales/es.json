@@ -401,6 +401,7 @@
     "splitPreviewExample": "Promotor ${{promoter}}, Consumidor ${{consumer}}, Plataforma ${{platform}}",
     "saveSplit": "Guardar División",
     "splitSaved": "División de comisiones actualizada exitosamente",
+    "splitSavedWithRecalc": "División actualizada. {{count}} ofertas recalculadas.",
     "supportTickets": "Tickets de Soporte",
     "manageSupportTickets": "Ver y responder mensajes de soporte de usuarios",
     "noSupportTickets": "Aún no hay tickets de soporte",

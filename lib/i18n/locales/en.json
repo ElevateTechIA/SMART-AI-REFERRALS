@@ -401,6 +401,7 @@
     "splitPreviewExample": "Promoter ${{promoter}}, Consumer ${{consumer}}, Platform ${{platform}}",
     "saveSplit": "Save Split",
     "splitSaved": "Commission split updated successfully",
+    "splitSavedWithRecalc": "Split updated. {{count}} offers recalculated.",
     "supportTickets": "Support Tickets",
     "manageSupportTickets": "View and respond to user support messages",
     "noSupportTickets": "No support tickets yet",
