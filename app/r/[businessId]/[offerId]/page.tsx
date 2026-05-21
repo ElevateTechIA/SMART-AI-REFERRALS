@@ -1,16 +1,24 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useParams } from 'next/navigation'
-import { ReferralPageWithOffer } from '../page'
+import {
+  ReferralPageContent,
+  ReferralPageFallback,
+} from '@/components/referral-page-content'
 
 /**
  * Offer-specific referral page: `/r/[businessId]/[offerId]`.
  *
- * Just delegates to the same component used at `/r/[businessId]` but pins
- * the offer the user lands on. Legacy `/r/[businessId]` links still work.
+ * Pins the offer the user lands on. Shares the same UI as
+ * `/r/[businessId]`. The legacy entry point stays functional.
  */
 export default function ReferralPageByOffer() {
   const params = useParams()
   const offerId = params.offerId as string
-  return <ReferralPageWithOffer offerId={offerId} />
+  return (
+    <Suspense fallback={<ReferralPageFallback />}>
+      <ReferralPageContent offerIdFromRoute={offerId} />
+    </Suspense>
+  )
 }
