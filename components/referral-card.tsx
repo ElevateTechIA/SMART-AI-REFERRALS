@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/use-toast'
 import { formatCurrency, generateReferralUrl } from '@/lib/utils'
 import QRCode from 'qrcode'
-import { Copy, Download, Share2, Building2, Gift, Link2, MapPin, Phone, Globe, Mail, Star, ArrowLeft } from 'lucide-react'
+import { Copy, Download, Share2, Building2, Gift, Link2, MapPin, Phone, Globe, Mail, Star, ArrowLeft, CheckCircle2 } from 'lucide-react'
 import type { Business, Offer } from '@/lib/types'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/lib/theme/theme-provider'
@@ -182,7 +182,62 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
   }
 
   return (
-    <div className="w-full perspective-1000">
+    <div className="w-full">
+      {/* ===== Offer tabs — rendered OUTSIDE the main card =====
+          Lives above the QR card so the promoter sees "first pick an offer,
+          then this is the QR/link for that offer". Only shown when the
+          business has more than one offer. Pure UI; tapping a pill calls
+          setSelectedOfferId, which causes referralUrl + QR to recompute via
+          the existing useEffect — no business logic here. */}
+      {offerList.length > 1 && (
+        <div className="mb-4">
+          <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide px-1">
+            {t('cards.chooseOffer', 'Choose an offer to share')}
+          </p>
+          {/* Pills span the full width of the card below: each pill takes
+              an equal share via flex-1. Horizontal scroll kicks in only if
+              MAX_ACTIVE_OFFERS_PER_BUSINESS is raised high enough that the
+              row no longer fits (today capped at 2 so they'll never scroll). */}
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin snap-x">
+            {offerList.map((o) => {
+              const isSelected = o.id === selectedOfferId
+              const label = o.title || `${t('businessOffer.offerLabel', 'Offer')} ${o.id.slice(-6)}`
+              return (
+                <button
+                  key={o.id}
+                  type="button"
+                  onClick={() => setSelectedOfferId(o.id)}
+                  aria-pressed={isSelected}
+                  className={`flex-1 min-w-0 snap-start text-left rounded-2xl px-4 py-3 transition-all duration-200 ${
+                    isSelected
+                      ? 'border-2 border-primary bg-primary/15 ring-1 ring-primary/40'
+                      : 'border border-border/60 bg-card opacity-75 hover:opacity-100 hover:border-primary/40'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <p className={`text-sm font-bold truncate ${isSelected ? 'text-foreground' : 'text-foreground/80'}`}>
+                      {label}
+                    </p>
+                    {isSelected && (
+                      <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" aria-hidden="true" />
+                    )}
+                  </div>
+                  <p className={`text-sm font-semibold mt-1 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`}>
+                    {t('cards.earn', { amount: formatCurrency(o.referrerCommissionAmount) })}
+                  </p>
+                  <p className={`text-[10px] mt-1.5 font-medium uppercase tracking-wide ${isSelected ? 'text-primary' : 'text-muted-foreground/70'}`}>
+                    {isSelected
+                      ? t('cards.sharingThisOffer', 'Sharing this offer')
+                      : t('cards.tapToSelect', 'Tap to select')}
+                  </p>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      <div className="w-full perspective-1000">
       <div className={`relative preserve-3d ${flipped ? 'rotate-y-180' : ''}`}>
         {/* ===== FRONT FACE ===== */}
         <div className="backface-hidden">
@@ -229,44 +284,25 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
               )}
             </div>
 
-            {/* Offer selector — only when the business has more than one */}
-            {offerList.length > 1 && (
-              <div className="px-5 pt-4 pb-2">
-                <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
-                  {t('cards.chooseOffer', 'Choose an offer to share')}
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                  {offerList.map((o) => {
-                    const isSelected = o.id === selectedOfferId
-                    return (
-                      <button
-                        key={o.id}
-                        type="button"
-                        onClick={() => setSelectedOfferId(o.id)}
-                        className={`text-left rounded-xl border p-2 transition-colors ${
-                          isSelected
-                            ? 'border-primary bg-primary/5'
-                            : 'border-border hover:border-primary/40'
-                        }`}
-                      >
-                        <p className="text-xs font-medium truncate">
-                          {o.title || `${t('businessOffer.offerLabel', 'Offer')} ${o.id.slice(-6)}`}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground">
-                          {t('cards.earn', { amount: formatCurrency(o.referrerCommissionAmount) })}
-                        </p>
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-
             {/* Scan to Refer & Earn label */}
             <div className="pt-5 pb-2 text-center">
               <h4 className="text-lg font-bold text-foreground">
                 {t('cards.scanToRefer')}
               </h4>
+              {/* Context badge: which offer this QR/link belongs to.
+                  Only shown for multi-offer businesses; single-offer
+                  promoters don't need this disambiguation. */}
+              {offerList.length > 1 && selectedOffer && (
+                <div className="mt-2 mx-5 flex items-center justify-center gap-1.5 rounded-full bg-primary/10 border border-primary/30 px-3 py-1">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                  <span className="text-xs font-medium text-foreground truncate">
+                    {t('cards.currentlySharing', {
+                      title: selectedOffer.title || `${t('businessOffer.offerLabel', 'Offer')} ${selectedOffer.id.slice(-6)}`,
+                      amount: formatCurrency(selectedOffer.referrerCommissionAmount),
+                    })}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* QR Code */}
@@ -292,9 +328,21 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
 
             {/* Action Buttons */}
             <div className="px-5 pb-4 pt-1 grid grid-cols-3 gap-2">
-              <Button onClick={copyLink} size="sm" className="gap-1.5 text-xs rounded-xl">
+              <Button
+                onClick={copyLink}
+                size="sm"
+                className="gap-1.5 text-xs rounded-xl"
+                title={offerList.length > 1 ? t('cards.copySelectedLink', 'Copy selected offer link') : undefined}
+              >
                 <Copy className="h-3.5 w-3.5" />
-                {t('cards.copy')}
+                {/* "Copy selected offer link" makes it explicit which link
+                    goes to the clipboard when a picker is visible; the
+                    shorter "Copy" stays for single-offer businesses. */}
+                <span className="truncate">
+                  {offerList.length > 1
+                    ? t('cards.copySelectedLink', 'Copy selected offer link')
+                    : t('cards.copy')}
+                </span>
               </Button>
               <Button
                 onClick={downloadQR}
@@ -462,6 +510,7 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
           </div>
         </div>
       </div>
+    </div>
     </div>
   )
 }
