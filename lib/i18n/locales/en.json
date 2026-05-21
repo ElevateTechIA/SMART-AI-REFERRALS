@@ -878,8 +878,8 @@
     "signedInDesc": "Now let's record your visit.",
     "visitSuccess": "Success!",
     "visitSuccessDesc": "Your visit has been recorded. Enjoy your experience!",
-    "alreadyVisited": "Already visited",
-    "alreadyVisitedDesc": "You have already registered a visit to this business.",
+    "alreadyVisited": "Offer already claimed",
+    "alreadyVisitedDesc": "You already have a visit registered for this offer. You can still try other active offers from this business.",
     "failedLoadBusiness": "Failed to load business information.",
     "points": "{{value}} Points",
     "percentOff": "{{value}}% Off"

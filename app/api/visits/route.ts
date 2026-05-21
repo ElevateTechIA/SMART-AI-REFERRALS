@@ -3,6 +3,7 @@ import { getAdminDb, verifyAuth } from '@/lib/firebase/admin'
 import { FieldValue } from 'firebase-admin/firestore'
 import type { Visit, AttributionType } from '@/lib/types'
 import { generateCheckInToken } from '@/lib/qr-checkin'
+import { isDuplicateVisit } from '@/lib/visits-helpers'
 
 export const dynamic = 'force-dynamic'
 
@@ -95,15 +96,26 @@ export async function POST(request: NextRequest) {
 
     // Use transaction for atomic visit creation (duplicate check inside to prevent race conditions)
     const result = await getAdminDb().runTransaction(async (transaction) => {
-      // Check if consumer already has a visit to this business (inside transaction to prevent races)
+      // Multi-offer duplicate check: a consumer can claim DIFFERENT offers
+      // from the same business, but cannot repeat the SAME offer. We fetch
+      // every visit this consumer has for this business (typically 0–2 rows
+      // since the active-offer cap is small) and let `isDuplicateVisit`
+      // collapse legacy shapes (offerId == null OR offerId == businessId)
+      // into one bucket so historic visits don't gate new auto-id offers.
+      //
+      // Note: no .limit() because we need to inspect offerIds. With the
+      // active-offer cap of 2 the result set is bounded.
       const existingVisitsQuery = await getAdminDb()
         .collection('visits')
         .where('businessId', '==', businessId)
         .where('consumerUserId', '==', consumerUserId)
-        .limit(1)
         .get()
 
-      if (!existingVisitsQuery.empty) {
+      const existingVisits = existingVisitsQuery.docs.map((d) => ({
+        offerId: (d.data().offerId ?? null) as string | null,
+      }))
+
+      if (isDuplicateVisit(existingVisits, offerId ?? null, businessId)) {
         throw new Error('DUPLICATE_VISIT')
       }
 
@@ -167,7 +179,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof Error && error.message === 'DUPLICATE_VISIT') {
       return NextResponse.json(
-        { error: 'You have already visited this business' },
+        { error: 'You have already claimed this offer' },
         { status: 409 }
       )
     }
