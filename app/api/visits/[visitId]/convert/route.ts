@@ -4,7 +4,7 @@ import { FieldValue } from 'firebase-admin/firestore'
 import { isTokenExpired } from '@/lib/qr-checkin'
 import { getCommissionSplit } from '@/lib/commission-config.server'
 import { calculateSplit } from '@/lib/commission-config'
-import type { Offer } from '@/lib/types'
+import { resolveOfferForVisit } from '@/lib/offers-server'
 
 export const dynamic = 'force-dynamic'
 
@@ -141,22 +141,14 @@ export async function POST(
       )
     }
 
-    // Get the offer (do reads before transaction)
-    let offer: Offer | null = null
-    if (visit.offerId) {
-      const offerDoc = await getAdminDb().collection('offers').doc(visit.offerId).get()
-      if (offerDoc.exists) {
-        offer = { id: offerDoc.id, ...offerDoc.data() } as Offer
-      }
-    }
-
-    // If no specific offer, try to get the default offer for the business
-    if (!offer) {
-      const offerDoc = await getAdminDb().collection('offers').doc(visit.businessId).get()
-      if (offerDoc.exists) {
-        offer = { id: offerDoc.id, ...offerDoc.data() } as Offer
-      }
-    }
+    // Resolve the offer: prefer `visit.offerId`, fall back to the legacy
+    // `offers/{businessId}` doc for visits created before multi-offer rolled
+    // out. The fallback is kept until backfill is verified — see
+    // `docs/MULTI_OFFERS_MIGRATION.md`.
+    const offer = await resolveOfferForVisit({
+      offerId: visit.offerId,
+      businessId: visit.businessId,
+    })
 
     // Offer is required to create financial records
     if (!offer) {

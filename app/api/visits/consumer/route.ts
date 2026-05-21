@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminDb, verifyAuth } from '@/lib/firebase/admin'
+import { getOfferById } from '@/lib/offers-server'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,23 +26,38 @@ export async function GET(request: NextRequest) {
 
     const visits = []
 
-    // Batch-fetch businesses and offers to avoid N+1 queries
+    // Batch-fetch businesses and offers to avoid N+1 queries.
+    // Offers are now resolved per-visit via `visit.offerId` (a visit points to
+    // ONE specific offer, not "the" offer of a business). Legacy visits with
+    // null offerId fall back to the legacy `offers/{businessId}` doc.
     const businessIds = Array.from(new Set(visitsSnapshot.docs.map((d) => d.data().businessId)))
     const businessRefs = businessIds.map((id) => db.collection('businesses').doc(id))
-    const offerRefs = businessIds.map((id) => db.collection('offers').doc(id))
 
-    const [businessDocs, offerDocs] = await Promise.all([
-      businessRefs.length > 0 ? db.getAll(...businessRefs) : Promise.resolve([]),
-      offerRefs.length > 0 ? db.getAll(...offerRefs) : Promise.resolve([]),
-    ])
+    const businessDocs = businessRefs.length > 0 ? await db.getAll(...businessRefs) : []
 
     const businessMap = new Map<string, FirebaseFirestore.DocumentData>()
     for (const doc of businessDocs) {
       if (doc.exists) businessMap.set(doc.id, { id: doc.id, ...doc.data() })
     }
-    const offerMap = new Map<string, FirebaseFirestore.DocumentData>()
-    for (const doc of offerDocs) {
-      if (doc.exists && doc.data()?.active) offerMap.set(doc.id, { id: doc.id, ...doc.data() })
+
+    // Resolve unique offers referenced by the visits (visitId → offer)
+    const offerIdsByVisit = new Map<string, string>()
+    for (const visitDoc of visitsSnapshot.docs) {
+      const data = visitDoc.data()
+      const oid = data.offerId || data.businessId // legacy fallback
+      offerIdsByVisit.set(visitDoc.id, oid)
+    }
+    // For historic visit display we include archived offers too — the
+    // visit happened against a real offer state that the consumer should
+    // still see in their ledger.
+    const uniqueOfferIds = Array.from(new Set(offerIdsByVisit.values()))
+    const offerEntries = await Promise.all(uniqueOfferIds.map(async (oid) => {
+      const offer = await getOfferById(oid)
+      return offer ? ([oid, offer] as const) : null
+    }))
+    const offerByVisitOfferId = new Map<string, FirebaseFirestore.DocumentData>()
+    for (const entry of offerEntries) {
+      if (entry) offerByVisitOfferId.set(entry[0], entry[1] as unknown as FirebaseFirestore.DocumentData)
     }
 
     // Batch-fetch owner emails
@@ -58,7 +74,8 @@ export async function GET(request: NextRequest) {
     for (const visitDoc of visitsSnapshot.docs) {
       const data = visitDoc.data()
       const businessData = businessMap.get(data.businessId)
-      const offerData = offerMap.get(data.businessId)
+      const offerLookupKey = offerIdsByVisit.get(visitDoc.id)
+      const offerData = offerLookupKey ? offerByVisitOfferId.get(offerLookupKey) : undefined
 
       visits.push({
         id: visitDoc.id,

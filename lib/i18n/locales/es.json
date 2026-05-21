@@ -745,7 +745,7 @@
     "offerSavedDesc": "Tu oferta de promoción ha sido actualizada.",
     "consumerRewardSummary": "Recompensa del Consumidor",
     "platformFeeSummary": "Tarifa de Plataforma",
-    "autoCommissionNote": "El pago se divide automáticamente: 30% promotor, 30% consumidor, 40% plataforma."
+    "autoCommissionNote": "El pago se divide automáticamente: {{promoter}}% promotor, {{consumer}}% consumidor, {{platform}}% plataforma."
   },
   "businessSettings": {
     "title": "Configuración del Negocio",

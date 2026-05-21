@@ -745,7 +745,7 @@
     "offerSavedDesc": "Your promo offer has been updated.",
     "consumerRewardSummary": "Consumer Cash Reward",
     "platformFeeSummary": "Platform Fee",
-    "autoCommissionNote": "Payment is automatically split: 30% promoter, 30% consumer, 40% platform."
+    "autoCommissionNote": "Payment is automatically split: {{promoter}}% promoter, {{consumer}}% consumer, {{platform}}% platform."
   },
   "businessSettings": {
     "title": "Business Settings",

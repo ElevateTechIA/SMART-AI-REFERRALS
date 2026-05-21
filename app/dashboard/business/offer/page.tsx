@@ -1,185 +1,106 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { db } from '@/lib/firebase/client'
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore'
-import { apiGet, apiPost, apiUpload } from '@/lib/api-client'
-import type { Business, PromotionType } from '@/lib/types'
+import { collection, query, where, getDocs } from 'firebase/firestore'
+import { apiGet, apiPatch } from '@/lib/api-client'
+import type { Business, Offer } from '@/lib/types'
+import { MAX_ACTIVE_OFFERS_PER_BUSINESS, isOfferActive } from '@/lib/offers-config'
 import { formatCurrency } from '@/lib/utils'
-import { DEFAULT_COMMISSION_SPLIT, type CommissionSplit } from '@/lib/commission-config'
-import { Loader2, DollarSign, Building2, ImagePlus, Gift, ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
+import {
+  Loader2,
+  ArrowLeft,
+  Plus,
+  Archive,
+  ArchiveRestore,
+  Edit3,
+  AlertCircle,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-export default function OfferConfigPage() {
+export default function OffersListPage() {
   const { user } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
   const { t } = useTranslation()
 
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [uploading, setUploading] = useState(false)
   const [business, setBusiness] = useState<Business | null>(null)
-  const [splitConfig, setSplitConfig] = useState<CommissionSplit>(DEFAULT_COMMISSION_SPLIT)
-  const [offerImage, setOfferImage] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [formData, setFormData] = useState({
-    pricePerNewCustomer: 100,
-    promotionType: 'none' as PromotionType,
-    promotionValue: 0,
-    promotionDescription: '',
-    allowPlatformAttribution: true,
-    active: true,
-  })
+  const [offers, setOffers] = useState<Offer[]>([])
+  const [mutatingId, setMutatingId] = useState<string | null>(null)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!user) return
-
-      try {
-        // Fetch user's business
-        const businessQuery = query(
-          collection(db, 'businesses'),
-          where('ownerUserId', '==', user.id)
-        )
-        const businessSnapshot = await getDocs(businessQuery)
-
-        if (businessSnapshot.empty) {
-          router.push('/dashboard/business/setup')
-          return
-        }
-
-        const businessDoc = businessSnapshot.docs[0]
-        const businessData = businessDoc.data()
-        const fetchedBusiness: Business = {
-          id: businessDoc.id,
-          ...businessData,
-          createdAt: businessData.createdAt?.toDate(),
-          updatedAt: businessData.updatedAt?.toDate(),
-        } as Business
-        setBusiness(fetchedBusiness)
-
-        // Fetch existing offer
-        const offerDoc = await getDoc(doc(db, 'offers', fetchedBusiness.id))
-        if (offerDoc.exists()) {
-          const offerData = offerDoc.data()
-          setFormData({
-            pricePerNewCustomer: offerData.pricePerNewCustomer || 100,
-            promotionType: offerData.promotionType || 'none',
-            promotionValue: offerData.promotionValue || 0,
-            promotionDescription: offerData.promotionDescription || '',
-            allowPlatformAttribution: offerData.allowPlatformAttribution !== false,
-            active: offerData.active !== false,
-          })
-          if (offerData.image) {
-            setOfferImage(offerData.image)
-          }
-        // Fetch commission split config
-        const splitResult = await apiGet<{ success: boolean; data: CommissionSplit }>('/api/config/commission')
-        if (splitResult.ok && splitResult.data?.success) {
-          setSplitConfig(splitResult.data.data)
-        }
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error)
-        toast({
-          title: t('common.error'),
-          description: 'Failed to load data',
-          variant: 'destructive',
-        })
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchData()
-  }, [user, router, toast, t])
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file || !business) return
-
-    if (fileInputRef.current) fileInputRef.current.value = ''
-
-    setUploading(true)
+  const loadData = async () => {
+    if (!user) return
     try {
-      const uploadData = new FormData()
-      uploadData.append('file', file)
-      uploadData.append('businessId', business.id)
-      uploadData.append('target', 'offer')
-
-      const result = await apiUpload<{ success: boolean; url: string }>(
-        '/api/upload',
-        uploadData
+      // Find the user's business
+      const businessQuery = query(
+        collection(db, 'businesses'),
+        where('ownerUserId', '==', user.id)
       )
-
-      if (!result.ok) {
-        throw new Error(result.error || 'Failed to upload image')
+      const snap = await getDocs(businessQuery)
+      if (snap.empty) {
+        router.push('/dashboard/business/setup')
+        return
       }
+      const bDoc = snap.docs[0]
+      const bData = bDoc.data()
+      const b: Business = {
+        id: bDoc.id,
+        ...bData,
+        createdAt: bData.createdAt?.toDate(),
+        updatedAt: bData.updatedAt?.toDate(),
+      } as Business
+      setBusiness(b)
 
-      setOfferImage(result.data.url)
-      toast({
-        title: t('common.success'),
-        description: t('businessOffer.imageUploaded'),
-      })
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to upload image'
-      toast({
-        title: t('common.error'),
-        description: errorMessage,
-        variant: 'destructive',
-      })
+      // Fetch all offers for this business (active + archived for the owner)
+      const result = await apiGet<{ success: boolean; data: Offer[] }>(`/api/offers?businessId=${b.id}`)
+      if (result.ok && result.data?.success) {
+        setOffers(result.data.data || [])
+      }
+    } catch (e) {
+      console.error('Error loading offers:', e)
+      toast({ title: t('common.error'), description: 'Failed to load offers', variant: 'destructive' })
     } finally {
-      setUploading(false)
+      setLoading(false)
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!user || !business) return
+  useEffect(() => {
+    loadData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user])
 
-    setSaving(true)
+  const handleToggleArchive = async (offer: Offer) => {
+    const archived = isOfferActive(offer) // we're archiving when currently active
+    setMutatingId(offer.id)
     try {
-      // API uses auth token to verify ownership - no need to pass ownerUserId
-      const result = await apiPost<{ success: boolean; error?: string }>(
-        '/api/offers',
-        {
-          ...formData,
-          businessId: business.id,
-          image: offerImage,
-        }
+      const result = await apiPatch<{ success: boolean; error?: string }>(
+        `/api/offers/${offer.id}/archive`,
+        { archived }
       )
-
       if (!result.ok) {
-        throw new Error(result.error || 'Failed to save offer')
+        throw new Error(result.error || 'Failed to update offer status')
       }
-
       toast({
-        title: t('businessOffer.offerSaved'),
-        description: t('businessOffer.offerSavedDesc'),
+        title: archived ? t('businessOffer.archivedTitle', 'Offer archived') : t('businessOffer.restoredTitle', 'Offer restored'),
+        description: archived
+          ? t('businessOffer.archivedDesc', 'Customers can no longer see this offer.')
+          : t('businessOffer.restoredDesc', 'Offer is active again.'),
       })
-
-      router.push('/dashboard/business')
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to save offer'
-      toast({
-        title: t('common.error'),
-        description: errorMessage,
-        variant: 'destructive',
-      })
+      await loadData()
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Failed to update offer'
+      toast({ title: t('common.error'), description: msg, variant: 'destructive' })
     } finally {
-      setSaving(false)
+      setMutatingId(null)
     }
   }
 
@@ -190,16 +111,15 @@ export default function OfferConfigPage() {
       </div>
     )
   }
+  if (!business) return null
 
-  if (!business) {
-    return null
-  }
-
-  const isAdmin = user?.roles?.includes('admin') ?? false
+  const activeOffers = offers.filter(isOfferActive)
+  const archivedOffers = offers.filter((o) => !isOfferActive(o))
+  const atLimit = activeOffers.length >= MAX_ACTIVE_OFFERS_PER_BUSINESS
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="mb-8">
+    <div className="max-w-3xl mx-auto">
+      <div className="mb-6">
         <Link
           href="/dashboard/business"
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
@@ -207,241 +127,185 @@ export default function OfferConfigPage() {
           <ArrowLeft className="h-4 w-4 mr-1" />
           {t('common.backToDashboard')}
         </Link>
-        <h1 className="text-3xl font-bold tracking-tight">{t('businessOffer.title')}</h1>
-        <p className="text-muted-foreground">
-          {t('businessOffer.subtitle')}
-        </p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">{t('businessOffer.listTitle', 'Your offers')}</h1>
+            <p className="text-muted-foreground">
+              {t('businessOffer.listSubtitle', 'Manage the promotions your business publishes ({{active}}/{{limit}} active).', {
+                active: activeOffers.length,
+                limit: MAX_ACTIVE_OFFERS_PER_BUSINESS,
+              })}
+            </p>
+          </div>
+          <Link href={atLimit ? '#' : '/dashboard/business/offer/new'}>
+            <Button disabled={atLimit} className="gap-2">
+              <Plus className="h-4 w-4" />
+              {t('businessOffer.newOffer', 'New offer')}
+            </Button>
+          </Link>
+        </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Offer Image */}
+      {atLimit && (
+        <Card className="border-amber-300 bg-amber-50 mb-6">
+          <CardContent className="flex items-start gap-3 py-4">
+            <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-amber-800">
+              {t('businessOffer.limitReached', 'You have reached the limit of {{limit}} active offers. Archive one to create another.', {
+                limit: MAX_ACTIVE_OFFERS_PER_BUSINESS,
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {offers.length === 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ImagePlus className="h-5 w-5" />
-              {t('businessOffer.offerImage')}
-            </CardTitle>
-            <CardDescription>
-              {t('businessOffer.offerImageDesc')}
-            </CardDescription>
+            <CardTitle>{t('businessDashboard.noOfferConfigured')}</CardTitle>
+            <CardDescription>{t('businessDashboard.noOfferDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              onChange={handleImageUpload}
-              className="hidden"
+            <Link href="/dashboard/business/offer/new">
+              <Button className="gap-2">
+                <Plus className="h-4 w-4" />
+                {t('businessDashboard.createOffer')}
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      )}
+
+      {activeOffers.length > 0 && (
+        <section className="space-y-3 mb-8">
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+            {t('businessOffer.activeOffers', 'Active offers')}
+          </h2>
+          {activeOffers.map((offer) => (
+            <OfferRow
+              key={offer.id}
+              offer={offer}
+              busy={mutatingId === offer.id}
+              onArchive={() => handleToggleArchive(offer)}
             />
-            {offerImage ? (
-              <div className="relative group rounded-lg overflow-hidden">
-                <div className="relative h-48 w-full">
-                  <Image
-                    src={offerImage}
-                    alt={t('businessOffer.offerImage')}
-                    fill
-                    className="object-cover"
-                    unoptimized
-                  />
-                </div>
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    className="opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploading}
-                  >
-                    {uploading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        {t('common.uploading')}
-                      </>
-                    ) : (
-                      t('businessOffer.changeImage')
-                    )}
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-                className="w-full h-48 rounded-lg border-2 border-dashed border-muted-foreground/25 hover:border-muted-foreground/50 transition-colors flex flex-col items-center justify-center gap-2 text-muted-foreground"
-              >
-                {uploading ? (
-                  <>
-                    <Loader2 className="h-8 w-8 animate-spin" />
-                    <span className="text-sm">{t('common.uploading')}</span>
-                  </>
-                ) : (
-                  <>
-                    <ImagePlus className="h-8 w-8" />
-                    <span className="text-sm font-medium">{t('businessOffer.uploadImage')}</span>
-                    <span className="text-xs">JPEG, PNG, WebP, GIF (max 5MB)</span>
-                  </>
-                )}
-              </button>
-            )}
-          </CardContent>
-        </Card>
+          ))}
+        </section>
+      )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5" />
-              {t('businessOffer.pricing')}
-            </CardTitle>
-            <CardDescription>
-              {t('businessOffer.pricingDesc')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="pricePerNewCustomer">{t('businessOffer.pricePerCustomer')}</Label>
-              <Input
-                id="pricePerNewCustomer"
-                type="number"
-                min="1"
-                step="1"
-                value={formData.pricePerNewCustomer}
-                onChange={(e) =>
-                  setFormData({ ...formData, pricePerNewCustomer: Number(e.target.value) })
-                }
-                required
-              />
-              <p className="text-xs text-muted-foreground">
-                {t('businessOffer.pricePerCustomerDesc')}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Customer Promotion */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Gift className="h-5 w-5" />
-              {t('businessOffer.promotion')}
-            </CardTitle>
-            <CardDescription>
-              {t('businessOffer.promotionDesc')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t('businessOffer.promotionType')}</Label>
-              <Select
-                value={formData.promotionType}
-                onValueChange={(value: PromotionType) =>
-                  setFormData({ ...formData, promotionType: value, promotionValue: value === 'none' || value === 'free_item' ? 0 : formData.promotionValue })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t('businessOffer.selectPromotionType')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">{t('businessOffer.promoNone')}</SelectItem>
-                  <SelectItem value="discount_percent">{t('businessOffer.promoDiscountPercent')}</SelectItem>
-                  <SelectItem value="discount_fixed">{t('businessOffer.promoDiscountFixed')}</SelectItem>
-                  <SelectItem value="free_item">{t('businessOffer.promoFreeItem')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {(formData.promotionType === 'discount_percent' || formData.promotionType === 'discount_fixed') && (
-              <div className="space-y-2">
-                <Label>
-                  {t('businessOffer.promoValue')}
-                  {formData.promotionType === 'discount_percent' ? ' (%)' : ' ($)'}
-                </Label>
-                <Input
-                  type="number"
-                  min="0"
-                  max={formData.promotionType === 'discount_percent' ? 100 : undefined}
-                  step="1"
-                  value={formData.promotionValue}
-                  onChange={(e) =>
-                    setFormData({ ...formData, promotionValue: Number(e.target.value) })
-                  }
-                />
-              </div>
-            )}
-
-            {formData.promotionType !== 'none' && (
-              <div className="space-y-2">
-                <Label>{t('businessOffer.promoDescription')}</Label>
-                <Textarea
-                  value={formData.promotionDescription}
-                  onChange={(e) =>
-                    setFormData({ ...formData, promotionDescription: e.target.value })
-                  }
-                  placeholder={t('businessOffer.promoDescriptionPlaceholder')}
-                  rows={2}
-                />
-                <p className="text-xs text-muted-foreground">
-                  {t('businessOffer.promoDescriptionHint')}
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {isAdmin && (
-          <Card className="bg-muted/50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
-                {t('businessOffer.paymentSummary')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">{t('businessOffer.pricePerCustomerSummary')}</span>
-                <span className="font-bold text-primary">{formatCurrency(formData.pricePerNewCustomer)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">{t('businessOffer.promoterCommissionSummary')} ({splitConfig.promoterPercent}%)</span>
-                <span className="font-semibold">{formatCurrency(Math.floor(formData.pricePerNewCustomer * splitConfig.promoterPercent / 100))}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">{t('businessOffer.consumerRewardSummary')} ({splitConfig.consumerPercent}%)</span>
-                <span className="font-semibold">{formatCurrency(Math.floor(formData.pricePerNewCustomer * splitConfig.consumerPercent / 100))}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">{t('businessOffer.platformFeeSummary')} ({splitConfig.platformPercent}%)</span>
-                <span className="font-semibold">{formatCurrency(formData.pricePerNewCustomer - Math.floor(formData.pricePerNewCustomer * splitConfig.promoterPercent / 100) - Math.floor(formData.pricePerNewCustomer * splitConfig.consumerPercent / 100))}</span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {t('businessOffer.autoCommissionNote')}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        <div className="flex gap-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.back()}
-            className="flex-1"
-          >
-            {t('common.cancel')}
-          </Button>
-          <Button type="submit" className="flex-1" disabled={saving}>
-            {saving ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {t('common.saving')}
-              </>
-            ) : (
-              t('businessOffer.saveOffer')
-            )}
-          </Button>
-        </div>
-      </form>
+      {archivedOffers.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+            {t('businessOffer.archivedOffers', 'Archived')}
+          </h2>
+          {archivedOffers.map((offer) => (
+            <OfferRow
+              key={offer.id}
+              offer={offer}
+              busy={mutatingId === offer.id}
+              onArchive={() => handleToggleArchive(offer)}
+              archived
+              canRestore={!atLimit}
+            />
+          ))}
+        </section>
+      )}
     </div>
+  )
+}
+
+function OfferRow({
+  offer,
+  busy,
+  onArchive,
+  archived = false,
+  canRestore = true,
+}: {
+  offer: Offer
+  busy: boolean
+  onArchive: () => void
+  archived?: boolean
+  canRestore?: boolean
+}) {
+  const { t } = useTranslation()
+  const promoLabel =
+    offer.promotionType === 'discount_percent'
+      ? `${offer.promotionValue}% off`
+      : offer.promotionType === 'discount_fixed'
+      ? `${formatCurrency(offer.promotionValue)} off`
+      : offer.promotionType === 'free_item'
+      ? t('businessOffer.promoFreeItem')
+      : t('businessOffer.promoNone')
+
+  return (
+    <Card>
+      <CardContent className="py-4">
+        <div className="flex items-start gap-4">
+          {offer.image ? (
+            <div className="relative h-20 w-20 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
+              <Image src={offer.image} alt={offer.title || 'Offer'} fill className="object-cover" unoptimized />
+            </div>
+          ) : (
+            <div className="h-20 w-20 rounded-lg bg-muted flex-shrink-0 flex items-center justify-center text-muted-foreground text-xs">
+              {t('businessOffer.noImage', 'No image')}
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="font-semibold truncate">
+                {offer.title || `${t('businessOffer.offerLabel', 'Offer')} ${offer.id.slice(-6)}`}
+              </h3>
+              <Badge variant={archived ? 'secondary' : 'success'}>
+                {archived ? t('businessOffer.statusArchived', 'Archived') : t('common.active', 'Active')}
+              </Badge>
+            </div>
+            <div className="mt-1 grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
+              <span className="text-muted-foreground">
+                {t('businessOffer.pricePerCustomerSummary')}
+                : <span className="text-foreground font-medium">{formatCurrency(offer.pricePerNewCustomer)}</span>
+              </span>
+              <span className="text-muted-foreground">
+                {t('businessOffer.promotion')}
+                : <span className="text-foreground font-medium">{promoLabel}</span>
+              </span>
+              <span className="text-muted-foreground">
+                {t('businessOffer.promoterCommissionSummary')}
+                : <span className="text-foreground font-medium">{formatCurrency(offer.referrerCommissionAmount)}</span>
+              </span>
+              <span className="text-muted-foreground">
+                {t('businessOffer.consumerRewardSummary')}
+                : <span className="text-foreground font-medium">{formatCurrency(offer.consumerRewardValue)}</span>
+              </span>
+            </div>
+          </div>
+          <div className="flex flex-col gap-2 flex-shrink-0">
+            <Link href={`/dashboard/business/offer/${offer.id}`}>
+              <Button size="sm" variant="outline" className="gap-1 w-full">
+                <Edit3 className="h-3.5 w-3.5" />
+                {t('common.edit', 'Edit')}
+              </Button>
+            </Link>
+            <Button
+              size="sm"
+              variant={archived ? 'default' : 'outline'}
+              className="gap-1"
+              onClick={onArchive}
+              disabled={busy || (archived && !canRestore)}
+              title={archived && !canRestore ? t('businessOffer.cannotRestoreLimit', 'Active limit reached') : undefined}
+            >
+              {busy ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : archived ? (
+                <ArchiveRestore className="h-3.5 w-3.5" />
+              ) : (
+                <Archive className="h-3.5 w-3.5" />
+              )}
+              {archived
+                ? t('businessOffer.restore', 'Restore')
+                : t('businessOffer.archive', 'Archive')}
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   )
 }

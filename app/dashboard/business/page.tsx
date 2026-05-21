@@ -10,9 +10,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/use-toast'
 import { db } from '@/lib/firebase/client'
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore'
+import { collection, query, where, getDocs } from 'firebase/firestore'
 import { apiPost, apiGet } from '@/lib/api-client'
 import type { Business, Offer, Visit, Charge, Receipt } from '@/lib/types'
+import { isOfferActive, MAX_ACTIVE_OFFERS_PER_BUSINESS } from '@/lib/offers-config'
 import { formatCurrency, formatDate, generateReferralUrl } from '@/lib/utils'
 import { SearchAndFilter, Pagination, paginate } from '@/components/list-controls'
 import {
@@ -49,7 +50,7 @@ export default function BusinessDashboardPage() {
   const { t } = useTranslation()
   const { theme } = useTheme()
   const [business, setBusiness] = useState<Business | null>(null)
-  const [offer, setOffer] = useState<Offer | null>(null)
+  const [offers, setOffers] = useState<Offer[]>([])
   const [visits, setVisits] = useState<Visit[]>([])
   const [charges, setCharges] = useState<Charge[]>([])
   const [loading, setLoading] = useState(true)
@@ -83,16 +84,12 @@ export default function BusinessDashboardPage() {
         } as Business
         setBusiness(fetchedBusiness)
 
-        // Fetch offer
-        const offerDoc = await getDoc(doc(db, 'offers', fetchedBusiness.id))
-        if (offerDoc.exists()) {
-          const offerData = offerDoc.data()
-          setOffer({
-            id: offerDoc.id,
-            ...offerData,
-            createdAt: offerData.createdAt?.toDate(),
-            updatedAt: offerData.updatedAt?.toDate(),
-          } as Offer)
+        // Fetch all offers for this business (active + archived)
+        const offersResult = await apiGet<{ success: boolean; data: Offer[] }>(
+          `/api/offers?businessId=${fetchedBusiness.id}`
+        )
+        if (offersResult.ok && offersResult.data?.success) {
+          setOffers(offersResult.data.data || [])
         }
 
         // Fetch visits (without orderBy to avoid index requirement, sort client-side)
@@ -408,61 +405,62 @@ export default function BusinessDashboardPage() {
       {/* Activity Calendar */}
       <BusinessCalendar visits={visits} charges={charges} />
 
-      {/* Offer Settings */}
-      {offer ? (
+      {/* Offers (multi) */}
+      {offers.length > 0 ? (
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
               <div>
                 <CardTitle>{t('businessDashboard.currentOffer')}</CardTitle>
-                <CardDescription>{t('businessDashboard.currentOfferDesc')}</CardDescription>
+                <CardDescription>
+                  {t('businessDashboard.offersSummary', {
+                    active: offers.filter(isOfferActive).length,
+                    limit: MAX_ACTIVE_OFFERS_PER_BUSINESS,
+                    defaultValue: '{{active}} of {{limit}} active offers.',
+                  })}
+                </CardDescription>
               </div>
               <Link href="/dashboard/business/offer">
                 <Button variant="outline" size="sm">
-                  {t('businessDashboard.editOffer')}
+                  {t('businessDashboard.manageOffers', 'Manage offers')}
                 </Button>
               </Link>
             </div>
           </CardHeader>
-          <CardContent>
-            {offer.image && (
-              <div className="relative h-40 w-full rounded-lg overflow-hidden mb-4">
-                <Image
-                  src={offer.image}
-                  alt={t('businessDashboard.currentOffer')}
-                  fill
-                  className="object-cover"
-                  unoptimized
-                />
-              </div>
-            )}
-            <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
-              <div>
-                <p className="text-sm text-muted-foreground">{t('businessDashboard.pricePerCustomer')}</p>
-                <p className="text-lg font-semibold">{formatCurrency(offer.pricePerNewCustomer)}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">{t('businessDashboard.promotion')}</p>
-                <p className="text-lg font-semibold">
-                  {offer.promotionType === 'discount_percent'
-                    ? t('businessDashboard.promoDiscountPercent', { value: offer.promotionValue })
-                    : offer.promotionType === 'discount_fixed'
-                    ? t('businessDashboard.promoDiscountFixed', { value: formatCurrency(offer.promotionValue) })
-                    : offer.promotionType === 'free_item'
-                    ? t('businessDashboard.promoFreeItem')
-                    : t('businessDashboard.none')}
-                </p>
-                {offer.promotionDescription && (
-                  <p className="text-xs text-muted-foreground mt-1">{offer.promotionDescription}</p>
+          <CardContent className="space-y-3">
+            {offers.slice(0, 3).map((o) => (
+              <div key={o.id} className="flex items-center gap-3 border rounded-lg p-3">
+                {o.image ? (
+                  <div className="relative h-14 w-14 rounded-md overflow-hidden flex-shrink-0 bg-muted">
+                    <Image src={o.image} alt={o.title || 'Offer'} fill className="object-cover" unoptimized />
+                  </div>
+                ) : (
+                  <div className="h-14 w-14 rounded-md bg-muted flex-shrink-0" />
                 )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-medium truncate">
+                      {o.title || `${t('businessOffer.offerLabel', 'Offer')} ${o.id.slice(-6)}`}
+                    </p>
+                    <Badge variant={isOfferActive(o) ? 'success' : 'secondary'}>
+                      {isOfferActive(o) ? t('common.active') : t('businessOffer.statusArchived', 'Archived')}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {formatCurrency(o.pricePerNewCustomer)} · {o.promotionType === 'discount_percent'
+                      ? t('businessDashboard.promoDiscountPercent', { value: o.promotionValue })
+                      : o.promotionType === 'discount_fixed'
+                      ? t('businessDashboard.promoDiscountFixed', { value: formatCurrency(o.promotionValue) })
+                      : o.promotionType === 'free_item'
+                      ? t('businessDashboard.promoFreeItem')
+                      : t('businessDashboard.none')}
+                  </p>
+                </div>
+                <Link href={`/dashboard/business/offer/${o.id}`}>
+                  <Button size="sm" variant="ghost">{t('common.edit', 'Edit')}</Button>
+                </Link>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">{t('businessDashboard.status')}</p>
-                <Badge variant={offer.active ? 'success' : 'secondary'}>
-                  {offer.active ? t('common.active') : t('common.inactive')}
-                </Badge>
-              </div>
-            </div>
+            ))}
           </CardContent>
         </Card>
       ) : (
@@ -474,7 +472,7 @@ export default function BusinessDashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Link href="/dashboard/business/offer">
+            <Link href="/dashboard/business/offer/new">
               <Button className="gap-2">
                 <Plus className="h-4 w-4" />
                 {t('businessDashboard.createOffer')}

@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { Business, Offer } from '@/lib/types'
 
 interface ReferralCardCarouselProps {
-  businesses: (Business & { offer?: Offer; images?: string[] })[]
+  businesses: (Business & { offer?: Offer; offers?: Offer[]; images?: string[] })[]
   userId: string
 }
 
