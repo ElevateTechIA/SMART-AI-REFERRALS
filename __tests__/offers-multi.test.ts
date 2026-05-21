@@ -40,6 +40,37 @@ describe('offers-config', () => {
   })
 })
 
+describe('visit attribution offer-id resolution', () => {
+  // Mirrors the logic in components/referral-page-content.tsx's
+  // handleCreateVisit: prefer the explicitly-selected offer, fall back to
+  // the first active offer, finally null. This guards against a regression
+  // where a multi-offer business could record visits without attribution.
+  function resolveOfferIdForVisit(
+    selected: { id: string } | null | undefined,
+    activeOffers: ReadonlyArray<{ id: string }>,
+  ): string | null {
+    return selected?.id ?? activeOffers[0]?.id ?? null
+  }
+
+  it('uses the selected offer when present', () => {
+    const active = [{ id: 'A' }, { id: 'B' }]
+    expect(resolveOfferIdForVisit({ id: 'B' }, active)).toBe('B')
+  })
+
+  it('falls back to the first active offer when none selected', () => {
+    const active = [{ id: 'A' }, { id: 'B' }]
+    expect(resolveOfferIdForVisit(null, active)).toBe('A')
+  })
+
+  it('returns null when there are no active offers', () => {
+    expect(resolveOfferIdForVisit(null, [])).toBeNull()
+  })
+
+  it('returns null when undefined is passed (defensive)', () => {
+    expect(resolveOfferIdForVisit(undefined, [])).toBeNull()
+  })
+})
+
 describe('generateReferralUrl', () => {
   it('builds a bare link when no offer or referrer is passed (legacy compat)', () => {
     const url = generateReferralUrl('biz123')

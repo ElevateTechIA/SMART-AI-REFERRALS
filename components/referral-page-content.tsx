@@ -174,9 +174,16 @@ export function ReferralPageContent({ offerIdFromRoute }: { offerIdFromRoute?: s
     if (!user || !business) return
     setRegistering(true)
     try {
+      // Resolve the offer to attribute this visit to. When the user signs up
+      // through the auth flow before tapping a card in the multi-offer picker
+      // (or when the page is the legacy /r/[businessId] form with several
+      // actives), default to the first active offer instead of sending a
+      // null offerId — that would force the conversion path into the legacy
+      // `offers/{businessId}` fallback and lose per-offer attribution.
+      const resolvedOfferId = selectedOffer?.id ?? activeOffers[0]?.id ?? null
       const result = await apiPost<{ success: boolean; error?: string }>('/api/visits', {
         businessId: business.id,
-        offerId: selectedOffer?.id || null,
+        offerId: resolvedOfferId,
         referrerUserId: referrerId,
       })
 

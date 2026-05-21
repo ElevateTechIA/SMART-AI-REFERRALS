@@ -136,8 +136,13 @@ async function migrate(apply) {
       // Mark the legacy doc as archived + pointing to the new one so it
       // doesn't double-count against the active cap, but DON'T delete it
       // (visit.offerId references may still point at it).
+      // We also snapshot the original `active` value into
+      // `legacyOriginalActive` so a future --rollback can restore the
+      // legacy doc to its exact pre-migration state instead of blindly
+      // re-activating it.
       await offerDoc.ref.update({
         migratedTo: newRef.id,
+        legacyOriginalActive: data.active !== false, // true if it was active (or unset)
         status: 'archived',
         active: false,
         updatedAt: FieldValue.serverTimestamp(),
@@ -186,13 +191,19 @@ async function rollback() {
     .get()
   console.log(`Found ${archivedLegacy.size} legacy doc(s) flagged migratedTo to restore.`)
   for (const legacy of archivedLegacy.docs) {
+    // Restore to the EXACT pre-migration state using the snapshot the apply
+    // step wrote (legacyOriginalActive). If that field is missing (script
+    // was upgraded mid-flight), default to active=true which matches the
+    // overwhelmingly common case.
+    const wasActive = legacy.data().legacyOriginalActive !== false
     await legacy.ref.update({
       migratedTo: FieldValue.delete(),
-      status: 'active',
-      active: true,
+      legacyOriginalActive: FieldValue.delete(),
+      status: wasActive ? 'active' : 'archived',
+      active: wasActive,
       updatedAt: FieldValue.serverTimestamp(),
     })
-    console.log(`  ✓ restored offers/${legacy.id}`)
+    console.log(`  ✓ restored offers/${legacy.id} (active=${wasActive})`)
   }
 
   console.log('\nRollback complete.')
