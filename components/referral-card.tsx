@@ -102,7 +102,11 @@ function getFakeReviews(name: string): FakeReview[] {
 }
 
 interface ReferralCardProps {
-  business: Business & { offer?: Offer; images?: string[] }
+  // `offer` is the legacy single-offer field; `offers` is the multi-offer
+  // array. When both are present, `offers` wins. New consumers should pass
+  // `offers` and the carousel/card will let the promoter pick which one to
+  // share.
+  business: Business & { offer?: Offer; offers?: Offer[]; images?: string[] }
   userId: string
 }
 
@@ -112,8 +116,29 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
   const { theme } = useTheme()
   const [qrCode, setQrCode] = useState<string | null>(null)
   const [flipped, setFlipped] = useState(false)
-  const referralUrl = generateReferralUrl(business.id, userId)
-  const coverImage = business.offer?.image || business.images?.[0] || null
+
+  // Build the offer list for the picker. Falls back to the singular `offer`
+  // for callers that haven't migrated to the array shape yet.
+  const offerList: Offer[] = (business.offers && business.offers.length > 0)
+    ? business.offers
+    : business.offer
+    ? [business.offer]
+    : []
+
+  const [selectedOfferId, setSelectedOfferId] = useState<string | null>(
+    offerList[0]?.id ?? null
+  )
+  const selectedOffer = offerList.find((o) => o.id === selectedOfferId) || offerList[0] || undefined
+
+  // The shareable URL points at a specific offer only when the business
+  // actually has more than one; for single-offer businesses we keep the
+  // bare `/r/[businessId]` form so existing links/QR codes remain valid.
+  const referralUrl = generateReferralUrl(
+    business.id,
+    userId,
+    offerList.length > 1 ? selectedOffer?.id : undefined
+  )
+  const coverImage = selectedOffer?.image || business.images?.[0] || null
   const gradient = getGradientForBusiness(business.name)
   const fakeReviews = getFakeReviews(business.name)
 
@@ -192,17 +217,50 @@ export function ReferralCard({ business, userId }: ReferralCardProps) {
               </div>
 
               {/* Earn badge */}
-              {business.offer && (
+              {selectedOffer && (
                 <div className="absolute top-4 right-4">
                   <div className="bg-white border border-[var(--theme-success,#22c55e)]/30 rounded-xl px-3.5 py-1.5 flex items-center gap-1.5 shadow-lg">
                     <Gift className="h-3.5 w-3.5 text-[var(--theme-success,#22c55e)]" />
                     <span className="text-sm font-bold text-[var(--theme-success,#22c55e)]">
-                      {t('cards.earn', { amount: formatCurrency(business.offer.referrerCommissionAmount) })}
+                      {t('cards.earn', { amount: formatCurrency(selectedOffer.referrerCommissionAmount) })}
                     </span>
                   </div>
                 </div>
               )}
             </div>
+
+            {/* Offer selector — only when the business has more than one */}
+            {offerList.length > 1 && (
+              <div className="px-5 pt-4 pb-2">
+                <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
+                  {t('cards.chooseOffer', 'Choose an offer to share')}
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {offerList.map((o) => {
+                    const isSelected = o.id === selectedOfferId
+                    return (
+                      <button
+                        key={o.id}
+                        type="button"
+                        onClick={() => setSelectedOfferId(o.id)}
+                        className={`text-left rounded-xl border p-2 transition-colors ${
+                          isSelected
+                            ? 'border-primary bg-primary/5'
+                            : 'border-border hover:border-primary/40'
+                        }`}
+                      >
+                        <p className="text-xs font-medium truncate">
+                          {o.title || `${t('businessOffer.offerLabel', 'Offer')} ${o.id.slice(-6)}`}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {t('cards.earn', { amount: formatCurrency(o.referrerCommissionAmount) })}
+                        </p>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Scan to Refer & Earn label */}
             <div className="pt-5 pb-2 text-center">

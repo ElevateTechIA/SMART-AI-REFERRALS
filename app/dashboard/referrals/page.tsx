@@ -31,7 +31,7 @@ import {
 } from 'lucide-react'
 
 interface ReferralsApiResponse {
-  businesses: (Business & { offer?: Offer; images?: string[] })[]
+  businesses: (Business & { offer?: Offer; offers?: Offer[]; images?: string[] })[]
   referrals: Visit[]
   earnings: Earning[]
   referrerStatus: string | null
@@ -45,7 +45,7 @@ function ReferralsContent() {
   const { t } = useTranslation()
   const { user } = useAuth()
   const { toast } = useToast()
-  const [businesses, setBusinesses] = useState<(Business & { offer?: Offer; images?: string[] })[]>([])
+  const [businesses, setBusinesses] = useState<(Business & { offer?: Offer; offers?: Offer[]; images?: string[] })[]>([])
   const [referrals, setReferrals] = useState<Visit[]>([])
   const [earnings, setEarnings] = useState<Earning[]>([])
   const [loading, setLoading] = useState(true)
@@ -96,7 +96,7 @@ function ReferralsContent() {
           ...b,
           createdAt: b.createdAt ? new Date(b.createdAt) : undefined,
           updatedAt: b.updatedAt ? new Date(b.updatedAt) : undefined,
-        })) as (Business & { offer?: Offer; images?: string[] })[]
+        })) as (Business & { offer?: Offer; offers?: Offer[]; images?: string[] })[]
 
         const referralsList = data.referrals.map((r) => ({
           ...r,

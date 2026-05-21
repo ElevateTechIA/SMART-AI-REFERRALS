@@ -15,7 +15,7 @@ function getFakeReviewCount(name: string): number {
   return 50 + (Math.abs(hash) % 450)
 }
 
-type BusinessWithOffer = Business & { offer?: Offer; images?: string[] }
+type BusinessWithOffer = Business & { offer?: Offer; offers?: Offer[]; images?: string[] }
 
 const PLACEHOLDER_BUSINESSES = [
   'Bloom Café',

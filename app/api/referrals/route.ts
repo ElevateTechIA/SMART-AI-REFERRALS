@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminDb, verifyAuth } from '@/lib/firebase/admin'
+import { listActiveOffersByBusiness } from '@/lib/offers-server'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,6 +31,16 @@ export async function GET(request: NextRequest) {
       .where('status', '==', 'active')
       .get()
 
+    type OfferSummary = {
+      id: string
+      image: string | null
+      title?: string
+      referrerCommissionAmount: number
+      consumerRewardType: string
+      consumerRewardValue: number
+      active: boolean
+    }
+
     const businesses: Array<{
       id: string
       name: string
@@ -42,56 +53,54 @@ export async function GET(request: NextRequest) {
       images: string[]
       status: string
       createdAt: Date | null
-      offer?: {
-        id: string
-        image: string | null
-        referrerCommissionAmount: number
-        consumerRewardType: string
-        consumerRewardValue: number
-        active: boolean
-      }
+      // `offer` is kept for backwards compat with the existing carousel/grid
+      // (it points at the first active offer). `offers` is the new array;
+      // consumers that support multi-offer should read from it.
+      offer?: OfferSummary
+      offers: OfferSummary[]
     }> = []
 
     for (const businessDoc of businessesSnapshot.docs) {
       const businessData = businessDoc.data()
 
-      // Check if business has an active offer
-      const offerDoc = await db.collection('offers').doc(businessDoc.id).get()
+      // Pull all active offers for this business (1..N)
+      const activeOffers = await listActiveOffersByBusiness(businessDoc.id)
+      if (activeOffers.length === 0) continue
 
-      if (offerDoc.exists && offerDoc.data()?.active) {
-        const offerData = offerDoc.data()!
-
-        // Look up owner email from users collection
-        let ownerEmail: string | null = null
-        if (businessData.ownerUserId) {
-          const ownerDoc = await db.collection('users').doc(businessData.ownerUserId).get()
-          if (ownerDoc.exists) {
-            ownerEmail = ownerDoc.data()?.email || null
-          }
+      // Look up owner email from users collection
+      let ownerEmail: string | null = null
+      if (businessData.ownerUserId) {
+        const ownerDoc = await db.collection('users').doc(businessData.ownerUserId).get()
+        if (ownerDoc.exists) {
+          ownerEmail = ownerDoc.data()?.email || null
         }
-
-        businesses.push({
-          id: businessDoc.id,
-          name: businessData.name,
-          category: businessData.category,
-          description: businessData.description,
-          address: businessData.address,
-          phone: businessData.phone,
-          website: businessData.website,
-          email: ownerEmail,
-          images: businessData.images || [],
-          status: businessData.status,
-          createdAt: businessData.createdAt?.toDate() || null,
-          offer: {
-            id: offerDoc.id,
-            image: offerData.image || null,
-            referrerCommissionAmount: offerData.referrerCommissionAmount,
-            consumerRewardType: offerData.consumerRewardType,
-            consumerRewardValue: offerData.consumerRewardValue,
-            active: offerData.active,
-          },
-        })
       }
+
+      const offerSummaries: OfferSummary[] = activeOffers.map((o) => ({
+        id: o.id,
+        image: o.image || null,
+        title: o.title,
+        referrerCommissionAmount: o.referrerCommissionAmount,
+        consumerRewardType: o.consumerRewardType,
+        consumerRewardValue: o.consumerRewardValue,
+        active: true,
+      }))
+
+      businesses.push({
+        id: businessDoc.id,
+        name: businessData.name,
+        category: businessData.category,
+        description: businessData.description,
+        address: businessData.address,
+        phone: businessData.phone,
+        website: businessData.website,
+        email: ownerEmail,
+        images: businessData.images || [],
+        status: businessData.status,
+        createdAt: businessData.createdAt?.toDate() || null,
+        offer: offerSummaries[0],
+        offers: offerSummaries,
+      })
     }
 
     // Fetch user's referrals (visits where they are the referrer)
@@ -107,6 +116,7 @@ export async function GET(request: NextRequest) {
         return {
           id: doc.id,
           businessId: data.businessId,
+          offerId: data.offerId || null,
           consumerUserId: data.consumerUserId,
           referrerUserId: data.referrerUserId,
           status: data.status,

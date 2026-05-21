@@ -62,6 +62,11 @@ export async function apiPut<T = unknown>(endpoint: string, body: unknown): Prom
   return apiClient<T>(endpoint, { method: 'PUT', body: JSON.stringify(body) })
 }
 
+/** PATCH */
+export async function apiPatch<T = unknown>(endpoint: string, body: unknown): Promise<ApiResult<T>> {
+  return apiClient<T>(endpoint, { method: 'PATCH', body: JSON.stringify(body) })
+}
+
 /** DELETE */
 export async function apiDelete<T = unknown>(endpoint: string): Promise<ApiResult<T>> {
   return apiClient<T>(endpoint, { method: 'DELETE' })

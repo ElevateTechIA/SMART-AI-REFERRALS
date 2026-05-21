@@ -68,10 +68,16 @@ export type ConsumerRewardType = 'cash' | 'none'
 // Business Promotion Type (business-controlled incentive for consumer)
 export type PromotionType = 'discount_percent' | 'discount_fixed' | 'free_item' | 'none'
 
+// Offer lifecycle state. `status` is the source of truth on new documents.
+// Legacy documents (pre multi-offer) only carried `active: boolean` — see
+// `lib/offers-config.ts` `isOfferActive` for the reconciled rule.
+export type OfferStatus = 'active' | 'archived'
+
 // Offer / Campaign
 export interface Offer {
   id: string
   businessId: string
+  title?: string // Short label shown in lists/selectors when a business has multiple offers
   image?: string // Firebase Storage URL for offer image
   pricePerNewCustomer: number // e.g., 100 USD
   referrerCommissionAmount: number // Fixed amount referrer earns (admin-set)
@@ -82,9 +88,13 @@ export interface Offer {
   promotionValue: number // Discount % or $ amount
   promotionDescription?: string // Free text, e.g. "Free appetizer on first visit"
   allowPlatformAttribution: boolean // If true, platform can get commission when no referrer
-  active: boolean
+  active: boolean // Kept for backwards compat — derive UI state from `status` when present
+  status?: OfferStatus // Preferred lifecycle field on new docs
   startDate?: Date
   endDate?: Date
+  // Migration audit (only set on docs created by the migration script)
+  legacyOfferId?: string
+  legacyBusinessId?: string
   createdAt: Date
   updatedAt: Date
 }

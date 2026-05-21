@@ -31,9 +31,22 @@ export function formatDateTime(date: Date | string): string {
   }).format(d)
 }
 
-export function generateReferralUrl(businessId: string, referrerUserId?: string): string {
+/**
+ * Build a referral URL.
+ *
+ * - `offerId` (optional) targets a specific offer when the business has more
+ *   than one. When omitted, the page falls back to listing all active offers,
+ *   keeping legacy links (`/r/[businessId]`) functional.
+ */
+export function generateReferralUrl(
+  businessId: string,
+  referrerUserId?: string,
+  offerId?: string,
+): string {
   let baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
   if (!baseUrl.startsWith('http')) baseUrl = `https://${baseUrl}`
-  const url = `${baseUrl}/r/${businessId}`
-  return referrerUserId ? `${url}?ref=${referrerUserId}` : url
+  const path = offerId
+    ? `${baseUrl}/r/${businessId}/${offerId}`
+    : `${baseUrl}/r/${businessId}`
+  return referrerUserId ? `${path}?ref=${referrerUserId}` : path
 }

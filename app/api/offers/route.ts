@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAdminDb, verifyAuth } from '@/lib/firebase/admin'
 import { FieldValue } from 'firebase-admin/firestore'
 import { getCommissionSplit } from '@/lib/commission-config.server'
+import {
+  listOffersByBusiness,
+  countActiveOffersByBusiness,
+} from '@/lib/offers-server'
+import {
+  MAX_ACTIVE_OFFERS_PER_BUSINESS,
+  isOfferActive,
+} from '@/lib/offers-config'
 import type { Offer } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
@@ -42,6 +50,16 @@ function validatePercentage(value: unknown): number | null {
 const VALID_REWARD_TYPES = ['none', 'cash'] as const
 const VALID_PROMOTION_TYPES = ['none', 'discount_percent', 'discount_fixed', 'free_item'] as const
 
+/**
+ * POST /api/offers
+ *
+ * Creates a NEW offer for the authenticated user's business under an
+ * auto-generated document id. Enforces `MAX_ACTIVE_OFFERS_PER_BUSINESS`.
+ *
+ * To EDIT an existing offer, use `PUT /api/offers/[offerId]` instead — this
+ * route used to do upsert-by-businessId but no longer does so safely with
+ * multiple offers per business.
+ */
 export async function POST(request: NextRequest) {
   try {
     // Verify authentication
@@ -58,6 +76,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const {
       businessId,
+      title,
       image,
       pricePerNewCustomer,
       referrerCommissionAmount,
@@ -185,10 +204,30 @@ export async function POST(request: NextRequest) {
       validatedPromoValue = val || 0
     }
 
-    // Sanitize promotion description
+    // Sanitize promotion description / title
     const promoDescription = typeof promotionDescription === 'string'
       ? promotionDescription.trim().slice(0, 500)
       : ''
+    const offerTitle = typeof title === 'string' ? title.trim().slice(0, 120) : ''
+
+    // Enforce active-offer cap for this business. We only block when the new
+    // doc would itself be active — letting users create archived drafts later
+    // is fine and doesn't count against the cap.
+    const willBeActive = active !== false
+    if (willBeActive) {
+      const activeCount = await countActiveOffersByBusiness(businessId)
+      if (activeCount >= MAX_ACTIVE_OFFERS_PER_BUSINESS) {
+        return NextResponse.json(
+          {
+            error: `Active offer limit reached (${MAX_ACTIVE_OFFERS_PER_BUSINESS}). Archive an existing active offer before creating another.`,
+            code: 'ACTIVE_OFFER_LIMIT_REACHED',
+            limit: MAX_ACTIVE_OFFERS_PER_BUSINESS,
+            activeCount,
+          },
+          { status: 409 }
+        )
+      }
+    }
 
     // Fetch commission split config from Firestore
     const commissionSplit = await getCommissionSplit()
@@ -196,6 +235,7 @@ export async function POST(request: NextRequest) {
     // Build offer data
     const offerData: Record<string, unknown> = {
       businessId,
+      ...(offerTitle && { title: offerTitle }),
       pricePerNewCustomer: validatedPrice,
       referrerCommissionAmount: validatedCommissionAmount || Math.floor(validatedPrice * commissionSplit.promoterPercent / 100),
       referrerCommissionPercentage: validatedCommissionPercentage || commissionSplit.promoterPercent,
@@ -205,24 +245,26 @@ export async function POST(request: NextRequest) {
       promotionValue: validatedPromoValue,
       promotionDescription: promoDescription,
       allowPlatformAttribution: allowPlatformAttribution !== false,
-      active: active !== false,
+      active: willBeActive,
+      status: willBeActive ? 'active' : 'archived',
       ...(image !== undefined && { image: image || null }),
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
     }
 
-    // Use set with merge to create or update
-    await getAdminDb().collection('offers').doc(businessId).set(offerData, { merge: true })
+    // Create with auto-generated doc id (no longer using businessId as doc id).
+    const newRef = getAdminDb().collection('offers').doc()
+    await newRef.set(offerData)
 
     return NextResponse.json({
       success: true,
       data: {
-        id: businessId,
+        id: newRef.id,
         ...offerData,
       },
     })
   } catch (error) {
-    console.error('Error creating/updating offer:', error)
+    console.error('Error creating offer:', error)
     return NextResponse.json(
       { error: 'Failed to save offer' },
       { status: 500 }
@@ -230,6 +272,14 @@ export async function POST(request: NextRequest) {
   }
 }
 
+/**
+ * GET /api/offers
+ *
+ * - `?businessId=X`: returns ALL offers for that business as an array
+ *   (active + archived for owner/admin; only active for everyone else).
+ * - no filter: list of offers visible to the caller (admins see everything,
+ *   others see only active offers).
+ */
 export async function GET(request: NextRequest) {
   try {
     // Verify authentication
@@ -252,35 +302,17 @@ export async function GET(request: NextRequest) {
     const isAdmin = userDoc.data()?.roles?.includes('admin')
 
     if (businessId) {
-      // Get specific offer
-      const offerDoc = await getAdminDb().collection('offers').doc(businessId).get()
-      if (!offerDoc.exists) {
-        return NextResponse.json({ success: true, data: null })
-      }
-
-      const offerData = offerDoc.data()!
-
-      // Check if user can view this offer
+      // List offers for a specific business. Owners and admins see archived
+      // too; everyone else only gets active ones.
       const businessDoc = await getAdminDb().collection('businesses').doc(businessId).get()
-      const isOwner = businessDoc.data()?.ownerUserId === userId
-      const isActive = offerData.active === true
+      const isOwner = businessDoc.exists && businessDoc.data()?.ownerUserId === userId
 
-      // Only allow viewing if: admin, owner, or offer is active
-      if (!isAdmin && !isOwner && !isActive) {
-        return NextResponse.json(
-          { error: 'Offer not found' },
-          { status: 404 }
-        )
-      }
+      const offers = await listOffersByBusiness(businessId)
+      const filtered = (isAdmin || isOwner)
+        ? offers
+        : offers.filter(isOfferActive)
 
-      const offer: Offer = {
-        id: offerDoc.id,
-        ...offerData,
-        createdAt: offerData.createdAt?.toDate(),
-        updatedAt: offerData.updatedAt?.toDate(),
-      } as Offer
-
-      return NextResponse.json({ success: true, data: offer })
+      return NextResponse.json({ success: true, data: filtered })
     }
 
     // Get offers based on permissions
