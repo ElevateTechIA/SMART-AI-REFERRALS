@@ -878,8 +878,8 @@
     "signedInDesc": "Ahora registremos tu visita.",
     "visitSuccess": "¡Éxito!",
     "visitSuccessDesc": "Tu visita ha sido registrada. ¡Disfruta tu experiencia!",
-    "alreadyVisited": "Ya visitaste este negocio",
-    "alreadyVisitedDesc": "Ya tienes una visita registrada a este negocio.",
+    "alreadyVisited": "Oferta ya reclamada",
+    "alreadyVisitedDesc": "Ya tienes una visita registrada para esta oferta. Puedes probar otras ofertas activas de este negocio.",
     "failedLoadBusiness": "Error al cargar información del negocio.",
     "points": "{{value}} Puntos",
     "percentOff": "{{value}}% de Descuento"
