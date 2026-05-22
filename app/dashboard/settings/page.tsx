@@ -453,7 +453,12 @@ export default function SettingsPage() {
               <div>
                 <p className="text-sm text-muted-foreground">{t('accountSettings.roles')}</p>
                 <div className="flex flex-wrap gap-1 mt-1">
-                  {user.roles.map((role) => (
+                  {/* Defensive: a freshly-created Firestore user doc could
+                      briefly hydrate with `roles` undefined if the document
+                      write hasn't fully replicated. Optional chaining +
+                      fallback prevents the entire page from crashing into
+                      the error boundary during that window. */}
+                  {(user.roles ?? []).map((role) => (
                     <Badge
                       key={role}
                       variant={role === 'admin' ? 'default' : 'secondary'}

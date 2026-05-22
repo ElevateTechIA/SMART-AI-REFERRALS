@@ -22,6 +22,17 @@ export default function GlobalError({
           <p style={{ fontSize: 14, color: 'var(--theme-textSecondary, #666)', maxWidth: 400 }}>
             A critical error occurred. Please try again.
           </p>
+          {/* See app/error.tsx for why we expose the digest. */}
+          {error.digest && (
+            <p style={{
+              fontSize: 11, fontFamily: 'monospace', padding: '4px 8px',
+              borderRadius: 4, background: 'rgba(0,0,0,0.08)',
+              color: 'var(--theme-textSecondary, #666)',
+              userSelect: 'all',
+            }}>
+              Error ID: {error.digest}
+            </p>
+          )}
           <button
             onClick={reset}
             style={{

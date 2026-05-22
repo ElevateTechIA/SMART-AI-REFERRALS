@@ -30,7 +30,7 @@ export function CityAutocomplete({
   error,
   className,
 }: CityAutocompleteProps) {
-  const { isLoaded } = useGoogleMaps()
+  const { isLoaded, loadError } = useGoogleMaps()
   const [suggestions, setSuggestions] = useState<Suggestion[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
@@ -126,7 +126,11 @@ export function CityAutocomplete({
     setTimeout(() => setIsOpen(false), 200)
   }
 
-  if (!isLoaded) {
+  // Fall back to a plain text input when Google Maps fails to load OR is
+  // still loading. Without this fallback, a failed Maps load (revoked key,
+  // billing issue, blocked domain) used to leave users staring at a stuck
+  // "loading" state and unable to complete their profile.
+  if (!isLoaded || loadError) {
     return (
       <div>
         <Input
