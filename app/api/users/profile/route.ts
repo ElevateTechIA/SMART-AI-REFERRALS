@@ -60,11 +60,13 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid state' }, { status: 400 })
     }
 
-    if (!city || typeof city !== 'string' || city.trim().length < 2 || city.trim().length > 100) {
+    // City is optional (the form does not mark it required); validate only if provided
+    if (city && (typeof city !== 'string' || city.trim().length < 2 || city.trim().length > 100)) {
       return NextResponse.json({ error: 'City must be 2-100 characters' }, { status: 400 })
     }
 
-    if (!zipcode || !/^\d{5}$/.test(zipcode)) {
+    // Zip code is optional; validate format only if provided
+    if (zipcode && !/^\d{5}$/.test(zipcode)) {
       return NextResponse.json({ error: 'Zip code must be 5 digits' }, { status: 400 })
     }
 
@@ -114,8 +116,8 @@ export async function PUT(request: NextRequest) {
       secondaryEmail: secondaryEmail ? secondaryEmail.trim() : null,
       dateOfBirth,
       state,
-      city: city.trim(),
-      zipcode,
+      city: city ? city.trim() : null,
+      zipcode: zipcode || null,
       phone: phone || null,
       profileComplete,
       updatedAt: FieldValue.serverTimestamp(),

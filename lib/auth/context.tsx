@@ -53,11 +53,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   })
 
   const fetchUserData = async (firebaseUser: FirebaseUser): Promise<User | null> => {
-    const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid))
-    if (userDoc.exists()) {
-      return hydrateUser(userDoc.id, userDoc.data())
+    try {
+      // Read from the server to avoid a stale client cache. The profile is
+      // written server-side (firebase-admin via /api/users/profile), so the
+      // client's Firestore cache can lag and miss recently-saved fields like
+      // state/city — which made them "disappear" from the form on reload.
+      // refreshUser() already does this for the same reason.
+      const serverDoc = await getDocFromServer(doc(db, 'users', firebaseUser.uid))
+      if (serverDoc.exists()) {
+        return hydrateUser(serverDoc.id, serverDoc.data())
+      }
+      return null
+    } catch {
+      // Offline or server unreachable: fall back to the (possibly cached) read.
+      const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid))
+      return userDoc.exists() ? hydrateUser(userDoc.id, userDoc.data()) : null
     }
-    return null
   }
 
   const createUserDocument = async (
