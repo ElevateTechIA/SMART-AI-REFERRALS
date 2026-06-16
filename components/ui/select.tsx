@@ -6,7 +6,21 @@ import { Check, ChevronDown, ChevronUp } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
-const Select = SelectPrimitive.Root
+// Wrap Radix's Root so a spurious empty-string `onValueChange` never reaches
+// consumers. Some browsers autofill the hidden native <select> that Radix
+// renders for `required` selects and fire a change with value "" on page load,
+// which was wiping already-loaded/selected values (e.g. State, Category) out of
+// controlled forms. A real user selection is never "" — Radix forbids items
+// with an empty value — so dropping empty values here is safe app-wide.
+const Select = ({
+  onValueChange,
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Root>) => (
+  <SelectPrimitive.Root
+    onValueChange={onValueChange ? (value) => { if (value) onValueChange(value) } : undefined}
+    {...props}
+  />
+)
 
 const SelectGroup = SelectPrimitive.Group
 

@@ -371,7 +371,13 @@ export default function SettingsPage() {
                   <Select
                     value={formData.state}
                     onValueChange={(value) => {
-                      setFormData({ ...formData, state: value, city: '' })
+                      // Guard against spurious/empty onValueChange fires (e.g. the
+                      // browser autofilling Radix's hidden `required` <select>), which
+                      // were wiping the just-loaded state AND resetting the city to ''
+                      // on page load. Only react to a genuine change of state, and only
+                      // then clear the (state-scoped) city.
+                      if (!value || value === formData.state) return
+                      setFormData((prev) => ({ ...prev, state: value, city: '' }))
                     }}
                     required
                   >
